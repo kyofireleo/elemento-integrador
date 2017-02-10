@@ -221,13 +221,6 @@ public class Elemento {
         lugarExpedicion = conf.getLugarExp();
         conf.dispose();
 
-        /*if (produccion) {
-         user = "SIGI7408036N9_71";
-         pass = "66514482243426681793344";
-         } else {
-         user = "SIGI7408036N9_6";
-         pass = "1505794126573071453720";
-         }*/
         if (produccion) {
             user = "ZAG4";
             pass = "ZAG.2015";
