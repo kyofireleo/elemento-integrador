@@ -33,6 +33,7 @@ public class NominaGeneral extends javax.swing.JFrame {
     utils.ConnectionFactory factory;
     int idEmisor;
     List<Integer> idEmpleados;
+    List<Integer> numEmpleados;
     String serie;
     String lugarExpedicion;
 
@@ -48,10 +49,11 @@ public class NominaGeneral extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         this.idEmisor = idEmisor;
         this.idEmpleados = idEmpleados;
+        this.numEmpleados = numEmpleados;
         util = new utils.Utils(Elemento.log);
         factory = new utils.ConnectionFactory(Elemento.log);
         llenarComboMetodos();
-        llenarTabla(numEmpleados);
+        llenarTabla();
     }
 
     /**
@@ -76,11 +78,25 @@ public class NominaGeneral extends javax.swing.JFrame {
         totalNetoLabel = new javax.swing.JLabel();
         metodoCombo = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        cmbTipoNomina = new javax.swing.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Nomina General");
 
         fechaPago.setDateFormatString("yyyy-MM-dd");
+        fechaPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                fechaPagoPropertyChange(evt);
+            }
+        });
+        fechaPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                fechaPagoInputMethodTextChanged(evt);
+            }
+        });
 
         fechaInicialPago.setDateFormatString("yyyy-MM-dd");
 
@@ -155,7 +171,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         totalNetoLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         totalNetoLabel.setText("0.0");
 
-        metodoCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "01 Efectivo", "02 Cheque Nominativo", "03 Transferencia electrónica de fondos", "04 Tarjeta de Crédito", "05 Monederos Electrónicos", "06 Dinero Electrónico", "08 Vales de Despensa", "28 Tarjeta de Débito", "29 Tarjeta de Servicio", "98 NA", "99 Otros" }));
+        metodoCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "NA", "01 Efectivo", "02 Cheque Nominativo", "03 Transferencia electrónica de fondos", "04 Tarjeta de Crédito", "05 Monederos Electrónicos", "06 Dinero Electrónico", "08 Vales de Despensa", "28 Tarjeta de Débito", "29 Tarjeta de Servicio", "98 NA", "99 Otros" }));
         metodoCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 metodoComboActionPerformed(evt);
@@ -163,6 +179,10 @@ public class NominaGeneral extends javax.swing.JFrame {
         });
 
         jLabel2.setText("Metodo de Pago");
+
+        jLabel3.setText("Tipo Nomina");
+
+        cmbTipoNomina.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ordinaria", "Extraordinaria" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -172,60 +192,62 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(generarNomina)
-                                .addGap(26, 26, 26)
-                                .addComponent(jLabel2)
-                                .addGap(18, 18, 18)
-                                .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(41, 41, 41)
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(totalNetoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel6)
-                                .addGap(10, 10, 10)
-                                .addComponent(fechaPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel7)
-                                .addGap(10, 10, 10)
-                                .addComponent(fechaInicialPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel8)
-                                .addGap(10, 10, 10)
-                                .addComponent(fechaFinalPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 20, Short.MAX_VALUE))
+                        .addComponent(generarNomina)
+                        .addGap(26, 26, 26)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(totalNetoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addContainerGap())))
+                        .addComponent(jLabel6)
+                        .addGap(10, 10, 10)
+                        .addComponent(fechaPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel7)
+                        .addGap(10, 10, 10)
+                        .addComponent(fechaInicialPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel8)
+                        .addGap(10, 10, 10)
+                        .addComponent(fechaFinalPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmbTipoNomina, 0, 112, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(fechaPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(fechaInicialPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(fechaFinalPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(fechaFinalPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(cmbTipoNomina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(generarNomina)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
-                        .addComponent(totalNetoLabel)
-                        .addComponent(generarNomina)))
+                        .addComponent(totalNetoLabel))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -243,7 +265,7 @@ public class NominaGeneral extends javax.swing.JFrame {
 
     private void fechaFinalPagoInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaFinalPagoInputMethodTextChanged
         // TODO add your handling code here:
-
+        llenarTabla();
     }//GEN-LAST:event_fechaFinalPagoInputMethodTextChanged
 
     private void fechaFinalPagoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fechaFinalPagoMouseExited
@@ -267,9 +289,11 @@ public class NominaGeneral extends javax.swing.JFrame {
         if (r == JOptionPane.YES_OPTION) {
             DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
             complementos.nominas.Nominas nom;
+            complementos.nominas.OtrosPagos otro = new complementos.nominas.OtrosPagos();
             complementos.nominas.Deducciones dedu = new complementos.nominas.Deducciones();
             complementos.nominas.Percepciones perc = new complementos.nominas.Percepciones();
             Factura fact;
+            OtrosPagos otr;
             Percepciones per;
             Deducciones dec;
             Layout lay;
@@ -296,12 +320,14 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact.moneda = "MXN";
                 fact.tipoCambio = "1.0";
                 fact.prefactura = "";
-
+                
+                otr = new OtrosPagos(emp.getIdEmpleado(), false);
                 per = new Percepciones(emp.getIdEmpleado(), false);
                 dec = new Deducciones(emp.getIdEmpleado(), false);
-
+                
+                nom.setTipoNomina(cmbTipoNomina.getSelectedItem().toString().substring(0,1));
                 nom.setAntiguedad(new Integer(model.getValueAt(i, 2).toString()));
-                nom.setNumDiasPagados(new Double(model.getValueAt(i, 3).toString()));
+                nom.setNumDiasPagados(new Integer(model.getValueAt(i, 3).toString()));
                 nom.setEmpleado(emp.getEmpleado());
                 nom.setFechaPago(format.format(fechaPago.getDate()));
                 nom.setFechaInicialPago(format.format(fechaInicialPago.getDate()));
@@ -309,21 +335,30 @@ public class NominaGeneral extends javax.swing.JFrame {
                 nom.setHorasExtra(null);
                 nom.setIncapacidad(null);
                 nom.setRegistroPatronal(fact.emisor.getRegistroPatronal());
-
+                
+                //Seteamos otros pagos
+                otro.setOtrosPagos(getOtrosPagos(otr));
+                otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
+                nom.setOtrosPagos(otro);
+                nom.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
+                
                 //Seteamos deducciones
                 dedu.setDeducciones(getDeducciones(dec));
-                dedu.setTotalExento(dec.getTotalExento());
-                dedu.setTotalGravado(dec.getTotalGravado());
+                dedu.setTotalRetenido(dec.getTotalRetenido());
+                dedu.setTotalOtras(dec.getTotalOtras());
                 nom.setDeducciones(dedu);
+                nom.setTotalDeducciones(new BigDecimal(dec.getTotalRetenido() + dec.getTotalOtras()));
 
                 //Seteamos percepciones
                 perc.setPercepciones(getPercepciones(per));
                 perc.setTotalExento(per.getTotalExento());
                 perc.setTotalGravado(per.getTotalGravado());
+                perc.setTotalSueldos(per.getTotalSueldos());
                 nom.setPercepciones(perc);
+                nom.setTotalPercepciones(new BigDecimal(per.getTotalSueldos()));
 
-                fact.conceptos = getConceptos(perc);
-                fact = getTotales(perc, dedu, fact);
+                fact.conceptos = getConceptos(perc,otro);
+                fact = getTotales(perc, dedu, otro, fact);
 
                 lay = new Layout(fact, emp, nom);
             }
@@ -334,6 +369,14 @@ public class NominaGeneral extends javax.swing.JFrame {
     private void metodoComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metodoComboActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_metodoComboActionPerformed
+
+    private void fechaPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaPagoPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_fechaPagoPropertyChange
+
+    private void fechaPagoInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaPagoInputMethodTextChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_fechaPagoInputMethodTextChanged
 
     private void llenarComboMetodos(){
         Connection con = Elemento.odbc();
@@ -373,17 +416,23 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
     }
 
-    public long calcularAntiguedadSemanas(Date fechaInicial) {
+    public long calcularAntiguedadSemanas(Date fechaInicial, Date fechaFinalPay) {
         try {
             Date date = fechaInicial;
-            Date date2 = new Date();
-
+            Date date2;
+            if(fechaFinalPay == null){
+                date2 = new Date();
+            }else{
+                date2 = fechaFinalPay;
+            }
+            
             GregorianCalendar cal = new GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
             GregorianCalendar cal2 = new GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
 
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
             long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
-            long difd = difms / (1000 * 60 * 60 * 24 * 7);
+            long undia = 24 * 60 * 60 * 1000;
+            long difd = difms / (1000 * 60 * 60 * 24 * 8);
             return difd;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -428,12 +477,14 @@ public class NominaGeneral extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cmbTipoNomina;
     private com.toedter.calendar.JDateChooser fechaFinalPago;
     private com.toedter.calendar.JDateChooser fechaInicialPago;
     private com.toedter.calendar.JDateChooser fechaPago;
     private javax.swing.JToggleButton generarNomina;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -443,7 +494,7 @@ public class NominaGeneral extends javax.swing.JFrame {
     private javax.swing.JLabel totalNetoLabel;
     // End of variables declaration//GEN-END:variables
 
-    private void llenarTabla(List<Integer> numEmpleados) {
+    private void llenarTabla() {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
@@ -456,10 +507,10 @@ public class NominaGeneral extends javax.swing.JFrame {
                 Percepciones per = new Percepciones(emp.getIdEmpleado(), true);
                 Deducciones dec = new Deducciones(emp.getIdEmpleado(), true);
                 double i = util.redondear(per.getTotalExento() + per.getTotalGravado());
-                double d = util.redondear(dec.getTotalExento() + dec.getTotalGravado());
+                double d = util.redondear(dec.getTotalRetenido()+ dec.getTotalOtras());
                 row[0] = numEmpleados.get(j);
                 row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
-                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral());
+                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
                 row[3] = 0;
                 row[4] = i;
                 row[5] = d;
@@ -512,7 +563,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
                 emp.setNumEmpleado(rs.getInt("numEmpleado"));
                 emp.setCurp(rs.getString("curp"));
-                emp.setTipoRegimen(rs.getInt("tipoRegimen"));
+                emp.setTipoRegimen(rs.getString("tipoRegimen"));
                 emp.setNss(rs.getString("nss"));
                 emp.setDepartamento(rs.getString("departamento"));
                 emp.setClabe(rs.getString("clabe"));
@@ -654,6 +705,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emi.setPais(rs.getString("pais"));
                 emi.setCp(rs.getString("cp"));
                 emi.setRegistroPatronal(rs.getString("registroPatronal"));
+                emi.setCurp(rs.getString("curp"));
                 emi.setEmitirNominas(rs.getBoolean("emiteNominas"));
                 emi.setRegimenFiscal(getRegimenFiscal(con, emi.getRfc()));
             }
@@ -685,7 +737,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
         return regimenFiscal;
     }
-
+    
     private List<complementos.nominas.Deducciones.Deduccion> getDeducciones(Deducciones dec) {
         DefaultTableModel model = (DefaultTableModel) dec.tabla.getModel();
         List<complementos.nominas.Deducciones.Deduccion> lista = new ArrayList();
@@ -697,10 +749,28 @@ public class NominaGeneral extends javax.swing.JFrame {
             ded.setTipoDeduccion(model.getValueAt(i, 0).toString());
             ded.setClave(model.getValueAt(i, 1).toString());
             ded.setConcepto(model.getValueAt(i, 2).toString());
-            ded.setImporteGravado(new Double(model.getValueAt(i, 3).toString()));
-            ded.setImporteExento(new Double(model.getValueAt(i, 4).toString()));
+            ded.setImporte(new Double(model.getValueAt(i, 3).toString()));
 
             lista.add(ded);
+        }
+
+        return lista;
+    }
+
+    private List<complementos.nominas.OtrosPagos.OtroPago> getOtrosPagos(OtrosPagos otr) {
+        DefaultTableModel model = (DefaultTableModel) otr.tabla.getModel();
+        List<complementos.nominas.OtrosPagos.OtroPago> lista = new ArrayList();
+        complementos.nominas.OtrosPagos.OtroPago otp;
+        complementos.nominas.OtrosPagos otros = new complementos.nominas.OtrosPagos();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            otp = otros.getClase();
+            otp.setTipoOtroPago(model.getValueAt(i, 0).toString());
+            otp.setClave(model.getValueAt(i, 1).toString());
+            otp.setConcepto(model.getValueAt(i, 2).toString());
+            otp.setImporte(new Double(model.getValueAt(i, 3).toString()));
+
+            lista.add(otp);
         }
 
         return lista;
@@ -726,29 +796,19 @@ public class NominaGeneral extends javax.swing.JFrame {
         return lista;
     }
 
-    private List<String> getConceptos(complementos.nominas.Percepciones perc) {
+    private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.OtrosPagos otro) {
         List<String> conceptos = new ArrayList();
-        BigDecimal pers = util.redondearBigDecimal(perc.getTotalGravado() + perc.getTotalExento());
-        String con = "C1: 001@1@SERVICIO@PAGO DE NOMINA@" + pers.toString() + "@" + pers.toString() + "@false@false\r\n";
+        BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos() + otro.getTotalOtrosPagos());
+        String con = "C1: 001@1@ACT@Pago de nómina@" + pers.toString() + "@" + pers.toString() + "@false@false\r\n";
         conceptos.add(con);
         return conceptos;
     }
 
-    private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, Factura fact) {
-        double des = 0;
-        double isR = 0;
-        double sub = perc.getTotalExento() + perc.getTotalGravado();
-        
-        for (int i = 0; i < dedu.getDeducciones().size(); i++) {
-            if (!dedu.getDeducciones().get(i).getTipoDeduccion().equals("002")) {
-                des += dedu.getDeducciones().get(i).getImporteGravado() + dedu.getDeducciones().get(i).getImporteExento();
-            } else {
-                isR = dedu.getDeducciones().get(i).getImporteExento() + dedu.getDeducciones().get(i).getImporteGravado();
-            }
-        }
+    private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, complementos.nominas.OtrosPagos otro, Factura fact) {
+        double sub = perc.getTotalSueldos() + otro.getTotalOtrosPagos();
 
-        fact.isrRetenido = util.redondear(isR);
-        fact.descuento = util.redondear(des);
+        fact.isrRetenido = dedu.getTotalRetenido();
+        fact.descuento = dedu.getTotalOtras() + dedu.getTotalRetenido();
         fact.totalRetenidos = fact.isrRetenido;
         fact.totalTraslados = 0.0;
         fact.iva = 0.0;
@@ -760,7 +820,7 @@ public class NominaGeneral extends javax.swing.JFrame {
             fact.motivoDescuento = "";
         }
 
-        double to = (perc.getTotalGravado() + perc.getTotalExento()) - des - isR;
+        double to = sub - fact.descuento;
         fact.subtotal = util.redondear(sub);
         fact.total = util.redondear(to);
 

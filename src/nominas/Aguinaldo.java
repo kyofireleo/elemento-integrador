@@ -202,7 +202,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
                 emp.setNumEmpleado(rs.getInt("numEmpleado"));
                 emp.setCurp(rs.getString("curp"));
-                emp.setTipoRegimen(rs.getInt("tipoRegimen"));
+                emp.setTipoRegimen(rs.getString("tipoRegimen"));
                 emp.setNss(rs.getString("nss"));
                 emp.setDepartamento(rs.getString("departamento"));
                 emp.setClabe(rs.getString("clabe"));
@@ -601,7 +601,8 @@ public class Aguinaldo extends javax.swing.JFrame {
                     fact.prefactura = "";
 
                     nom.setAntiguedad(new Integer(model.getValueAt(i, 2).toString()));
-                    nom.setNumDiasPagados(new Double(model.getValueAt(i, 3).toString()));
+                    nom.setTipoNomina("E"); //Extraordinaria
+                    nom.setNumDiasPagados(new Integer(model.getValueAt(i, 3).toString()));
                     nom.setEmpleado(emp.getEmpleado());
                     nom.setFechaPago(format.format(fechaPago.getDate()));
                     nom.setFechaInicialPago(format.format(fechaInicialPago.getDate()));
@@ -612,8 +613,8 @@ public class Aguinaldo extends javax.swing.JFrame {
 
                     //Seteamos deducciones
                     dedu.setDeducciones(getDeducciones(i));
-                    dedu.setTotalExento(0.0);
-                    dedu.setTotalGravado(new Double(model.getValueAt(i, 5).toString()));
+                    dedu.setTotalRetenido(0.0);
+                    dedu.setTotalOtras(new Double(model.getValueAt(i, 5).toString()));
                     nom.setDeducciones(dedu);
 
                     //Seteamos percepciones
@@ -646,9 +647,9 @@ public class Aguinaldo extends javax.swing.JFrame {
         double isR = 0;
         for (int i = 0; i < dedu.getDeducciones().size(); i++) {
             if (!dedu.getDeducciones().get(i).getTipoDeduccion().equals("002")) {
-                des += dedu.getDeducciones().get(i).getImporteGravado() + dedu.getDeducciones().get(i).getImporteExento();
+                des += dedu.getDeducciones().get(i).getImporte();
             } else {
-                isR = dedu.getDeducciones().get(i).getImporteExento() + dedu.getDeducciones().get(i).getImporteGravado();
+                isR = dedu.getDeducciones().get(i).getImporte();
             }
         }
 
@@ -684,8 +685,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         ded.setTipoDeduccion(cc.getTipoConcepto());
         ded.setClave(cc.getCodigo());
         ded.setConcepto(cc.getDescripcion());
-        ded.setImporteGravado(new Double(model.getValueAt(pos, 5).toString()));
-        ded.setImporteExento(0.0);
+        ded.setImporte(new Double(model.getValueAt(pos, 5).toString()));
         lista.add(ded);
 
         return lista;

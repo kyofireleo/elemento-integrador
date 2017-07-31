@@ -23,42 +23,41 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jScrollPane2" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="jLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="jScrollPane1" pref="350" max="32767" attributes="0"/>
+                          <Component id="tipoDeduccion" pref="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="jScrollPane1" pref="350" max="32767" attributes="0"/>
-                                  <Component id="tipoDeduccion" pref="0" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="clave" min="-2" pref="93" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="agregar" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
-                                      <Component id="eliminar" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="clave" min="-2" pref="93" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="guardar" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="agregar" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                              <Component id="eliminar" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="guardar" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -86,9 +85,9 @@
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="jScrollPane2" min="-2" pref="168" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="guardar" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -136,10 +135,10 @@
     <Component class="javax.swing.JComboBox" name="tipoDeduccion">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="21">
+          <StringArray count="99">
             <StringItem index="0" value="001,Seguridad social"/>
             <StringItem index="1" value="002,ISR"/>
-            <StringItem index="2" value="003,Aportaciones a retiro, cesant&#xed;a en edad avanzada y vejez"/>
+            <StringItem index="2" value="003,Aportaciones a retiro, cesant&#xed;a en edad avanzada y vejez."/>
             <StringItem index="3" value="004,Otros"/>
             <StringItem index="4" value="005,Aportaciones a Fondo de vivienda"/>
             <StringItem index="5" value="006,Descuento por incapacidad"/>
@@ -155,9 +154,87 @@
             <StringItem index="15" value="016,Aver&#xed;as"/>
             <StringItem index="16" value="017,Adquisici&#xf3;n de art&#xed;culos producidos por la empresa o establecimiento"/>
             <StringItem index="17" value="018,Cuotas para la constituci&#xf3;n y fomento de sociedades cooperativas y de cajas de ahorro"/>
-            <StringItem index="18" value="019,Cuotas sindicales"/>
+            <StringItem index="18" value="19,Cuotas sindicales"/>
             <StringItem index="19" value="020,Ausencia (Ausentismo)"/>
             <StringItem index="20" value="021,Cuotas obrero patronales"/>
+            <StringItem index="21" value="022,Impuestos Locales"/>
+            <StringItem index="22" value="023,Aportaciones voluntarias"/>
+            <StringItem index="23" value="024,Ajuste en Gratificaci&#xf3;n Anual (Aguinaldo) Exento"/>
+            <StringItem index="24" value="025,Ajuste en Gratificaci&#xf3;n Anual (Aguinaldo) Gravado"/>
+            <StringItem index="25" value="026,Ajuste en Participaci&#xf3;n de los Trabajadores en las Utilidades PTU Exento"/>
+            <StringItem index="26" value="027,Ajuste en Participaci&#xf3;n de los Trabajadores en las Utilidades PTU Gravado"/>
+            <StringItem index="27" value="028,Ajuste en Reembolso de Gastos M&#xe9;dicos Dentales y Hospitalarios Exento"/>
+            <StringItem index="28" value="029,Ajuste en Fondo de ahorro Exento"/>
+            <StringItem index="29" value="030,Ajuste en Caja de ahorro Exento"/>
+            <StringItem index="30" value="031,Ajuste en Contribuciones a Cargo del Trabajador Pagadas por el Patr&#xf3;n Exento"/>
+            <StringItem index="31" value="032,Ajuste en Premios por puntualidad Gravado"/>
+            <StringItem index="32" value="033,Ajuste en Prima de Seguro de vida Exento"/>
+            <StringItem index="33" value="034,Ajuste en Seguro de Gastos M&#xe9;dicos Mayores Exento"/>
+            <StringItem index="34" value="035,Ajuste en Cuotas Sindicales Pagadas por el Patr&#xf3;n Exento"/>
+            <StringItem index="35" value="036,Ajuste en Subsidios por incapacidad Exento"/>
+            <StringItem index="36" value="037,Ajuste en Becas para trabajadores y/o hijos Exento"/>
+            <StringItem index="37" value="038,Ajuste en Horas extra Exento"/>
+            <StringItem index="38" value="039,Ajuste en Horas extra Gravado"/>
+            <StringItem index="39" value="040,Ajuste en Prima dominical Exento"/>
+            <StringItem index="40" value="041,Ajuste en Prima dominical Gravado"/>
+            <StringItem index="41" value="042,Ajuste en Prima vacacional Exento"/>
+            <StringItem index="42" value="043,Ajuste en Prima vacacional Gravado"/>
+            <StringItem index="43" value="044,Ajuste en Prima por antig&#xfc;edad Exento"/>
+            <StringItem index="44" value="045,Ajuste en Prima por antig&#xfc;edad Gravado"/>
+            <StringItem index="45" value="046,Ajuste en Pagos por separaci&#xf3;n Exento"/>
+            <StringItem index="46" value="047,Ajuste en Pagos por separaci&#xf3;n Gravado"/>
+            <StringItem index="47" value="048,Ajuste en Seguro de retiro Exento"/>
+            <StringItem index="48" value="049,Ajuste en Indemnizaciones Exento"/>
+            <StringItem index="49" value="050,Ajuste en Indemnizaciones Gravado"/>
+            <StringItem index="50" value="051,Ajuste en Reembolso por funeral Exento"/>
+            <StringItem index="51" value="052,Ajuste en Cuotas de seguridad social pagadas por el patr&#xf3;n Exento"/>
+            <StringItem index="52" value="053,Ajuste en Comisiones Gravado"/>
+            <StringItem index="53" value="054,Ajuste en Vales de despensa Exento"/>
+            <StringItem index="54" value="055,Ajuste en Vales de restaurante Exento"/>
+            <StringItem index="55" value="056,Ajuste en Vales de gasolina Exento"/>
+            <StringItem index="56" value="057,Ajuste en Vales de ropa Exento"/>
+            <StringItem index="57" value="058,Ajuste en Ayuda para renta Exento"/>
+            <StringItem index="58" value="059,Ajuste en Ayuda para art&#xed;culos escolares Exento"/>
+            <StringItem index="59" value="060,Ajuste en Ayuda para anteojos Exento"/>
+            <StringItem index="60" value="061,Ajuste en Ayuda para transporte Exento"/>
+            <StringItem index="61" value="062,Ajuste en Ayuda para gastos de funeral Exento"/>
+            <StringItem index="62" value="063,Ajuste en Otros ingresos por salarios Exento"/>
+            <StringItem index="63" value="064,Ajuste en Otros ingresos por salarios Gravado"/>
+            <StringItem index="64" value="065,Ajuste en Jubilaciones, pensiones o haberes de retiro Exento"/>
+            <StringItem index="65" value="066,Ajuste en Jubilaciones, pensiones o haberes de retiro Gravado"/>
+            <StringItem index="66" value="067,Ajuste en Pagos por separaci&#xf3;n Acumulable"/>
+            <StringItem index="67" value="068,Ajuste en Pagos por separaci&#xf3;n No acumulable"/>
+            <StringItem index="68" value="069,Ajuste en Jubilaciones, pensiones o haberes de retiro Acumulable"/>
+            <StringItem index="69" value="070,Ajuste en Jubilaciones, pensiones o haberes de retiro No acumulable"/>
+            <StringItem index="70" value="071,Ajuste en Subsidio para el empleo (efectivamente entregado al trabajador)"/>
+            <StringItem index="71" value="072,Ajuste en Ingresos en acciones o t&#xed;tulos valor que representan bienes Exento"/>
+            <StringItem index="72" value="073,Ajuste en Ingresos en acciones o t&#xed;tulos valor que representan bienes Gravado"/>
+            <StringItem index="73" value="074,Ajuste en Alimentaci&#xf3;n Exento"/>
+            <StringItem index="74" value="075,Ajuste en Alimentaci&#xf3;n Gravado"/>
+            <StringItem index="75" value="076,Ajuste en Habitaci&#xf3;n Exento"/>
+            <StringItem index="76" value="077,Ajuste en Habitaci&#xf3;n Gravado"/>
+            <StringItem index="77" value="078,Ajuste en Premios por asistencia"/>
+            <StringItem index="78" value="079,Ajuste en Pagos distintos a los listados y que no deben considerarse como ingreso por sueldos, salarios o ingresos asimilados."/>
+            <StringItem index="79" value="080,Ajuste en Vi&#xe1;ticos no comprobados"/>
+            <StringItem index="80" value="081,Ajuste en Vi&#xe1;ticos anticipados"/>
+            <StringItem index="81" value="082,Ajuste en Fondo de ahorro Gravado"/>
+            <StringItem index="82" value="083,Ajuste en Caja de ahorro Gravado"/>
+            <StringItem index="83" value="084,Ajuste en Prima de Seguro de vida Gravado"/>
+            <StringItem index="84" value="085,Ajuste en Seguro de Gastos M&#xe9;dicos Mayores Gravado"/>
+            <StringItem index="85" value="086,Ajuste en Subsidios por incapacidad Gravado"/>
+            <StringItem index="86" value="087,Ajuste en Becas para trabajadores y/o hijos Gravado"/>
+            <StringItem index="87" value="088,Ajuste en Seguro de retiro Gravado"/>
+            <StringItem index="88" value="089,Ajuste en Vales de despensa Gravado"/>
+            <StringItem index="89" value="090,Ajuste en Vales de restaurante Gravado"/>
+            <StringItem index="90" value="091,Ajuste en Vales de gasolina Gravado"/>
+            <StringItem index="91" value="092,Ajuste en Vales de ropa Gravado"/>
+            <StringItem index="92" value="093,Ajuste en Ayuda para renta Gravado"/>
+            <StringItem index="93" value="094,Ajuste en Ayuda para art&#xed;culos escolares Gravado"/>
+            <StringItem index="94" value="095,Ajuste en Ayuda para anteojos Gravado"/>
+            <StringItem index="95" value="096,Ajuste en Ayuda para transporte Gravado"/>
+            <StringItem index="96" value="097,Ajuste en Ayuda para gastos de funeral Gravado"/>
+            <StringItem index="97" value="098,Ajuste a ingresos asimilados a salarios gravados"/>
+            <StringItem index="98" value="099,Ajuste a ingresos por sueldos y salarios gravados"/>
           </StringArray>
         </Property>
       </Properties>

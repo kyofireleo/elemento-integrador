@@ -855,7 +855,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="formaPago">
       <Properties>
-        <Property name="text" type="java.lang.String" value="PAGO EN UNA SOLA EXHIBICION"/>
+        <Property name="text" type="java.lang.String" value="En una sola exhibici&#xf3;n"/>
       </Properties>
       <Events>
         <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formaPagoFocusGained"/>

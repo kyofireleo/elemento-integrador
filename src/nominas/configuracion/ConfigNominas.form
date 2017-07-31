@@ -60,10 +60,12 @@
                       <Component id="jLabel24" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="listaEmisores" min="-2" pref="343" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="clavesOP" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="clavesPercepciones" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="clavesDeducciones" min="-2" pref="131" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="clavesDeducciones" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -88,6 +90,7 @@
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="clavesPercepciones" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="clavesDeducciones" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="clavesOP" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel24" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -125,7 +128,7 @@
   <SubComponents>
     <Component class="javax.swing.JButton" name="clavesPercepciones">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Claves Percepciones"/>
+        <Property name="text" type="java.lang.String" value="Claves Percep."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clavesPercepcionesActionPerformed"/>
@@ -133,7 +136,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="clavesDeducciones">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Claves Deducciones"/>
+        <Property name="text" type="java.lang.String" value="Claves Deduc."/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clavesDeduccionesActionPerformed"/>
@@ -257,6 +260,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="actualizarActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="clavesOP">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Claves OP"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clavesOPActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

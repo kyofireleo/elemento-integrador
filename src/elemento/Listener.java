@@ -139,7 +139,7 @@ public class Listener implements JNotifyListener {
                     fv.consultar("Folio", "SELECT * FROM Folios WHERE rfc like \'" + cons.getRfcEmisor() + "\' AND idComprobante = " + fv.getIdComprobante(tipoComprobante));
 
                     //con.crearLayout(layout, name);
-                    if (tipoComprobante.equalsIgnoreCase("recibo de nomina")) {
+                    if (!tipoComprobante.equalsIgnoreCase("recibo de nomina")) {
                         if (!verificarCliente(rfcRe)) {
                             agregarCliente(cons);
                         }
@@ -350,11 +350,11 @@ public class Listener implements JNotifyListener {
 
             if (folio == folioActual) {
                 folio++;
-                stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = \'" + folio + "\' WHERE rfc like \'" + rfcE + "\' AND idComprobante like \'" + idComprobante + "\'");
+                stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = " + folio + " WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
                 Elemento.log.info("Se ha actualizado al folio: " + folio);
             } else {
                 if (folioActual == (folio - 1)) {
-                    stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = \'" + folio + "\' WHERE rfc like \'" + rfcE + "\' AND idComprobante = \'" + idComprobante + "\'");
+                    stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = " + folio + " WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
                     Elemento.log.info("Se ha actualizado al folio: " + folio);
                 }
             }

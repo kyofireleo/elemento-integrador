@@ -4,6 +4,7 @@ import complementos.nominas.Deducciones;
 import complementos.nominas.HorasExtra;
 import complementos.nominas.Incapacidad;
 import complementos.nominas.Nominas;
+import complementos.nominas.OtrosPagos;
 import complementos.nominas.Percepciones;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -143,6 +144,7 @@ public class Layout {
         this.fecha = this.getFecha();
         BigDecimal porIeps = this.redondear(this.fact.porIeps);
         BigDecimal totalIeps = this.redondear(this.fact.totalIeps);
+        OtrosPagos otr = this.nomi.getOtrosPagos();
         Percepciones per = this.nomi.getPercepciones();
         Deducciones dec = this.nomi.getDeducciones();
         re.append(preFactura).append("\r\n");
@@ -159,7 +161,11 @@ public class Layout {
         re.append("ESTADO1: ").append(this.emisor.getEstado()).append("\r\n");
         re.append("PAIS1: ").append(this.emisor.getPais()).append("\r\n");
         re.append("CP1: ").append(this.emisor.getCp()).append("\r\n");
-        re.append("REGISTROPATRONAL:").append(this.emisor.getRegistroPatronal()).append("\r\n");
+        re.append("REGISTROPATRONAL: ").append(this.emisor.getRegistroPatronal()).append("\r\n");
+        
+        if(this.emisor.getRfc().trim().length() == 13)
+            re.append("CURPE: ").append(this.emisor.getCurp()).append("\r\n");
+        
         re.append("[/DATOS_EMISOR]\r\n\r\n");
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
@@ -180,7 +186,7 @@ public class Layout {
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: ").append(tipoComprobante).append("\r\n");
-        re.append("FORMAPAGO: PAGO EN UNA SOLA EXHIBICION\r\n");
+        re.append("FORMAPAGO: En una sola exhibición\r\n");
         re.append("METODOPAGO: ").append(this.fact.getMetodoPago()).append("\r\n");
         re.append("NUMCTAPAGO: ").append(this.fact.getCuentaBancaria()).append("\r\n");
         re.append("DESCUENTO: ").append(this.fact.descuento).append("\r\n");
@@ -199,12 +205,16 @@ public class Layout {
         }
         re.append("[/CONCEPTOS]\r\n\r\n");
         re.append("[IMPUESTOS_TRASLADADOS]\r\n");
-        re.append("IT1: IVA·").append(16.0).append("·").append(this.iva.toString()).append("\r\n");
-        re.append("IT2: IEPS·").append(porIeps.toString()).append("·").append(totalIeps.toString()).append("\r\n");
+        if(this.iva.doubleValue() > 0)
+            re.append("IT1: IVA·").append(16.0).append("·").append(this.iva.toString()).append("\r\n");
+        if(totalIeps.doubleValue() > 0)
+            re.append("IT2: IEPS·").append(porIeps.toString()).append("·").append(totalIeps.toString()).append("\r\n");
         re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        re.append("IR1: IVA·").append(this.fact.getIvaRetenido()).append("\r\n");
-        re.append("IR2: ISR·").append(this.fact.getIsrRetenido()).append("\r\n");
+        if(this.fact.getIvaRetenido() > 0)
+            re.append("IR1: IVA·").append(this.fact.getIvaRetenido()).append("\r\n");
+        if(this.fact.getIsrRetenido() > 0)
+            re.append("IR2: ISR·").append(this.fact.getIsrRetenido()).append("\r\n");
         re.append("[/IMPUESTOS_RETENIDOS]\r\n\r\n");
         re.append("[EMPLEADO]\r\n");
         re.append("NUMEMPLEADO: ").append(this.emp.getNumEmpleado()).append("\r\n");
@@ -218,22 +228,32 @@ public class Layout {
         re.append("FECHA_INICIAL_REL_LABORAL: ").append(this.emp.getFechaInicialRelLaboral()).append("\r\n");
         re.append("TIPO_CONTRATO: ").append(this.emp.getTipoContrato()).append("\r\n");
         re.append("TIPO_JORNADA: ").append(this.emp.getTipoJornada()).append("\r\n");
-        re.append("PERIODICIDAD_PAGO: ").append(this.emp.getPeriodicidadPago()).append("\r\n");
+        re.append("PERIODICIDAD_PAGO: ").append(this.emp.getPeriodicidadPago().split(",")[0]).append("\r\n");
         re.append("RIESGO_PUESTO: ").append(this.emp.getRiesgoPuesto()).append("\r\n");
         re.append("SUELDO_BASE: ").append(this.emp.getSalarioBaseCotApor()).append("\r\n");
         re.append("SALARIO_DIARIO_INT: ").append(this.emp.getSalarioDiarioInt()).append("\r\n");
         re.append("[/EMPLEADO]\r\n\r\n");
         re.append("[NOMINA]\r\n");
-        re.append("TOTAL_GRAVADO_PER: ").append(this.redondear(per.getTotalGravado()).toString()).append("\r\n");
-        re.append("TOTAL_EXENTO_PER: ").append(this.redondear(per.getTotalExento()).toString()).append("\r\n");
-        re.append("TOTAL_GRAVADO_DEC: ").append(this.redondear(dec.getTotalGravado()).toString()).append("\r\n");
-        re.append("TOTAL_EXENTO_DEC: ").append(this.redondear(dec.getTotalExento()).toString()).append("\r\n");
+        re.append("TIPO_NOMINA: ").append(this.nomi.getTipoNomina()).append("\r\n");
+        re.append("TOTAL_PER: ").append(this.redondear(per.getTotalSueldos())).append("\r\n");
+        re.append("TOTAL_DEC: ").append(this.redondear(nomi.getTotalDeducciones().doubleValue()).toString()).append("\r\n");
+        re.append("TOTAL_OTP: ").append(this.redondear(nomi.getTotalOtrosPagos().doubleValue()).toString()).append("\r\n");
         re.append("FECHA_PAGO: ").append(this.nomi.getFechaPago()).append("\r\n");
         re.append("FECHA_INICIAL_PAGO: ").append(this.nomi.getFechaInicialPago()).append("\r\n");
         re.append("FECHA_FINAL_PAGO: ").append(this.nomi.getFechaFinalPago()).append("\r\n");
         re.append("NUM_DIAS_PAGADOS: ").append(this.nomi.getNumDiasPagados()).append("\r\n");
-        re.append("ANTIGUEDAD: ").append(this.nomi.getAntiguedad()).append("\r\n");
+        re.append("ANTIGUEDAD: ").append("P").append(this.nomi.getAntiguedad()).append("W").append("\r\n");
         re.append("[/NOMINA]\r\n\r\n");
+        
+        if (!otr.getOtrosPagos().isEmpty()) {
+            re.append("[OTROS_PAGOS]\r\n");
+            for (int i = 0; i < otr.getOtrosPagos().size(); ++i) {
+                OtrosPagos.OtroPago p = (OtrosPagos.OtroPago)otr.getOtrosPagos().get(i);
+                re.append("OTR").append(i + 1).append(": ").append(p.getTipoOtroPago()).append("@").append(p.getClave()).append("@").append(p.getConcepto()).append("@").append(p.getImporte()).append("\r\n");
+            }
+            re.append("[/OTROS_PAGOS]\r\n\r\n");
+        }
+        
         if (!per.getPercepciones().isEmpty()) {
             re.append("[PERCEPCIONES]\r\n");
             for (int i = 0; i < per.getPercepciones().size(); ++i) {
@@ -246,7 +266,7 @@ public class Layout {
             re.append("[DEDUCCIONES]\r\n");
             for (int i = 0; i < dec.getDeducciones().size(); ++i) {
                 Deducciones.Deduccion d = (Deducciones.Deduccion)dec.getDeducciones().get(i);
-                re.append("DEC").append(i + 1).append(": ").append(d.getTipoDeduccion()).append("@").append(d.getClave()).append("@").append(d.getConcepto()).append("@").append(d.getImporteGravado()).append("@").append(d.getImporteExento()).append("\r\n");
+                re.append("DEC").append(i + 1).append(": ").append(d.getTipoDeduccion()).append("@").append(d.getClave()).append("@").append(d.getConcepto()).append("@").append(d.getImporte()).append("\r\n");
             }
             re.append("[/DEDUCCIONES]\r\n\r\n");
         }

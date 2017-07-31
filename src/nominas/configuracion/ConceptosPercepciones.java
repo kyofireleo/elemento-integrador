@@ -68,7 +68,7 @@ public class ConceptosPercepciones extends javax.swing.JFrame {
 
         jLabel1.setText("Tipo Percepcion");
 
-        tipoPercepcion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "001,Sueldos, Salarios Rayas y Jornales", "002,Gratificación Anual (Aguinaldo)", "003,Participación de los Trabajadores en las Utilidades PTU", "004,Reembolso de Gastos Médicos Dentales y Hospitalarios", "005,Fondo de Ahorro", "006,Caja de ahorro", "007,Vales", "008,Ayudas", "009,Contribuciones a Cargo del Trabajador Pagadas por el Patrón", "010,Premios por puntualidad", "011,Prima de Seguro de vida", "012,Seguro de Gastos Medicos Mayores", "013,Cuotas Sindicales Pagadas por el Patrón", "014,Subsidios por incapacidad", "015,Becas para trabajadores y/o hijos", "016,Otros", "017,Subsidio para el empleo", "018,Fomento al primer empleo", "019,Horas extra", "020,Prima dominical", "021,Prima vacacional", "022,Prima por antigüedad", "023,Pagos por separación", "024,Seguro de retiro", "025,Indeminizaciones", "026,Reembolso por funeral", "027,Cuotas de seguridad social pagadas por el patrón", "028,Comisiones" }));
+        tipoPercepcion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "001,Sueldos, Salarios  Rayas y Jornales", "002,Gratificación Anual (Aguinaldo)", "003,Participación de los Trabajadores en las Utilidades PTU", "004,Reembolso de Gastos Médicos Dentales y Hospitalarios", "005,Fondo de Ahorro", "006,Caja de ahorro", "009,Contribuciones a Cargo del Trabajador Pagadas por el Patrón", "010,Premios por puntualidad", "011,Prima de Seguro de vida", "012,Seguro de Gastos Médicos Mayores", "013,Cuotas Sindicales Pagadas por el Patrón", "014,Subsidios por incapacidad", "015,Becas para trabajadores y/o hijos", "019,Horas extra", "020,Prima dominical", "021,Prima vacacional", "022,Prima por antigüedad", "023,Pagos por separación", "024,Seguro de retiro", "025,Indemnizaciones", "026,Reembolso por funeral", "027,Cuotas de seguridad social pagadas por el patrón", "028,Comisiones", "029,Vales de despensa", "030,Vales de restaurante", "031,Vales de gasolina", "032,Vales de ropa", "033,Ayuda para renta", "034,Ayuda para artículos escolares", "035,Ayuda para anteojos", "036,Ayuda para transporte", "037,Ayuda para gastos de funeral", "038,Otros ingresos por salarios", "039,Jubilaciones, pensiones o haberes de retiro", "044,Jubilaciones, pensiones o haberes de retiro en parcialidades", "045,Ingresos en acciones o títulos valor que representan bienes", "046,Ingresos asimilados a salarios", "047,Alimentación", "048,Habitación", "049,Premios por asistencia", "050,Viáticos" }));
 
         jLabel2.setText("Clave");
 
@@ -137,29 +137,31 @@ public class ConceptosPercepciones extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel3)
-                                .addComponent(jLabel1))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(tipoPercepcion, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1))
-                            .addGap(27, 27, 27)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(clave, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(agregar)
-                                    .addGap(31, 31, 31)
-                                    .addComponent(eliminar)))))
-                    .addComponent(guardar))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(tipoPercepcion, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1))
+                        .addGap(27, 27, 27)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(clave, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(agregar)
+                                .addGap(31, 31, 31)
+                                .addComponent(eliminar)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(guardar)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -181,9 +183,9 @@ public class ConceptosPercepciones extends javax.swing.JFrame {
                     .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(guardar)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();

@@ -11,9 +11,17 @@ package elemento;
 public class Emisor {
 
     private String nombre,rfc,calle,noExterior,noInterior,colonia,localidad,registroPatronal;
-    private String municipio,estado,pais,cp,regimenFiscal;
+    private String municipio,estado,pais,cp,regimenFiscal,curp;
     private ExpedidoEn expedidoEn;
     private Boolean emitirNominas;
+
+    public String getCurp() {
+        return curp;
+    }
+
+    public void setCurp(String curp) {
+        this.curp = curp;
+    }
 
     public String getRegistroPatronal() {
         return registroPatronal;

@@ -20,7 +20,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Deducciones extends javax.swing.JFrame {
 
-    private Double totalGravado=0.0, totalExento=0.0;
+    private Double totalOtras=0.0, totalRet=0.0;
     private utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
     private utils.Utils util = new utils.Utils(Elemento.log);
     Integer idEmpleado;
@@ -56,13 +56,11 @@ public class Deducciones extends javax.swing.JFrame {
     private void initComponents() {
 
         guardar = new javax.swing.JButton();
-        labelExento = new javax.swing.JLabel();
-        labelGravado = new javax.swing.JLabel();
+        labelOtras = new javax.swing.JLabel();
+        labelRetenido = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tabla = new javax.swing.JTable();
         agregar = new javax.swing.JButton();
-        importeExento = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
         tipoDeduccion = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
@@ -70,7 +68,7 @@ public class Deducciones extends javax.swing.JFrame {
         concepto = new javax.swing.JTextArea();
         jLabel4 = new javax.swing.JLabel();
         clave = new javax.swing.JTextField();
-        importeGravado = new javax.swing.JTextField();
+        importe = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         eliminar = new javax.swing.JButton();
 
@@ -83,20 +81,20 @@ public class Deducciones extends javax.swing.JFrame {
             }
         });
 
-        labelExento.setText("Total Exento:");
+        labelOtras.setText("Total Otras Deducciones:");
 
-        labelGravado.setText("Total Gravado:");
+        labelRetenido.setText("Total Retenido:");
 
         tabla.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Tipo Deduccion", "Clave", "Concepto", "Importe Gravado", "Importe Exento"
+                "Tipo Deduccion", "Clave", "Concepto", "Importe Importe"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -112,21 +110,7 @@ public class Deducciones extends javax.swing.JFrame {
             }
         });
 
-        importeExento.setText("0.0");
-        importeExento.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                importeExentoMouseClicked(evt);
-            }
-        });
-        importeExento.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                importeExentoFocusGained(evt);
-            }
-        });
-
-        jLabel5.setText("Importe Exento");
-
-        tipoDeduccion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "001,Seguridad social", "002,ISR", "003,Aportaciones a retiro, cesantía en edad avanzada y vejez", "004,Otros", "005,Aportaciones a Fondo de vivienda", "006,Descuento por incapacidad", "007,Pensión alimenticia", "008,Renta", "009,Préstamos provenientes del Fondo Nacional de la Vivienda para los Trabajadores", "010,Pago por crédito de vivienda", "011,Pago de abonos INFONACOT", "012,Anticipo de salarios", "013,Pagos hechos con exceso al trabajador", "014,Errores", "015,Pérdidas", "016,Averías", "017,Adquisición de artículos producidos por la empresa o establecimiento", "018,Cuotas para la constitución y fomento de sociedades cooperativas y de cajas de ahorro", "019,Cuotas sindicales", "020,Ausencia (Ausentismo)", "021,Cuotas obrero patronales" }));
+        tipoDeduccion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "001,Seguridad social", "002,ISR", "003,Aportaciones a retiro, cesantía en edad avanzada y vejez.", "004,Otros", "005,Aportaciones a Fondo de vivienda", "006,Descuento por incapacidad", "007,Pensión alimenticia", "008,Renta", "009,Préstamos provenientes del Fondo Nacional de la Vivienda para los Trabajadores", "010,Pago por crédito de vivienda", "011,Pago de abonos INFONACOT", "012,Anticipo de salarios", "013,Pagos hechos con exceso al trabajador", "014,Errores", "015,Pérdidas", "016,Averías", "017,Adquisición de artículos producidos por la empresa o establecimiento", "018,Cuotas para la constitución y fomento de sociedades cooperativas y de cajas de ahorro", "19,Cuotas sindicales", "020,Ausencia (Ausentismo)", "021,Cuotas obrero patronales", "022,Impuestos Locales", "023,Aportaciones voluntarias", "024,Ajuste en Gratificación Anual (Aguinaldo) Exento", "025,Ajuste en Gratificación Anual (Aguinaldo) Gravado", "026,Ajuste en Participación de los Trabajadores en las Utilidades PTU Exento", "027,Ajuste en Participación de los Trabajadores en las Utilidades PTU Gravado", "028,Ajuste en Reembolso de Gastos Médicos Dentales y Hospitalarios Exento", "029,Ajuste en Fondo de ahorro Exento", "030,Ajuste en Caja de ahorro Exento", "031,Ajuste en Contribuciones a Cargo del Trabajador Pagadas por el Patrón Exento", "032,Ajuste en Premios por puntualidad Gravado", "033,Ajuste en Prima de Seguro de vida Exento", "034,Ajuste en Seguro de Gastos Médicos Mayores Exento", "035,Ajuste en Cuotas Sindicales Pagadas por el Patrón Exento", "036,Ajuste en Subsidios por incapacidad Exento", "037,Ajuste en Becas para trabajadores y/o hijos Exento", "038,Ajuste en Horas extra Exento", "039,Ajuste en Horas extra Gravado", "040,Ajuste en Prima dominical Exento", "041,Ajuste en Prima dominical Gravado", "042,Ajuste en Prima vacacional Exento", "043,Ajuste en Prima vacacional Gravado", "044,Ajuste en Prima por antigüedad Exento", "045,Ajuste en Prima por antigüedad Gravado", "046,Ajuste en Pagos por separación Exento", "047,Ajuste en Pagos por separación Gravado", "048,Ajuste en Seguro de retiro Exento", "049,Ajuste en Indemnizaciones Exento", "050,Ajuste en Indemnizaciones Gravado", "051,Ajuste en Reembolso por funeral Exento", "052,Ajuste en Cuotas de seguridad social pagadas por el patrón Exento", "053,Ajuste en Comisiones Gravado", "054,Ajuste en Vales de despensa Exento", "055,Ajuste en Vales de restaurante Exento", "056,Ajuste en Vales de gasolina Exento", "057,Ajuste en Vales de ropa Exento", "058,Ajuste en Ayuda para renta Exento", "059,Ajuste en Ayuda para artículos escolares Exento", "060,Ajuste en Ayuda para anteojos Exento", "061,Ajuste en Ayuda para transporte Exento", "062,Ajuste en Ayuda para gastos de funeral Exento", "063,Ajuste en Otros ingresos por salarios Exento", "064,Ajuste en Otros ingresos por salarios Gravado", "065,Ajuste en Jubilaciones, pensiones o haberes de retiro Exento", "066,Ajuste en Jubilaciones, pensiones o haberes de retiro Gravado", "067,Ajuste en Pagos por separación Acumulable", "068,Ajuste en Pagos por separación No acumulable", "069,Ajuste en Jubilaciones, pensiones o haberes de retiro Acumulable", "070,Ajuste en Jubilaciones, pensiones o haberes de retiro No acumulable", "071,Ajuste en Subsidio para el empleo (efectivamente entregado al trabajador)", "072,Ajuste en Ingresos en acciones o títulos valor que representan bienes Exento", "073,Ajuste en Ingresos en acciones o títulos valor que representan bienes Gravado", "074,Ajuste en Alimentación Exento", "075,Ajuste en Alimentación Gravado", "076,Ajuste en Habitación Exento", "077,Ajuste en Habitación Gravado", "078,Ajuste en Premios por asistencia", "079,Ajuste en Pagos distintos a los listados y que no deben considerarse como ingreso por sueldos, salarios o ingresos asimilados.", "080,Ajuste en Viáticos no comprobados", "081,Ajuste en Viáticos anticipados", "082,Ajuste en Fondo de ahorro Gravado", "083,Ajuste en Caja de ahorro Gravado", "084,Ajuste en Prima de Seguro de vida Gravado", "085,Ajuste en Seguro de Gastos Médicos Mayores Gravado", "086,Ajuste en Subsidios por incapacidad Gravado", "087,Ajuste en Becas para trabajadores y/o hijos Gravado", "088,Ajuste en Seguro de retiro Gravado", "089,Ajuste en Vales de despensa Gravado", "090,Ajuste en Vales de restaurante Gravado", "091,Ajuste en Vales de gasolina Gravado", "092,Ajuste en Vales de ropa Gravado", "093,Ajuste en Ayuda para renta Gravado", "094,Ajuste en Ayuda para artículos escolares Gravado", "095,Ajuste en Ayuda para anteojos Gravado", "096,Ajuste en Ayuda para transporte Gravado", "097,Ajuste en Ayuda para gastos de funeral Gravado", "098,Ajuste a ingresos asimilados a salarios gravados", "099,Ajuste a ingresos por sueldos y salarios gravados" }));
 
         jLabel2.setText("Clave");
 
@@ -144,7 +128,7 @@ public class Deducciones extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(concepto);
 
-        jLabel4.setText("Importe Gravado");
+        jLabel4.setText("Importe");
 
         clave.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -152,15 +136,15 @@ public class Deducciones extends javax.swing.JFrame {
             }
         });
 
-        importeGravado.setText("0.0");
-        importeGravado.addMouseListener(new java.awt.event.MouseAdapter() {
+        importe.setText("0.0");
+        importe.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                importeGravadoMouseClicked(evt);
+                importeMouseClicked(evt);
             }
         });
-        importeGravado.addFocusListener(new java.awt.event.FocusAdapter() {
+        importe.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                importeGravadoFocusGained(evt);
+                importeFocusGained(evt);
             }
         });
 
@@ -193,27 +177,23 @@ public class Deducciones extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(clave, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(clave))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(importeGravado, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(18, 18, 18)
-                                .addComponent(importeExento))
+                                .addComponent(importe))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(agregar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(eliminar)))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(labelGravado)
+                        .addComponent(labelRetenido)
                         .addGap(119, 119, 119)
-                        .addComponent(labelExento)
+                        .addComponent(labelOtras)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(guardar))
-                    .addComponent(jScrollPane2))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 621, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -231,12 +211,8 @@ public class Deducciones extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
-                            .addComponent(importeGravado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel5)
-                            .addComponent(importeExento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(importe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(42, 42, 42)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(agregar)
                             .addComponent(eliminar)))
@@ -245,8 +221,8 @@ public class Deducciones extends javax.swing.JFrame {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(labelGravado)
-                    .addComponent(labelExento)
+                    .addComponent(labelRetenido)
+                    .addComponent(labelOtras)
                     .addComponent(guardar))
                 .addContainerGap())
         );
@@ -261,14 +237,13 @@ public class Deducciones extends javax.swing.JFrame {
 
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
-        Double impG = new Double(importeGravado.getText());
-        Double impE = new Double(importeExento.getText());
+        Double impG = new Double(importe.getText());
         
         String tipoPer = tipoDeduccion.getSelectedItem().toString().split(",")[0];
         String cla = clave.getText();
         String conce = concepto.getText().trim();
 
-        Object[] x = {tipoPer,cla,conce,impG,impE};
+        Object[] x = {tipoPer,cla,conce,impG};
         model.addRow(x);
         
         calcular();
@@ -277,27 +252,28 @@ public class Deducciones extends javax.swing.JFrame {
 
     private void calcular(){
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
-        Double impG, impE;
-        totalGravado = 0.0;
-        totalExento = 0.0;
+        Double imp;
+        totalOtras = 0.0;
+        totalRet = 0.0;
         
         for (int i = 0; i < model.getRowCount(); i++) {
-            impG = (Double)model.getValueAt(i, 3);
-            impE = (Double)model.getValueAt(i, 4);
-            totalGravado = util.redondear(totalGravado+impG);
-            totalExento = util.redondear(totalExento+impE);
+            imp = (Double)model.getValueAt(i, 3);
+            if(model.getValueAt(i, 0).toString().equals("002")){
+                totalRet = util.redondear(totalRet+imp);
+            }else{
+                totalOtras = util.redondear(totalOtras+imp);
+            }
         }
         
-        labelGravado.setText("Total Gravado: "+totalGravado);
-        labelExento.setText("Total Exento: "+totalExento);
+        labelRetenido.setText("Total Retenido: "+totalRet);
+        labelOtras.setText("Total Otras Deducciones: "+totalOtras);
     }
     
     private void limpiar(){
         tipoDeduccion.setSelectedIndex(0);
         clave.setText("");
         concepto.setText("");
-        importeGravado.setText("0.0");
-        importeExento.setText("0.0");
+        importe.setText("0.0");
         
         clave.transferFocusBackward();
     }
@@ -314,25 +290,15 @@ public class Deducciones extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_conceptoKeyPressed
 
-    private void importeGravadoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_importeGravadoMouseClicked
+    private void importeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_importeMouseClicked
         // TODO add your handling code here:
-        importeGravado.selectAll();
-    }//GEN-LAST:event_importeGravadoMouseClicked
+        importe.selectAll();
+    }//GEN-LAST:event_importeMouseClicked
 
-    private void importeExentoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_importeExentoMouseClicked
+    private void importeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_importeFocusGained
         // TODO add your handling code here:
-        importeExento.selectAll();
-    }//GEN-LAST:event_importeExentoMouseClicked
-
-    private void importeGravadoFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_importeGravadoFocusGained
-        // TODO add your handling code here:
-        importeGravado.selectAll();
-    }//GEN-LAST:event_importeGravadoFocusGained
-
-    private void importeExentoFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_importeExentoFocusGained
-        // TODO add your handling code here:
-        importeExento.selectAll();
-    }//GEN-LAST:event_importeExentoFocusGained
+        importe.selectAll();
+    }//GEN-LAST:event_importeFocusGained
 
     private void eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarActionPerformed
         // TODO add your handling code here:
@@ -374,12 +340,12 @@ public class Deducciones extends javax.swing.JFrame {
         return 0;
     }
     
-    public Double getTotalGravado(){
-        return totalGravado;
+    public Double getTotalOtras(){
+        return totalOtras;
     }
     
-    public Double getTotalExento(){
-        return totalExento;
+    public Double getTotalRetenido(){
+        return totalRet;
     }
     
     private void guardar(){
@@ -399,9 +365,9 @@ public class Deducciones extends javax.swing.JFrame {
             borrarDeducciones(idEmpleado);
         try {
             for (int i = 0; i < model.getRowCount(); i++) {
-                String query = "INSERT INTO ImportesDeducciones (clave,idEmpleado,importeGravado,importeExento) "
+                String query = "INSERT INTO ImportesDeducciones (clave,idEmpleado,importe) "
                     + "VALUES (\'"+model.getValueAt(i, 1).toString()+"\',"+idEmpleado+","
-                        + (Double)model.getValueAt(i, 3) +","+(Double)model.getValueAt(i, 4)+")";
+                        + (Double)model.getValueAt(i, 3) +")";
                 stmt.executeUpdate(query);
                 
             }
@@ -453,17 +419,15 @@ public class Deducciones extends javax.swing.JFrame {
     private javax.swing.JTextArea concepto;
     private javax.swing.JButton eliminar;
     private javax.swing.JButton guardar;
-    private javax.swing.JTextField importeExento;
-    private javax.swing.JTextField importeGravado;
+    private javax.swing.JTextField importe;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel labelExento;
-    private javax.swing.JLabel labelGravado;
+    private javax.swing.JLabel labelOtras;
+    private javax.swing.JLabel labelRetenido;
     public javax.swing.JTable tabla;
     private javax.swing.JComboBox tipoDeduccion;
     // End of variables declaration//GEN-END:variables
@@ -485,8 +449,7 @@ public class Deducciones extends javax.swing.JFrame {
                     row[0] = rs2.getString("tipo");
                     row[1] = claveD;
                     row[2] = rs2.getString("concepto");
-                    row[3] = rs.getDouble("importeGravado");
-                    row[4] = rs.getDouble("importeExento");
+                    row[3] = rs.getDouble("importe");
                     model.addRow(row);
                 }
             }

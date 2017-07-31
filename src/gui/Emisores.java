@@ -46,14 +46,14 @@ public class Emisores extends javax.swing.JFrame {
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs;
         try{
-            rs = stmt.executeQuery("SELECT * FROM Emisores WHERE rfc like \'"+rfce+"\'");
+            rs = stmt.executeQuery("SELECT * FROM Emisores WHERE rfc = \'"+rfce+"\'");
             if(rs.next()){
                 id = rs.getInt("id");
                 nombre.setText(rs.getString("nombre").trim());
                 rfc.setText(rs.getString("rfc").trim());
                 calle.setText(rs.getString("calle").trim());
                 noExterior.setText(rs.getString("noExterior").trim());
-                noInterior.setText(rs.getString("noInterior").trim());
+                noInterior.setText(rs.getString("noInterior") == null ? "" : rs.getString("noInterior").trim());
                 colonia.setText(rs.getString("colonia").trim());
                 localidad.setText(rs.getString("localidad").trim());
                 municipio.setText(rs.getString("municipio").trim());
@@ -64,12 +64,14 @@ public class Emisores extends javax.swing.JFrame {
                 pass.setText(rs.getString("pass").trim());
                 registroPatronal.setText(rs.getString("registroPatronal"));
                 emiteNominas.setSelected(rs.getBoolean("emiteNominas"));
+                curp.setText(rs.getString("curp"));
             }
             rs.close();
             stmt.close();
             con.close();
         }catch(Exception ex){
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al consultar el emisor con el RFC: " + rfce + " : " + ex.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
             Elemento.log.error("Excepcion al consultar el emisor con el RFC: " + rfce + " : " + ex.getMessage() + " || " + ex.getCause().getMessage(),ex);
         }
     }
@@ -117,6 +119,8 @@ public class Emisores extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         registroPatronal = new javax.swing.JTextField();
         emiteNominas = new javax.swing.JCheckBox();
+        jLabel15 = new javax.swing.JLabel();
+        curp = new javax.swing.JTextField();
 
         jCheckBox1.setText("jCheckBox1");
 
@@ -220,6 +224,10 @@ public class Emisores extends javax.swing.JFrame {
             }
         });
 
+        jLabel15.setText("CURP");
+
+        curp.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -238,38 +246,6 @@ public class Emisores extends javax.swing.JFrame {
                             .addComponent(nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(rfc, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel7)
-                            .addComponent(jLabel8)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel10)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel12))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(noExterior, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jLabel5))
-                                    .addComponent(colonia)
-                                    .addComponent(localidad)
-                                    .addComponent(municipio)
-                                    .addComponent(cp, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(email))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(noInterior, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel13)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(pass, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addComponent(pais, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(estado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(65, 65, 65)
                         .addComponent(guardar)
                         .addGap(18, 18, 18)
@@ -278,12 +254,48 @@ public class Emisores extends javax.swing.JFrame {
                         .addComponent(jButton1)
                         .addGap(18, 18, 18)
                         .addComponent(cancelar))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel14)
-                        .addGap(18, 18, 18)
-                        .addComponent(registroPatronal, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(emiteNominas)))
+                    .addComponent(emiteNominas)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addComponent(jLabel14)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(registroPatronal, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel15)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(curp))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel4)
+                                .addComponent(jLabel6)
+                                .addComponent(jLabel7)
+                                .addComponent(jLabel8)
+                                .addComponent(jLabel9)
+                                .addComponent(jLabel10)
+                                .addComponent(jLabel11)
+                                .addComponent(jLabel12))
+                            .addGap(18, 18, 18)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(noExterior, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(jLabel5))
+                                        .addComponent(colonia)
+                                        .addComponent(localidad)
+                                        .addComponent(municipio)
+                                        .addComponent(cp, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(email))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(noInterior, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(jLabel13)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(pass, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(pais, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(estado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -337,12 +349,15 @@ public class Emisores extends javax.swing.JFrame {
                     .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel13)
                     .addComponent(pass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
+                .addComponent(emiteNominas)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
                     .addComponent(registroPatronal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(emiteNominas))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                    .addComponent(jLabel15)
+                    .addComponent(curp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(guardar)
                     .addComponent(cancelar)
@@ -366,7 +381,7 @@ public class Emisores extends javax.swing.JFrame {
                         + "noExterior=\'"+noExterior.getText().trim()+"\',noInterior=\'"+noInterior.getText().trim()+"\',colonia=\'"+colonia.getText().trim()+"\',"
                         + "localidad=\'"+localidad.getText().trim()+"\',municipio=\'"+municipio.getText().trim()+"\',estado=\'"+estado.getSelectedItem().toString().trim()+"\',"
                         + "pais=\'"+pais.getSelectedItem().toString().trim()+"\',cp=\'"+cp.getText().trim()+"\',pass=\'"+String.copyValueOf(pass.getPassword()).trim()+ "\',"
-                        + "email=\'"+ email.getText().trim() + "\', registroPatronal=\'"+ registroPatronal.getText().trim() +"\', emiteNominas="+ emiteNominas.isSelected() +" WHERE id="+id;
+                        + "email=\'"+ email.getText().trim() + "\', registroPatronal=\'"+ registroPatronal.getText().trim() +"\', emiteNominas="+ emiteNominas.isSelected() +", curp=\'"+curp.getText().trim()+"\' WHERE id="+id;
                 if(emiteNominas.isSelected()){
                     rs = stmt.executeQuery("SELECT * FROM Folios WHERE rfc like \'"+rfc.getText()+"\' AND idComprobante = 4");
                     if(!rs.next()){
@@ -376,11 +391,11 @@ public class Emisores extends javax.swing.JFrame {
                 }
                 textoLog = "El emisor " + nombre.getText() + " fue actualizado correctamente";
             }else{
-                query = "INSERT INTO Emisores (nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,pass,email,registroPatronal,emiteNominas) "
+                query = "INSERT INTO Emisores (nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,pass,email,registroPatronal,emiteNominas,curp) "
                     + "VALUES (\'"+nombre.getText().trim()+"\',\'"+rfc.getText().trim()+"\',\'"+calle.getText().trim()+"\',\'"+noExterior.getText().trim()+"\',"
                     + "\'"+noInterior.getText().trim()+"\',\'"+colonia.getText().trim()+"\',\'"+localidad.getText().trim()+"\',\'"+municipio.getText().trim()+"\',"
                     + "\'"+estado.getSelectedItem().toString().trim()+"\',\'"+pais.getSelectedItem().toString().trim()+"\',\'"+cp.getText().trim()+"\',\'" + String.copyValueOf(pass.getPassword()).trim() + "\',"
-                    + "\'"+ email.getText().trim() +"\',\'"+registroPatronal.getText().trim()+"\',"+ emiteNominas.isSelected() +")";
+                    + "\'"+ email.getText().trim() +"\',\'"+registroPatronal.getText().trim()+"\',"+ emiteNominas.isSelected() +",\'"+curp.getText().trim()+"\')";
                 textoLog = "El emisor " + nombre.getText() + " fue agregado correctamente";
             }
             stmt.executeUpdate(query);
@@ -428,6 +443,7 @@ public class Emisores extends javax.swing.JFrame {
         email.setText("");
         emiteNominas.setSelected(false);
         registroPatronal.setText("");
+        curp.setText("");
         rfc.transferFocusBackward();
     }
 
@@ -476,16 +492,19 @@ public class Emisores extends javax.swing.JFrame {
     private void emiteNominasStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_emiteNominasStateChanged
         // TODO add your handling code here:
         registroPatronal.setEnabled(emiteNominas.isSelected());
+        curp.setEnabled(emiteNominas.isSelected());
     }//GEN-LAST:event_emiteNominasStateChanged
 
     private void emiteNominasItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_emiteNominasItemStateChanged
         // TODO add your handling code here:
         registroPatronal.setEnabled(emiteNominas.isSelected());
+        curp.setEnabled(emiteNominas.isSelected());
     }//GEN-LAST:event_emiteNominasItemStateChanged
 
     private void emiteNominasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emiteNominasActionPerformed
         // TODO add your handling code here:
         registroPatronal.setEnabled(emiteNominas.isSelected());
+        curp.setEnabled(emiteNominas.isSelected());
     }//GEN-LAST:event_emiteNominasActionPerformed
 
     private void borrarEmisor(){
@@ -539,6 +558,7 @@ public class Emisores extends javax.swing.JFrame {
     private javax.swing.JButton cancelar;
     public javax.swing.JTextField colonia;
     public javax.swing.JTextField cp;
+    private javax.swing.JTextField curp;
     public javax.swing.JTextField email;
     public javax.swing.JCheckBox emiteNominas;
     public javax.swing.JComboBox estado;
@@ -551,6 +571,7 @@ public class Emisores extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

@@ -539,7 +539,7 @@ public class Factura_View extends javax.swing.JFrame {
 
         jLabel11.setText("Foma de Pago");
 
-        formaPago.setText("PAGO EN UNA SOLA EXHIBICION");
+        formaPago.setText("En una sola exhibición");
         formaPago.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 formaPagoFocusGained(evt);
@@ -898,14 +898,14 @@ public class Factura_View extends javax.swing.JFrame {
             empleado.setIdEmpleado(rsE.getInt("idEmpleado"));
             empleado.setNss(rsE.getString("nss"));
             empleado.setNumEmpleado(rsE.getLong("numEmpleado"));
-            empleado.setPeriodicidadPago(rsE.getString("periodicidadPago"));
+            empleado.setPeriodicidadPago(rsE.getString("periodicidadPago").split(",")[0]);
             empleado.setPuesto(rsE.getString("puesto"));
             empleado.setRiesgoPuesto(rsE.getString("riesgoPuesto"));
             empleado.setSalarioBaseCotApor(rsE.getBigDecimal("salarioBaseCotApor"));
             empleado.setSalarioDiarioInt(rsE.getBigDecimal("salarioDiarioInt"));
             empleado.setTipoContrato(rsE.getString("tipoContrato"));
             empleado.setTipoJornada(rsE.getString("tipoJornada"));
-            empleado.setTipoRegimen(rsE.getInt("tipoRegimen"));
+            empleado.setTipoRegimen(rsE.getString("tipoRegimen"));
             rsE.close();
             stmtE.close();
             return empleado;
@@ -1913,6 +1913,7 @@ public class Factura_View extends javax.swing.JFrame {
             emi.setCp(rs.getString("cp").trim());
             emi.setEmitirNominas(rs.getBoolean("emiteNominas"));
             emi.setRegistroPatronal(rs.getString("registroPatronal"));
+            emi.setCurp(rs.getString("curp"));
 
             emi.setExpedidoEn(obtenerExpedidoEn(idEmisor));
 

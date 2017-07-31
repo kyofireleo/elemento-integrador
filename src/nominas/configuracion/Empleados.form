@@ -34,18 +34,17 @@
                           <Component id="jLabel11" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel10" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="unrelated" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
                               <Component id="departamento" alignment="0" max="32767" attributes="0"/>
                               <Component id="clabe" alignment="0" max="32767" attributes="0"/>
-                              <Component id="banco" alignment="0" max="32767" attributes="0"/>
+                              <Component id="banco" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="fechaInicialRelLaboral" alignment="0" min="-2" pref="120" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
@@ -58,19 +57,32 @@
                           <Component id="jLabel5" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="tipoRegimen" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="numEmpleado" alignment="0" min="-2" pref="90" max="-2" attributes="0"/>
-                          <Component id="curp" alignment="0" min="-2" pref="261" max="-2" attributes="0"/>
-                          <Component id="nss" alignment="1" min="-2" pref="261" max="-2" attributes="0"/>
+                          <Component id="curp" alignment="0" pref="261" max="32767" attributes="0"/>
+                          <Component id="nss" alignment="0" pref="261" max="32767" attributes="0"/>
+                          <Component id="tipoRegimen" alignment="0" pref="0" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="guardarBtn" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="verPercepciones" min="-2" pref="95" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="verDeducciones" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="verOtrosPagos" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="cancelarBtn" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="66" max="-2" attributes="0"/>
@@ -90,49 +102,46 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="riesgoPuesto" min="-2" max="-2" attributes="0"/>
-                          <Component id="tipoContrato" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="tipoJornada" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="periodicidadPago" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="jLabel21" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="salarioDiario" min="-2" pref="100" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="riesgoPuesto" min="-2" max="-2" attributes="0"/>
+                                  <Component id="tipoJornada" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="periodicidadPago" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
-                                  <Component id="jLabel19" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="salarioBaseCotApor" min="-2" pref="100" max="-2" attributes="0"/>
-                              </Group>
+                              <EmptySpace pref="169" max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="79" max="-2" attributes="0"/>
-                              <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="puesto" min="-2" pref="261" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="tipoContrato" min="-2" pref="261" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="guardarBtn" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="verPercepciones" min="-2" pref="95" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="verDeducciones" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="cancelarBtn" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="jLabel21" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="salarioDiario" min="-2" pref="100" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="jLabel19" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="salarioBaseCotApor" min="-2" pref="100" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="79" max="-2" attributes="0"/>
+                      <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="puesto" min="-2" pref="261" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -220,6 +229,7 @@
                   <Component id="cancelarBtn" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="verPercepciones" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="verDeducciones" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="verOtrosPagos" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -249,11 +259,18 @@
     <Component class="javax.swing.JComboBox" name="tipoRegimen">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="4">
-            <StringItem index="0" value="Asimilados a salarios"/>
-            <StringItem index="1" value="Sueldos y salarios"/>
-            <StringItem index="2" value="Jubilados"/>
-            <StringItem index="3" value="Pensionados"/>
+          <StringArray count="11">
+            <StringItem index="0" value="02, Sueldos"/>
+            <StringItem index="1" value="03, Jubilados"/>
+            <StringItem index="2" value="04, Pensionados"/>
+            <StringItem index="3" value="05, Asimilados Miembros Sociedades Cooperativas Produccion"/>
+            <StringItem index="4" value="06, Asimilados Integrantes Sociedades Asociaciones Civiles"/>
+            <StringItem index="5" value="07, Asimilados Miembros consejos"/>
+            <StringItem index="6" value="08, Asimilados comisionistas"/>
+            <StringItem index="7" value="09, Asimilados Honorarios"/>
+            <StringItem index="8" value="10, Asimilados acciones"/>
+            <StringItem index="9" value="11, Asimilados otros"/>
+            <StringItem index="10" value="99, Otro Regimen"/>
           </StringArray>
         </Property>
       </Properties>
@@ -402,13 +419,18 @@
     <Component class="javax.swing.JComboBox" name="tipoContrato">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="6">
-            <StringItem index="0" value="Base"/>
-            <StringItem index="1" value="Eventual"/>
-            <StringItem index="2" value="Confianza"/>
-            <StringItem index="3" value="Sindicalizado"/>
-            <StringItem index="4" value="A Prueba"/>
-            <StringItem index="5" value="Otro"/>
+          <StringArray count="11">
+            <StringItem index="0" value="01, Contrato de trabajo por tiempo indeterminado"/>
+            <StringItem index="1" value="02, Contrato de trabajo para obra determinada"/>
+            <StringItem index="2" value="03, Contrato de trabajo por tiempo determinado"/>
+            <StringItem index="3" value="04, Contrato de trabajo por temporada"/>
+            <StringItem index="4" value="05, Contrato de trabajo sujeto a prueba"/>
+            <StringItem index="5" value="06, Contrato de trabajo con capacitaci&#xf3;n inicial"/>
+            <StringItem index="6" value="07, Modalidad de contrataci&#xf3;n por pago de hora laborada"/>
+            <StringItem index="7" value="08, Modalidad de trabajo por comisi&#xf3;n laboral"/>
+            <StringItem index="8" value="09, Modalidades de contrataci&#xf3;n donde no existe relaci&#xf3;n de trabajo"/>
+            <StringItem index="9" value="10, Jubilaci&#xf3;n, pensi&#xf3;n, retiro."/>
+            <StringItem index="10" value="99, Otro contrato"/>
           </StringArray>
         </Property>
       </Properties>
@@ -422,15 +444,15 @@
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="9">
-            <StringItem index="0" value="Diurna"/>
-            <StringItem index="1" value="Nocturna"/>
-            <StringItem index="2" value="Mixta"/>
-            <StringItem index="3" value="Por Hora"/>
-            <StringItem index="4" value="Reducida"/>
-            <StringItem index="5" value="Continuada"/>
-            <StringItem index="6" value="Partida"/>
-            <StringItem index="7" value="Por Turnos"/>
-            <StringItem index="8" value="Otra"/>
+            <StringItem index="0" value="01, Diurna"/>
+            <StringItem index="1" value="02, Nocturna"/>
+            <StringItem index="2" value="03, Mixta"/>
+            <StringItem index="3" value="04, Por hora"/>
+            <StringItem index="4" value="05, Reducida"/>
+            <StringItem index="5" value="06, Continuada"/>
+            <StringItem index="6" value="07, Partida"/>
+            <StringItem index="7" value="08, Por turnos"/>
+            <StringItem index="8" value="99, Otra Jornada"/>
           </StringArray>
         </Property>
       </Properties>
@@ -443,17 +465,18 @@
     <Component class="javax.swing.JComboBox" name="periodicidadPago">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="10">
-            <StringItem index="0" value="Diario"/>
-            <StringItem index="1" value="Semanal"/>
-            <StringItem index="2" value="Quincenal"/>
-            <StringItem index="3" value="Catorcenal"/>
-            <StringItem index="4" value="Mensual"/>
-            <StringItem index="5" value="Bimestral"/>
-            <StringItem index="6" value="Unidad de obra"/>
-            <StringItem index="7" value="Comision"/>
-            <StringItem index="8" value="Precio Alzado"/>
-            <StringItem index="9" value="Otro"/>
+          <StringArray count="11">
+            <StringItem index="0" value="01, Diario"/>
+            <StringItem index="1" value="02, Semanal"/>
+            <StringItem index="2" value="03, Catorcenal"/>
+            <StringItem index="3" value="04, Quincenal"/>
+            <StringItem index="4" value="05, Mensual"/>
+            <StringItem index="5" value="06, Bimestral"/>
+            <StringItem index="6" value="07, Unidad de obra"/>
+            <StringItem index="7" value="08, Comision"/>
+            <StringItem index="8" value="09, Precio Alzado"/>
+            <StringItem index="9" value="10, Decenal"/>
+            <StringItem index="10" value="99, Otra Periodicidad"/>
           </StringArray>
         </Property>
       </Properties>
@@ -548,6 +571,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verDeduccionesActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="verOtrosPagos">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Otros Pagos"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verOtrosPagosActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

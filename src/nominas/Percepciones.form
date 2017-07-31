@@ -131,35 +131,48 @@
     <Component class="javax.swing.JComboBox" name="tipoPercepcion">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="28">
-            <StringItem index="0" value="001,Sueldos, Salarios Rayas y Jornales"/>
+          <StringArray count="41">
+            <StringItem index="0" value="001,Sueldos, Salarios  Rayas y Jornales"/>
             <StringItem index="1" value="002,Gratificaci&#xf3;n Anual (Aguinaldo)"/>
             <StringItem index="2" value="003,Participaci&#xf3;n de los Trabajadores en las Utilidades PTU"/>
             <StringItem index="3" value="004,Reembolso de Gastos M&#xe9;dicos Dentales y Hospitalarios"/>
             <StringItem index="4" value="005,Fondo de Ahorro"/>
             <StringItem index="5" value="006,Caja de ahorro"/>
-            <StringItem index="6" value="007,Vales"/>
-            <StringItem index="7" value="008,Ayudas"/>
-            <StringItem index="8" value="009,Contribuciones a Cargo del Trabajador Pagadas por el Patr&#xf3;n"/>
-            <StringItem index="9" value="010,Premios por puntualidad"/>
-            <StringItem index="10" value="011,Prima de Seguro de vida"/>
-            <StringItem index="11" value="012,Seguro de Gastos Medicos Mayores"/>
-            <StringItem index="12" value="013,Cuotas Sindicales Pagadas por el Patr&#xf3;n"/>
-            <StringItem index="13" value="014,Subsidios por incapacidad"/>
-            <StringItem index="14" value="015,Becas para trabajadores y/o hijos"/>
-            <StringItem index="15" value="016,Otros"/>
-            <StringItem index="16" value="017,Subsidio para el empleo"/>
-            <StringItem index="17" value="018,Fomento al primer empleo"/>
-            <StringItem index="18" value="019,Horas extra"/>
-            <StringItem index="19" value="020,Prima dominical"/>
-            <StringItem index="20" value="021,Prima vacacional"/>
-            <StringItem index="21" value="022,Prima por antig&#xfc;edad"/>
-            <StringItem index="22" value="023,Pagos por separaci&#xf3;n"/>
-            <StringItem index="23" value="024,Seguro de retiro"/>
-            <StringItem index="24" value="025,Indeminizaciones"/>
-            <StringItem index="25" value="026,Reembolso por funeral"/>
-            <StringItem index="26" value="027,Cuotas de seguridad social pagadas por el patr&#xf3;n"/>
-            <StringItem index="27" value="028,Comisiones"/>
+            <StringItem index="6" value="009,Contribuciones a Cargo del Trabajador Pagadas por el Patr&#xf3;n"/>
+            <StringItem index="7" value="010,Premios por puntualidad"/>
+            <StringItem index="8" value="011,Prima de Seguro de vida"/>
+            <StringItem index="9" value="012,Seguro de Gastos M&#xe9;dicos Mayores"/>
+            <StringItem index="10" value="013,Cuotas Sindicales Pagadas por el Patr&#xf3;n"/>
+            <StringItem index="11" value="014,Subsidios por incapacidad"/>
+            <StringItem index="12" value="015,Becas para trabajadores y/o hijos"/>
+            <StringItem index="13" value="019,Horas extra"/>
+            <StringItem index="14" value="020,Prima dominical"/>
+            <StringItem index="15" value="021,Prima vacacional"/>
+            <StringItem index="16" value="022,Prima por antig&#xfc;edad"/>
+            <StringItem index="17" value="023,Pagos por separaci&#xf3;n"/>
+            <StringItem index="18" value="024,Seguro de retiro"/>
+            <StringItem index="19" value="025,Indemnizaciones"/>
+            <StringItem index="20" value="026,Reembolso por funeral"/>
+            <StringItem index="21" value="027,Cuotas de seguridad social pagadas por el patr&#xf3;n"/>
+            <StringItem index="22" value="028,Comisiones"/>
+            <StringItem index="23" value="029,Vales de despensa"/>
+            <StringItem index="24" value="030,Vales de restaurante"/>
+            <StringItem index="25" value="031,Vales de gasolina"/>
+            <StringItem index="26" value="032,Vales de ropa"/>
+            <StringItem index="27" value="033,Ayuda para renta"/>
+            <StringItem index="28" value="034,Ayuda para art&#xed;culos escolares"/>
+            <StringItem index="29" value="035,Ayuda para anteojos"/>
+            <StringItem index="30" value="036,Ayuda para transporte"/>
+            <StringItem index="31" value="037,Ayuda para gastos de funeral"/>
+            <StringItem index="32" value="038,Otros ingresos por salarios"/>
+            <StringItem index="33" value="039,Jubilaciones, pensiones o haberes de retiro"/>
+            <StringItem index="34" value="044,Jubilaciones, pensiones o haberes de retiro en parcialidades"/>
+            <StringItem index="35" value="045,Ingresos en acciones o t&#xed;tulos valor que representan bienes"/>
+            <StringItem index="36" value="046,Ingresos asimilados a salarios"/>
+            <StringItem index="37" value="047,Alimentaci&#xf3;n"/>
+            <StringItem index="38" value="048,Habitaci&#xf3;n"/>
+            <StringItem index="39" value="049,Premios por asistencia"/>
+            <StringItem index="40" value="050,Vi&#xe1;ticos"/>
           </StringArray>
         </Property>
       </Properties>

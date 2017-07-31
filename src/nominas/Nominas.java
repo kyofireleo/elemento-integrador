@@ -7,6 +7,7 @@ package nominas;
 import elemento.Elemento;
 import elemento.Factura;
 import elemento.Layout;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,11 +25,16 @@ public class Nominas extends javax.swing.JFrame {
     public boolean seguir = true;
     Percepciones per;
     Deducciones dec;
+    OtrosPagos otr;
     complementos.nominas.Empleado emp;
     complementos.nominas.Nominas nomi;
     String nombreEmpleado, rfcEmpleado;
     nominas.Empleado empleado;
     Factura fact;
+    
+    public OtrosPagos getOtro(){
+        return otr;
+    }
     
     public Percepciones getPer() {
         return per;
@@ -41,6 +47,7 @@ public class Nominas extends javax.swing.JFrame {
     public Nominas(Factura fact,Empleado emp, String nombreEmpleado, String rfcEmpleado) {
         initComponents();
         this.setLocationRelativeTo(null);
+        otr = new OtrosPagos(emp.getIdEmpleado(),true);
         per = new Percepciones(emp.getIdEmpleado(),true);
         dec = new Deducciones(emp.getIdEmpleado(),true);
         this.emp = emp.getEmpleado();
@@ -110,6 +117,8 @@ public class Nominas extends javax.swing.JFrame {
         cantidadHorasExtra = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
         importePagado = new javax.swing.JTextField();
+        otrosPagosBox = new javax.swing.JCheckBox();
+        verOtrosPagos = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -146,11 +155,11 @@ public class Nominas extends javax.swing.JFrame {
             }
         });
         fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoInputMethodTextChanged(evt);
-            }
             public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
                 fechaFinalPagoCaretPositionChanged(evt);
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                fechaFinalPagoInputMethodTextChanged(evt);
             }
         });
 
@@ -208,6 +217,7 @@ public class Nominas extends javax.swing.JFrame {
         labelRfc.setText("jLabel3");
 
         incapacidad.setText("Incapacidad");
+        incapacidad.setEnabled(false);
         incapacidad.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 incapacidadStateChanged(evt);
@@ -215,6 +225,7 @@ public class Nominas extends javax.swing.JFrame {
         });
 
         horasExtra.setText("Horas Extra");
+        horasExtra.setEnabled(false);
         horasExtra.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 horasExtraStateChanged(evt);
@@ -251,6 +262,26 @@ public class Nominas extends javax.swing.JFrame {
 
         importePagado.setEnabled(false);
 
+        otrosPagosBox.setText("Otros Pagos");
+        otrosPagosBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                otrosPagosBoxStateChanged(evt);
+            }
+        });
+        otrosPagosBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                otrosPagosBoxActionPerformed(evt);
+            }
+        });
+
+        verOtrosPagos.setText("Ver Otros Pagos");
+        verOtrosPagos.setEnabled(false);
+        verOtrosPagos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verOtrosPagosActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -281,38 +312,25 @@ public class Nominas extends javax.swing.JFrame {
                             .addComponent(numDiasPagados, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(antiguedad, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(2, 2, 2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 46, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(percepcionesBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(deduccionesBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(otrosPagosBox))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(verPercepciones, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(verDeducciones, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(verOtrosPagos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(59, 59, 59))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(percepcionesBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(deduccionesBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(verPercepciones, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(verDeducciones, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(diasIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel10)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tipoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel11)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(descuentoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(19, 19, 19))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(25, 25, 25)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(horasExtra, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(incapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(21, 21, 21)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -320,7 +338,7 @@ public class Nominas extends javax.swing.JFrame {
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(jLabel12)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(dias)))))
+                                                .addComponent(dias, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                 .addGap(20, 20, 20)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -329,11 +347,27 @@ public class Nominas extends javax.swing.JFrame {
                                         .addComponent(cantidadHorasExtra, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(tipoHoras, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(47, 47, 47)
+                                .addGap(22, 22, 22)
                                 .addComponent(jLabel16)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(importePagado, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addComponent(importePagado, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel5)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(diasIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel10)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(tipoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel11)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(descuentoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(incapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(24, 24, 24))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -349,32 +383,8 @@ public class Nominas extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(percepcionesBox)
-                            .addComponent(verPercepciones))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(deduccionesBox)
-                            .addComponent(verDeducciones))
-                        .addGap(18, 18, 18)
-                        .addComponent(incapacidad)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel5)
-                            .addComponent(diasIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel10)
-                            .addComponent(tipoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel11)
-                            .addComponent(descuentoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addComponent(horasExtra))
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(numEmpleado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
@@ -382,11 +392,26 @@ public class Nominas extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(tipoRegimen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4))
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(fechaPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(12, 12, 12))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(percepcionesBox)
+                            .addComponent(verPercepciones))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(deduccionesBox)
+                            .addComponent(verDeducciones))
+                        .addGap(6, 6, 6)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(fechaPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(otrosPagosBox)
+                        .addComponent(verOtrosPagos)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(fechaInicialPago, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -404,10 +429,24 @@ public class Nominas extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(antiguedad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(incapacidad)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(diasIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel10)
+                            .addComponent(tipoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel11)
+                            .addComponent(descuentoIncapacidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                        .addComponent(horasExtra)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel12)
                             .addComponent(dias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -420,8 +459,11 @@ public class Nominas extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel16)
-                            .addComponent(importePagado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
+                            .addComponent(importePagado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cancelar)
                             .addComponent(guardar)))
@@ -429,7 +471,7 @@ public class Nominas extends javax.swing.JFrame {
                         .addComponent(labelNombre)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(labelRfc)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -453,20 +495,12 @@ public class Nominas extends javax.swing.JFrame {
 
     private void percepcionesBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_percepcionesBoxStateChanged
         // TODO add your handling code here:
-        if(percepcionesBox.isSelected()){
-            verPercepciones.setEnabled(true);
-        }else{
-            verPercepciones.setEnabled(false);
-        }
+        verPercepciones.setEnabled(percepcionesBox.isSelected());
     }//GEN-LAST:event_percepcionesBoxStateChanged
 
     private void deduccionesBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_deduccionesBoxStateChanged
         // TODO add your handling code here:
-        if(deduccionesBox.isSelected()){
-            verDeducciones.setEnabled(true);
-        }else{
-            verDeducciones.setEnabled(false);
-        }
+        verDeducciones.setEnabled(deduccionesBox.isSelected());
     }//GEN-LAST:event_deduccionesBoxStateChanged
 
     private void verPercepcionesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verPercepcionesActionPerformed
@@ -482,6 +516,7 @@ public class Nominas extends javax.swing.JFrame {
     private void guardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarActionPerformed
         // Codigo para guardar la nomina en el XML  
         nomi = new complementos.nominas.Nominas();
+        complementos.nominas.OtrosPagos otro = new complementos.nominas.OtrosPagos();
         complementos.nominas.Deducciones dedu = new complementos.nominas.Deducciones();
         complementos.nominas.Percepciones perc = new complementos.nominas.Percepciones();
         complementos.nominas.HorasExtra horas;
@@ -495,20 +530,28 @@ public class Nominas extends javax.swing.JFrame {
         nomi.setFechaInicialPago(format.format(fechaInicialPago.getDate()));
         nomi.setFechaFinalPago(format.format(fechaFinalPago.getDate()));
         nomi.setAntiguedad(new Integer(antiguedad.getText()));
-        nomi.setNumDiasPagados(new Double(numDiasPagados.getText()));
+        nomi.setNumDiasPagados(new Integer(numDiasPagados.getText()));
         nomi.setRegistroPatronal("");
+        
+        //Seteamos otros pagos
+        otro.setOtrosPagos(getOtrosPagos());
+        otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
+        nomi.setOtrosPagos(otro);
+        nomi.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
         
         //Seteamos deducciones
         dedu.setDeducciones(getDeducciones());
-        dedu.setTotalExento(dec.getTotalExento());
-        dedu.setTotalGravado(dec.getTotalGravado());
+        dedu.setTotalRetenido(dec.getTotalRetenido());
+        dedu.setTotalOtras(dec.getTotalOtras());
         nomi.setDeducciones(dedu);
         
         //Seteamos percepciones
         perc.setPercepciones(getPercepciones());
         perc.setTotalExento(per.getTotalExento());
         perc.setTotalGravado(per.getTotalGravado());
+        perc.setTotalSueldos(per.getTotalSueldos());
         nomi.setPercepciones(perc);
+        nomi.setTotalPercepciones(new BigDecimal(per.getTotalSueldos()));
         
         //Seteamos incapacidad
         if(incapacidad.isSelected()){
@@ -529,18 +572,10 @@ public class Nominas extends javax.swing.JFrame {
             nomi.setHorasExtra(horas);
         }
         
-        double des = 0;
-        double isR = 0;
-        for (int i = 0; i < nomi.getDeducciones().getDeducciones().size(); i++) {
-            if(!nomi.getDeducciones().getDeducciones().get(i).getTipoDeduccion().equals("002")){
-                des += nomi.getDeducciones().getDeducciones().get(i).getImporteGravado() + nomi.getDeducciones().getDeducciones().get(i).getImporteExento();
-            }else{
-                isR = nomi.getDeducciones().getDeducciones().get(i).getImporteExento()+nomi.getDeducciones().getDeducciones().get(i).getImporteGravado();
-            }
-        }
+        nomi.setTotalDeducciones(new BigDecimal(dec.getTotalOtras() + dec.getTotalRetenido()));
         
-        fact.isrRetenido = isR;
-        fact.descuento = Math.rint(des*100)/100;
+        fact.isrRetenido = dec.getTotalRetenido();
+        fact.descuento = nomi.getTotalDeducciones().doubleValue();
         double to = fact.subtotal - fact.descuento - fact.isrRetenido;
         fact.total = Math.rint(to*100)/100;
         
@@ -554,6 +589,25 @@ public class Nominas extends javax.swing.JFrame {
     public complementos.nominas.Nominas getNomina() {
         return nomi;
     }
+    
+    private List<complementos.nominas.OtrosPagos.OtroPago> getOtrosPagos() {
+        DefaultTableModel model = (DefaultTableModel)otr.tabla.getModel();
+        List<complementos.nominas.OtrosPagos.OtroPago> lista = new ArrayList();
+        complementos.nominas.OtrosPagos.OtroPago otp;
+        complementos.nominas.OtrosPagos otros = new complementos.nominas.OtrosPagos();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            otp = otros.getClase();
+            otp.setTipoOtroPago(model.getValueAt(i, 0).toString());
+            otp.setClave(model.getValueAt(i, 1).toString());
+            otp.setConcepto(model.getValueAt(i, 2).toString());
+            otp.setImporte(new Double(model.getValueAt(i, 3).toString()));
+
+            lista.add(otp);
+        }
+
+        return lista;
+    }
 
     private List<complementos.nominas.Deducciones.Deduccion> getDeducciones(){
         DefaultTableModel model = (DefaultTableModel)dec.tabla.getModel();
@@ -566,8 +620,7 @@ public class Nominas extends javax.swing.JFrame {
             ded.setTipoDeduccion(model.getValueAt(i, 0).toString());
             ded.setClave(model.getValueAt(i, 1).toString());
             ded.setConcepto(model.getValueAt(i, 2).toString());
-            ded.setImporteGravado(new Double(model.getValueAt(i, 3).toString()));
-            ded.setImporteExento(new Double(model.getValueAt(i, 4).toString()));
+            ded.setImporte(new Double(model.getValueAt(i, 3).toString()));
             
             lista.add(ded);
         }
@@ -639,6 +692,20 @@ public class Nominas extends javax.swing.JFrame {
             importePagado.setEnabled(false);
         }
     }//GEN-LAST:event_horasExtraStateChanged
+
+    private void otrosPagosBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otrosPagosBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_otrosPagosBoxActionPerformed
+
+    private void otrosPagosBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_otrosPagosBoxStateChanged
+        // TODO add your handling code here:
+        this.verOtrosPagos.setEnabled(this.otrosPagosBox.isSelected());
+    }//GEN-LAST:event_otrosPagosBoxStateChanged
+
+    private void verOtrosPagosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verOtrosPagosActionPerformed
+        // TODO add your handling code here:
+        otr.setVisible(true);
+    }//GEN-LAST:event_verOtrosPagosActionPerformed
 
     public long calcularDiasPagados(Date date, Date date2){
         try {
@@ -734,11 +801,13 @@ public class Nominas extends javax.swing.JFrame {
     private javax.swing.JLabel labelRfc;
     private javax.swing.JTextField numDiasPagados;
     private javax.swing.JTextField numEmpleado;
+    private javax.swing.JCheckBox otrosPagosBox;
     private javax.swing.JCheckBox percepcionesBox;
     private javax.swing.JComboBox tipoHoras;
     private javax.swing.JComboBox tipoIncapacidad;
     private javax.swing.JComboBox tipoRegimen;
     private javax.swing.JButton verDeducciones;
+    private javax.swing.JButton verOtrosPagos;
     private javax.swing.JButton verPercepciones;
     // End of variables declaration//GEN-END:variables
 }

@@ -55,11 +55,11 @@ public class Empleado {
         emp.setCurp(curp);
     }
 
-    public int getTipoRegimen() {
+    public String getTipoRegimen() {
         return emp.getTipoRegimen();
     }
 
-    public void setTipoRegimen(int tipoRegimen) {
+    public void setTipoRegimen(String tipoRegimen) {
         emp.setTipoRegimen(tipoRegimen);
     }
 

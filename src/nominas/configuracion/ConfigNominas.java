@@ -137,19 +137,20 @@ public class ConfigNominas extends javax.swing.JFrame {
         all = new javax.swing.JButton();
         aguinaldoBoton = new javax.swing.JButton();
         actualizar = new javax.swing.JButton();
+        clavesOP = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Configuracion de Nomina");
         setResizable(false);
 
-        clavesPercepciones.setText("Claves Percepciones");
+        clavesPercepciones.setText("Claves Percep.");
         clavesPercepciones.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clavesPercepcionesActionPerformed(evt);
             }
         });
 
-        clavesDeducciones.setText("Claves Deducciones");
+        clavesDeducciones.setText("Claves Deduc.");
         clavesDeducciones.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clavesDeduccionesActionPerformed(evt);
@@ -272,6 +273,13 @@ public class ConfigNominas extends javax.swing.JFrame {
             }
         });
 
+        clavesOP.setText("Claves OP");
+        clavesOP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clavesOPActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -306,10 +314,12 @@ public class ConfigNominas extends javax.swing.JFrame {
                         .addComponent(jLabel24)
                         .addGap(18, 18, 18)
                         .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(clavesOP, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(clavesPercepciones)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(clavesDeducciones, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(clavesDeducciones))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(generarNomina)
@@ -328,7 +338,8 @@ public class ConfigNominas extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(clavesPercepciones)
-                        .addComponent(clavesDeducciones))
+                        .addComponent(clavesDeducciones)
+                        .addComponent(clavesOP))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel24)
                         .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -515,6 +526,11 @@ public class ConfigNominas extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_aguinaldoBotonActionPerformed
 
+    private void clavesOPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clavesOPActionPerformed
+        ConceptosOtrosPagos cop = new ConceptosOtrosPagos();
+        cop.setVisible(true);
+    }//GEN-LAST:event_clavesOPActionPerformed
+
     private boolean isNumeric(String cadena){
 	try {
             Integer.parseInt(cadena);
@@ -565,6 +581,7 @@ public class ConfigNominas extends javax.swing.JFrame {
     private javax.swing.JButton aguinaldoBoton;
     private javax.swing.JButton all;
     private javax.swing.JButton clavesDeducciones;
+    private javax.swing.JButton clavesOP;
     private javax.swing.JButton clavesPercepciones;
     private javax.swing.JButton generarNomina;
     private javax.swing.JLabel jLabel1;

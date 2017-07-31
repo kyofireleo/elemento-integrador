@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import nominas.Deducciones;
+import nominas.OtrosPagos;
 import nominas.Percepciones;
 
 /**
@@ -27,6 +28,7 @@ public class Empleados extends javax.swing.JFrame {
     int idEmpleado;
     String nombre = "";
     boolean modificar = false;
+    OtrosPagos otr;
     Percepciones per;
     Deducciones dec;
     private boolean guardo;
@@ -35,6 +37,7 @@ public class Empleados extends javax.swing.JFrame {
     public Empleados() {
         initComponents();
         this.setLocationRelativeTo(null);
+        otr = new OtrosPagos();
         per = new Percepciones();
         dec = new Deducciones();
         guardo = false;
@@ -46,6 +49,7 @@ public class Empleados extends javax.swing.JFrame {
         this.idEmpleado = idEmpleado;
         this.nombre = nombre;
         this.setTitle("Empleado: "+nombre);
+        otr = new OtrosPagos(idEmpleado);
         per = new Percepciones(idEmpleado);
         dec = new Deducciones(idEmpleado);
         guardo = false;
@@ -57,6 +61,7 @@ public class Empleados extends javax.swing.JFrame {
         this.nombre = nombre;
         this.idEmpleado = idEmpleado;
         this.setTitle("Empleado: "+nombre);
+        otr = new OtrosPagos();
         per = new Percepciones();
         dec = new Deducciones();
         guardo = false;
@@ -70,6 +75,7 @@ public class Empleados extends javax.swing.JFrame {
         this.setTitle("EMPLEADO: "+nombre);
         consultarEmpleado();
         modificar = true;
+        otr = new OtrosPagos(idEmpleado,false);
         per = new Percepciones(idEmpleado,false);
         dec = new Deducciones(idEmpleado,false);
         guardo = true;
@@ -98,11 +104,12 @@ public class Empleados extends javax.swing.JFrame {
                 }
                 
                 fechaInicialRelLaboral.setDate(rs.getDate("fechaInicialRelLaboral"));
-                tipoContrato.setSelectedItem(rs.getString("tipoContrato"));
-                tipoJornada.setSelectedItem(rs.getString("tipoJornada"));
-                periodicidadPago.setSelectedItem(rs.getString("periodicidadPago"));
+                seleccionarTipoRegimen(rs.getString("tipoRegimen"));
+                seleccionarTipoContrato(rs.getString("tipoContrato"));
+                seleccionarTipoJornada(rs.getString("tipoJornada"));
+                seleccionarPeriodicidadPago(rs.getString("periodicidadPago"));
                 salarioBaseCotApor.setText(rs.getString("salarioBaseCotApor"));
-                riesgoPuesto.setSelectedItem(rs.getString("riesgoPuesto"));
+                riesgoPuesto.setSelectedIndex(rs.getInt("riesgoPuesto")-1);
                 salarioDiario.setText(rs.getString("salarioDiarioInt"));
                 puesto.setText(rs.getString("puesto"));
             }
@@ -113,6 +120,43 @@ public class Empleados extends javax.swing.JFrame {
             ex.printStackTrace();
         }
     }
+    
+    private void seleccionarTipoRegimen(String reg){
+        for (int i = 0; i < tipoRegimen.getItemCount(); i++) {
+            if(tipoRegimen.getItemAt(i).toString().contains(reg)){
+                tipoRegimen.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+    
+    private void seleccionarTipoContrato(String reg){
+        for (int i = 0; i < tipoContrato.getItemCount(); i++) {
+            if(tipoContrato.getItemAt(i).toString().contains(reg)){
+                tipoContrato.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+    
+    private void seleccionarTipoJornada(String reg){
+        for (int i = 0; i < tipoJornada.getItemCount(); i++) {
+            if(tipoJornada.getItemAt(i).toString().contains(reg)){
+                tipoJornada.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+    
+    private void seleccionarPeriodicidadPago(String reg){
+        for (int i = 0; i < periodicidadPago.getItemCount(); i++) {
+            if(periodicidadPago.getItemAt(i).toString().contains(reg)){
+                periodicidadPago.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -151,6 +195,7 @@ public class Empleados extends javax.swing.JFrame {
         cancelarBtn = new javax.swing.JButton();
         verPercepciones = new javax.swing.JButton();
         verDeducciones = new javax.swing.JButton();
+        verOtrosPagos = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Empleado: ");
@@ -161,7 +206,7 @@ public class Empleados extends javax.swing.JFrame {
 
         jLabel4.setText("Tipo de Regimen");
 
-        tipoRegimen.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Asimilados a salarios", "Sueldos y salarios", "Jubilados", "Pensionados" }));
+        tipoRegimen.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "02, Sueldos", "03, Jubilados", "04, Pensionados", "05, Asimilados Miembros Sociedades Cooperativas Produccion", "06, Asimilados Integrantes Sociedades Asociaciones Civiles", "07, Asimilados Miembros consejos", "08, Asimilados comisionistas", "09, Asimilados Honorarios", "10, Asimilados acciones", "11, Asimilados otros", "99, Otro Regimen" }));
 
         jLabel5.setText("Numero de Seguro Social");
 
@@ -179,15 +224,15 @@ public class Empleados extends javax.swing.JFrame {
 
         jLabel16.setText("Tipo de Contrato");
 
-        tipoContrato.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Base", "Eventual", "Confianza", "Sindicalizado", "A Prueba", "Otro" }));
+        tipoContrato.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "01, Contrato de trabajo por tiempo indeterminado", "02, Contrato de trabajo para obra determinada", "03, Contrato de trabajo por tiempo determinado", "04, Contrato de trabajo por temporada", "05, Contrato de trabajo sujeto a prueba", "06, Contrato de trabajo con capacitación inicial", "07, Modalidad de contratación por pago de hora laborada", "08, Modalidad de trabajo por comisión laboral", "09, Modalidades de contratación donde no existe relación de trabajo", "10, Jubilación, pensión, retiro.", "99, Otro contrato" }));
 
         jLabel17.setText("Tipo de Jornada");
 
-        tipoJornada.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Diurna", "Nocturna", "Mixta", "Por Hora", "Reducida", "Continuada", "Partida", "Por Turnos", "Otra" }));
+        tipoJornada.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "01, Diurna", "02, Nocturna", "03, Mixta", "04, Por hora", "05, Reducida", "06, Continuada", "07, Partida", "08, Por turnos", "99, Otra Jornada" }));
 
         jLabel18.setText("Periodicidad de Pago");
 
-        periodicidadPago.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Diario", "Semanal", "Quincenal", "Catorcenal", "Mensual", "Bimestral", "Unidad de obra", "Comision", "Precio Alzado", "Otro" }));
+        periodicidadPago.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "01, Diario", "02, Semanal", "03, Catorcenal", "04, Quincenal", "05, Mensual", "06, Bimestral", "07, Unidad de obra", "08, Comision", "09, Precio Alzado", "10, Decenal", "99, Otra Periodicidad" }));
 
         jLabel19.setText("Salario Base Cot. Apor.");
 
@@ -244,6 +289,13 @@ public class Empleados extends javax.swing.JFrame {
             }
         });
 
+        verOtrosPagos.setText("Otros Pagos");
+        verOtrosPagos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verOtrosPagosActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -257,15 +309,14 @@ public class Empleados extends javax.swing.JFrame {
                             .addComponent(jLabel12)
                             .addComponent(jLabel11)
                             .addComponent(jLabel10))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(departamento)
                                 .addComponent(clabe)
-                                .addComponent(banco, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(fechaInicialRelLaboral, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(26, 26, 26))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(banco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(fechaInicialRelLaboral, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(54, 54, 54)
@@ -275,15 +326,27 @@ public class Empleados extends javax.swing.JFrame {
                                     .addComponent(jLabel2)))
                             .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tipoRegimen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(numEmpleado, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(curp, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(nss, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(curp, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .addComponent(nss, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .addComponent(tipoRegimen, 0, 1, Short.MAX_VALUE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(guardarBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(verPercepciones, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(verDeducciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(verOtrosPagos)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cancelarBtn)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(66, 66, 66)
@@ -298,39 +361,34 @@ public class Empleados extends javax.swing.JFrame {
                                 .addComponent(jLabel20)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(riesgoPuesto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tipoContrato, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tipoJornada, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(periodicidadPago, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel21)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(salarioDiario, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel19)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(salarioBaseCotApor, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(79, 79, 79)
-                                .addComponent(jLabel15)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(puesto, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(guardarBtn)
-                        .addGap(18, 18, 18)
-                        .addComponent(verPercepciones, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(verDeducciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(cancelarBtn)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(riesgoPuesto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tipoJornada, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(periodicidadPago, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 169, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(tipoContrato, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel21)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(salarioDiario, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel19)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(salarioBaseCotApor, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(79, 79, 79)
+                        .addComponent(jLabel15)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(puesto, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(44, 44, 44))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -400,7 +458,8 @@ public class Empleados extends javax.swing.JFrame {
                     .addComponent(guardarBtn)
                     .addComponent(cancelarBtn)
                     .addComponent(verPercepciones)
-                    .addComponent(verDeducciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(verDeducciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(verOtrosPagos))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -452,6 +511,14 @@ public class Empleados extends javax.swing.JFrame {
         salarioDiario.selectAll();
     }//GEN-LAST:event_salarioDiarioFocusGained
 
+    private void verOtrosPagosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verOtrosPagosActionPerformed
+        if(guardo){
+            otr.setVisible(true);
+        }else{
+            JOptionPane.showMessageDialog(null, "Primero debe guardar el empleado");
+        }
+    }//GEN-LAST:event_verOtrosPagosActionPerformed
+
     private Empleado crearEmpleado(){
         Empleado emp = new Empleado();
         
@@ -463,12 +530,12 @@ public class Empleados extends javax.swing.JFrame {
         emp.setFechaInicialRelLaboral(fechaInicialRelLaboral.getDate());
         emp.setNss(nss.getText());
         emp.setNumEmpleado(new Long(numEmpleado.getText()));
-        emp.setPeriodicidadPago(periodicidadPago.getSelectedItem().toString());
+        emp.setPeriodicidadPago(periodicidadPago.getSelectedItem().toString().split(",")[0]);
         emp.setPuesto(puesto.getText());
         emp.setRiesgoPuesto(""+(riesgoPuesto.getSelectedIndex()+1));
-        emp.setTipoContrato(tipoContrato.getSelectedItem().toString());
-        emp.setTipoJornada(tipoJornada.getSelectedItem().toString());
-        emp.setTipoRegimen(tipoRegimen.getSelectedIndex()+1);
+        emp.setTipoContrato(tipoContrato.getSelectedItem().toString().split(",")[0]);
+        emp.setTipoJornada(tipoJornada.getSelectedItem().toString().split(",")[0]);
+        emp.setTipoRegimen(tipoRegimen.getSelectedItem().toString().split(",")[0]);
         emp.setSalarioDiarioInt(new BigDecimal(salarioDiario.getText()));
         emp.setSalarioBaseCotApor(new BigDecimal(salarioBaseCotApor.getText()));
         return emp;
@@ -606,6 +673,7 @@ public class Empleados extends javax.swing.JFrame {
     private javax.swing.JComboBox tipoJornada;
     private javax.swing.JComboBox tipoRegimen;
     private javax.swing.JButton verDeducciones;
+    private javax.swing.JButton verOtrosPagos;
     private javax.swing.JButton verPercepciones;
     // End of variables declaration//GEN-END:variables
 }
