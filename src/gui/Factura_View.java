@@ -443,7 +443,7 @@ public class Factura_View extends javax.swing.JFrame {
             }
         });
 
-        unidad.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "-", "NA", "NO APLICA", "SERVICIO", "DONATIVO", "KILOGRAMO", "GRAMO", "METRO", "METRO CUADRADO", "METRO CUBICO", "PIEZA", "SEGUNDO", "CABEZA", "LITRO", "PAR", "KILOWATT", "MILLAR", "JUEGO", "KILOWATT/HORA", "TONELADA", "BARRIL", "GRAMO NETO", "DECENAS", "CIENTOS", "DOCENAS", "CAJA", "BOTELLA" }));
+        unidad.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "-", "NA", "ACT", "NO APLICA", "SERVICIO", "DONATIVO", "KILOGRAMO", "GRAMO", "METRO", "METRO CUADRADO", "METRO CUBICO", "PIEZA", "SEGUNDO", "CABEZA", "LITRO", "PAR", "KILOWATT", "MILLAR", "JUEGO", "KILOWATT/HORA", "TONELADA", "BARRIL", "GRAMO NETO", "DECENAS", "CIENTOS", "DOCENAS", "CAJA", "BOTELLA" }));
 
         jLabel28.setText("Moneda");
 

@@ -187,7 +187,7 @@ public class Layout {
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: ").append(tipoComprobante).append("\r\n");
         re.append("FORMAPAGO: En una sola exhibición\r\n");
-        re.append("METODOPAGO: ").append(this.fact.getMetodoPago()).append("\r\n");
+        re.append("METODOPAGO: ").append("NA").append("\r\n");
         re.append("NUMCTAPAGO: ").append(this.fact.getCuentaBancaria()).append("\r\n");
         re.append("DESCUENTO: ").append(this.fact.descuento).append("\r\n");
         re.append("MOTIVODESCUENTO: ").append(this.fact.motivoDescuento).append("\r\n");

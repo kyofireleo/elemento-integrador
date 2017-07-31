@@ -4,6 +4,7 @@
  */
 package nominas;
 
+import complementos.nominas.OtrosPagos.OtroPago;
 import elemento.Elemento;
 import elemento.Factura;
 import elemento.Layout;
@@ -534,8 +535,14 @@ public class Nominas extends javax.swing.JFrame {
         nomi.setRegistroPatronal("");
         
         //Seteamos otros pagos
+        List<OtroPago> op = getOtrosPagos();
         otro.setOtrosPagos(getOtrosPagos());
-        otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
+        if(op.size() > 0){
+            otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
+        }else{
+            otro.setTotalOtrosPagos(0.0);
+        }
+        
         nomi.setOtrosPagos(otro);
         nomi.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
         
@@ -576,7 +583,7 @@ public class Nominas extends javax.swing.JFrame {
         
         fact.isrRetenido = dec.getTotalRetenido();
         fact.descuento = nomi.getTotalDeducciones().doubleValue();
-        double to = fact.subtotal - fact.descuento - fact.isrRetenido;
+        double to = fact.subtotal - fact.descuento;
         fact.total = Math.rint(to*100)/100;
         
         per.dispose();

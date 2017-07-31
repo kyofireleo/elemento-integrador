@@ -231,34 +231,35 @@
     <Component class="javax.swing.JComboBox" name="unidad">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="27">
+          <StringArray count="28">
             <StringItem index="0" value="-"/>
             <StringItem index="1" value="NA"/>
-            <StringItem index="2" value="NO APLICA"/>
-            <StringItem index="3" value="SERVICIO"/>
-            <StringItem index="4" value="DONATIVO"/>
-            <StringItem index="5" value="KILOGRAMO"/>
-            <StringItem index="6" value="GRAMO"/>
-            <StringItem index="7" value="METRO"/>
-            <StringItem index="8" value="METRO CUADRADO"/>
-            <StringItem index="9" value="METRO CUBICO"/>
-            <StringItem index="10" value="PIEZA"/>
-            <StringItem index="11" value="SEGUNDO"/>
-            <StringItem index="12" value="CABEZA"/>
-            <StringItem index="13" value="LITRO"/>
-            <StringItem index="14" value="PAR"/>
-            <StringItem index="15" value="KILOWATT"/>
-            <StringItem index="16" value="MILLAR"/>
-            <StringItem index="17" value="JUEGO"/>
-            <StringItem index="18" value="KILOWATT/HORA"/>
-            <StringItem index="19" value="TONELADA"/>
-            <StringItem index="20" value="BARRIL"/>
-            <StringItem index="21" value="GRAMO NETO"/>
-            <StringItem index="22" value="DECENAS"/>
-            <StringItem index="23" value="CIENTOS"/>
-            <StringItem index="24" value="DOCENAS"/>
-            <StringItem index="25" value="CAJA"/>
-            <StringItem index="26" value="BOTELLA"/>
+            <StringItem index="2" value="ACT"/>
+            <StringItem index="3" value="NO APLICA"/>
+            <StringItem index="4" value="SERVICIO"/>
+            <StringItem index="5" value="DONATIVO"/>
+            <StringItem index="6" value="KILOGRAMO"/>
+            <StringItem index="7" value="GRAMO"/>
+            <StringItem index="8" value="METRO"/>
+            <StringItem index="9" value="METRO CUADRADO"/>
+            <StringItem index="10" value="METRO CUBICO"/>
+            <StringItem index="11" value="PIEZA"/>
+            <StringItem index="12" value="SEGUNDO"/>
+            <StringItem index="13" value="CABEZA"/>
+            <StringItem index="14" value="LITRO"/>
+            <StringItem index="15" value="PAR"/>
+            <StringItem index="16" value="KILOWATT"/>
+            <StringItem index="17" value="MILLAR"/>
+            <StringItem index="18" value="JUEGO"/>
+            <StringItem index="19" value="KILOWATT/HORA"/>
+            <StringItem index="20" value="TONELADA"/>
+            <StringItem index="21" value="BARRIL"/>
+            <StringItem index="22" value="GRAMO NETO"/>
+            <StringItem index="23" value="DECENAS"/>
+            <StringItem index="24" value="CIENTOS"/>
+            <StringItem index="25" value="DOCENAS"/>
+            <StringItem index="26" value="CAJA"/>
+            <StringItem index="27" value="BOTELLA"/>
           </StringArray>
         </Property>
       </Properties>
