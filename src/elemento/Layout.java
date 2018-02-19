@@ -137,13 +137,17 @@ public class Layout {
     private BigDecimal redondear(double num) {
         return new BigDecimal(num).setScale(2, RoundingMode.HALF_UP);
     }
+    
+    private BigDecimal redondear(BigDecimal num){
+        return num.setScale(2, RoundingMode.HALF_UP);
+    }
 
     private String rellenarNominas(String preFactura) throws Error, Exception {
         Elemento.log.info((Object)"Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
         this.fecha = this.getFecha();
-        BigDecimal porIeps = this.redondear(this.fact.porIeps);
-        BigDecimal totalIeps = this.redondear(this.fact.totalIeps);
+        /*BigDecimal porIeps = this.redondear(this.fact.porIeps);
+        BigDecimal totalIeps = this.redondear(this.fact.totalIeps);*/
         OtrosPagos otr = this.nomi.getOtrosPagos();
         Percepciones per = this.nomi.getPercepciones();
         Deducciones dec = this.nomi.getDeducciones();
@@ -152,7 +156,7 @@ public class Layout {
         re.append("NOMBRE1: ").append(this.emisor.getNombre()).append("\r\n");
         re.append("REGIMENFISCAL: ").append(this.emisor.getRegimenFiscal()).append("\r\n");
         re.append("RFC1: ").append(this.emisor.getRfc()).append("\r\n");
-        re.append("CALLE1: ").append(this.emisor.getCalle()).append("\r\n");
+        /*re.append("CALLE1: ").append(this.emisor.getCalle()).append("\r\n");
         re.append("NOEXTERIOR1: ").append(this.emisor.getNoExterior()).append("\r\n");
         re.append("NOINTERIOR1: ").append(this.emisor.getNoInterior()).append("\r\n");
         re.append("COLONIA1: ").append(this.emisor.getColonia()).append("\r\n");
@@ -160,7 +164,7 @@ public class Layout {
         re.append("MUNICIPIO1: ").append(this.emisor.getMunicipio()).append("\r\n");
         re.append("ESTADO1: ").append(this.emisor.getEstado()).append("\r\n");
         re.append("PAIS1: ").append(this.emisor.getPais()).append("\r\n");
-        re.append("CP1: ").append(this.emisor.getCp()).append("\r\n");
+        re.append("CP1: ").append(this.emisor.getCp()).append("\r\n");*/
         re.append("REGISTROPATRONAL: ").append(this.emisor.getRegistroPatronal()).append("\r\n");
         
         if(this.emisor.getRfc().trim().length() == 13)
@@ -170,7 +174,7 @@ public class Layout {
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
         re.append("RFC2: ").append(this.rfc).append("\r\n");
-        re.append("CALLE2: ").append(this.fact.getCalle()).append("\r\n");
+        /*re.append("CALLE2: ").append(this.fact.getCalle()).append("\r\n");
         re.append("NOEXTERIOR2: ").append(this.fact.getNumExt()).append("\r\n");
         re.append("NOINTERIOR2: ").append(this.fact.getNumInt()).append("\r\n");
         re.append("COLONIA2: ").append(this.fact.getColonia()).append("\r\n");
@@ -178,17 +182,18 @@ public class Layout {
         re.append("MUNICIPIO2: ").append(this.fact.getMunicipio()).append("\r\n");
         re.append("ESTADO2: ").append(this.fact.getEstado()).append("\r\n");
         re.append("PAIS2: ").append(this.fact.getPais()).append("\r\n");
-        re.append("CP2: ").append(this.fact.getCp()).append("\r\n");
+        re.append("CP2: ").append(this.fact.getCp()).append("\r\n");*/
+        re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
+        
         String tipoComprobante = this.fact.getTipoCfd();
         re.append("[DATOS_CFD]\r\n");
         re.append("FOLIO: ").append(this.folio).append("\r\n");
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: ").append(tipoComprobante).append("\r\n");
-        re.append("FORMAPAGO: En una sola exhibición\r\n");
-        re.append("METODOPAGO: ").append("NA").append("\r\n");
-        re.append("NUMCTAPAGO: ").append(this.fact.getCuentaBancaria()).append("\r\n");
+        re.append("FORMAPAGO: ").append(fact.formaPago).append("\r\n");
+        re.append("METODOPAGO: ").append(fact.metodoPago).append("\r\n");
         re.append("DESCUENTO: ").append(this.fact.descuento).append("\r\n");
         re.append("MOTIVODESCUENTO: ").append(this.fact.motivoDescuento).append("\r\n");
         re.append("MONEDA: ").append(this.fact.getMoneda()).append("\r\n");
@@ -204,17 +209,17 @@ public class Layout {
             re.append(concepto).append("\r\n");
         }
         re.append("[/CONCEPTOS]\r\n\r\n");
-        re.append("[IMPUESTOS_TRASLADADOS]\r\n");
+        /*re.append("[IMPUESTOS_TRASLADADOS]\r\n");
         if(this.iva.doubleValue() > 0)
-            re.append("IT1: IVA·").append(16.0).append("·").append(this.iva.toString()).append("\r\n");
+            re.append("IT1: IVA@").append(16.0).append("@").append(this.iva.toString()).append("\r\n");
+        
         if(totalIeps.doubleValue() > 0)
-            re.append("IT2: IEPS·").append(porIeps.toString()).append("·").append(totalIeps.toString()).append("\r\n");
-        re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");
+            re.append("IT2: IEPS@").append(porIeps.toString()).append("@").append(totalIeps.toString()).append("\r\n");
+        
+        re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");*/
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        if(this.fact.getIvaRetenido() > 0)
-            re.append("IR1: IVA·").append(this.fact.getIvaRetenido()).append("\r\n");
         if(this.fact.getIsrRetenido() > 0)
-            re.append("IR2: ISR·").append(this.fact.getIsrRetenido()).append("\r\n");
+            re.append("IR2: 001@").append(this.fact.getIsrRetenido()).append("\r\n");
         re.append("[/IMPUESTOS_RETENIDOS]\r\n\r\n");
         re.append("[EMPLEADO]\r\n");
         re.append("NUMEMPLEADO: ").append(this.emp.getNumEmpleado()).append("\r\n");
@@ -236,8 +241,8 @@ public class Layout {
         re.append("[NOMINA]\r\n");
         re.append("TIPO_NOMINA: ").append(this.nomi.getTipoNomina()).append("\r\n");
         re.append("TOTAL_PER: ").append(this.redondear(per.getTotalSueldos())).append("\r\n");
-        re.append("TOTAL_DEC: ").append(this.redondear(nomi.getTotalDeducciones().doubleValue()).toString()).append("\r\n");
-        re.append("TOTAL_OTP: ").append(this.redondear(nomi.getTotalOtrosPagos().doubleValue()).toString()).append("\r\n");
+        re.append("TOTAL_DEC: ").append(this.redondear(nomi.getTotalDeducciones()).toString()).append("\r\n");
+        re.append("TOTAL_OTP: ").append(this.redondear(nomi.getTotalOtrosPagos()).toString()).append("\r\n");
         re.append("FECHA_PAGO: ").append(this.nomi.getFechaPago()).append("\r\n");
         re.append("FECHA_INICIAL_PAGO: ").append(this.nomi.getFechaInicialPago()).append("\r\n");
         re.append("FECHA_FINAL_PAGO: ").append(this.nomi.getFechaFinalPago()).append("\r\n");
@@ -245,7 +250,7 @@ public class Layout {
         re.append("ANTIGUEDAD: ").append("P").append(this.nomi.getAntiguedad()).append("W").append("\r\n");
         re.append("[/NOMINA]\r\n\r\n");
         
-        if (!otr.getOtrosPagos().isEmpty()) {
+        if (otr != null && !otr.getOtrosPagos().isEmpty()) {
             re.append("[OTROS_PAGOS]\r\n");
             for (int i = 0; i < otr.getOtrosPagos().size(); ++i) {
                 OtrosPagos.OtroPago p = (OtrosPagos.OtroPago)otr.getOtrosPagos().get(i);
@@ -254,7 +259,7 @@ public class Layout {
             re.append("[/OTROS_PAGOS]\r\n\r\n");
         }
         
-        if (!per.getPercepciones().isEmpty()) {
+        if (per != null && !per.getPercepciones().isEmpty()) {
             re.append("[PERCEPCIONES]\r\n");
             for (int i = 0; i < per.getPercepciones().size(); ++i) {
                 Percepciones.Percepcion p = (Percepciones.Percepcion)per.getPercepciones().get(i);
@@ -262,7 +267,7 @@ public class Layout {
             }
             re.append("[/PERCEPCIONES]\r\n\r\n");
         }
-        if (!dec.getDeducciones().isEmpty()) {
+        if (dec != null && !dec.getDeducciones().isEmpty()) {
             re.append("[DEDUCCIONES]\r\n");
             for (int i = 0; i < dec.getDeducciones().size(); ++i) {
                 Deducciones.Deduccion d = (Deducciones.Deduccion)dec.getDeducciones().get(i);
@@ -295,14 +300,15 @@ public class Layout {
         Elemento.log.info((Object)"Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
         this.fecha = this.getFecha();
-        BigDecimal porIeps = new BigDecimal(this.fact.porIeps).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal porIeps = new BigDecimal(this.fact.porIeps / 100).setScale(2, RoundingMode.HALF_UP);
         BigDecimal totalIeps = new BigDecimal(this.fact.totalIeps).setScale(2, RoundingMode.HALF_UP);
+        
         re.append(preFactura).append("\r\n");
         re.append("[DATOS_EMISOR]\r\n");
         re.append("NOMBRE1: ").append(this.emisor.getNombre()).append("\r\n");
         re.append("REGIMENFISCAL: ").append(this.emisor.getRegimenFiscal()).append("\r\n");
         re.append("RFC1: ").append(this.emisor.getRfc()).append("\r\n");
-        re.append("CALLE1: ").append(this.emisor.getCalle()).append("\r\n");
+        /*re.append("CALLE1: ").append(this.emisor.getCalle()).append("\r\n");
         re.append("NOEXTERIOR1: ").append(this.emisor.getNoExterior()).append("\r\n");
         re.append("NOINTERIOR1: ").append(this.emisor.getNoInterior()).append("\r\n");
         re.append("COLONIA1: ").append(this.emisor.getColonia()).append("\r\n");
@@ -310,7 +316,7 @@ public class Layout {
         re.append("MUNICIPIO1: ").append(this.emisor.getMunicipio()).append("\r\n");
         re.append("ESTADO1: ").append(this.emisor.getEstado()).append("\r\n");
         re.append("PAIS1: ").append(this.emisor.getPais()).append("\r\n");
-        re.append("CP1: ").append(this.emisor.getCp()).append("\r\n");
+        re.append("CP1: ").append(this.emisor.getCp()).append("\r\n");*/
         re.append("[/DATOS_EMISOR]\r\n\r\n");
         if (this.emisor.getExpedidoEn() != null) {
             ExpedidoEn expedidoEn = this.emisor.getExpedidoEn();
@@ -329,7 +335,8 @@ public class Layout {
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
         re.append("RFC2: ").append(this.rfc).append("\r\n");
-        re.append("CALLE2: ").append(this.fact.getCalle()).append("\r\n");
+        re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
+        /*re.append("CALLE2: ").append(this.fact.getCalle()).append("\r\n");
         re.append("NOEXTERIOR2: ").append(this.fact.getNumExt()).append("\r\n");
         re.append("NOINTERIOR2: ").append(this.fact.getNumInt()).append("\r\n");
         re.append("COLONIA2: ").append(this.fact.getColonia()).append("\r\n");
@@ -337,7 +344,7 @@ public class Layout {
         re.append("MUNICIPIO2: ").append(this.fact.getMunicipio()).append("\r\n");
         re.append("ESTADO2: ").append(this.fact.getEstado()).append("\r\n");
         re.append("PAIS2: ").append(this.fact.getPais()).append("\r\n");
-        re.append("CP2: ").append(this.fact.getCp()).append("\r\n");
+        re.append("CP2: ").append(this.fact.getCp()).append("\r\n");*/
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
         
         re.append("[DATOS_CFD]\r\n");
@@ -345,18 +352,21 @@ public class Layout {
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: ").append(this.fact.getTipoCfd()).append("\r\n");
+        if(this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()){
+            re.append("RELACIONCFDI: ").append(this.fact.cfdisAsociados).append("\r\n");
+            re.append("TIPORELACION: ").append(this.fact.tipoRelacion).append("\r\n");
+        }
         re.append("FORMAPAGO: ").append(this.fact.getFormaPago()).append("\r\n");
         re.append("CONDICIONPAGO: ").append(this.fact.getCondicionPago()).append("\r\n");
         re.append("METODOPAGO: ").append(this.fact.getMetodoPago()).append("\r\n");
-        re.append("NUMCTAPAGO: ").append(this.fact.getCuentaBancaria()).append("\r\n");
-        re.append("DESCUENTO: ").append(this.fact.getDescuento()).append("\r\n");
+        re.append("DESCUENTO: ").append(new BigDecimal(this.fact.getDescuento())).append("\r\n");
         re.append("MOTIVODESCUENTO: _\r\n");
         re.append("MONEDA: ").append(this.fact.getMoneda()).append("\r\n");
-        re.append("TIPOCAMBIO: ").append(this.fact.getTipoCambio()).append("\r\n");
+        re.append("TIPOCAMBIO: ").append(new BigDecimal(this.fact.getTipoCambio())).append("\r\n");
         re.append("TOTALRETENIDOS: ").append(new BigDecimal(this.fact.getTotalRetenidos()).setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
         re.append("TOTALTRASLADOS: ").append(new BigDecimal(this.fact.getTotalTraslados()).setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-        re.append("SUBTOTAL: ").append(this.subtotal.toString()).append("\r\n");
-        re.append("TOTALNETO: ").append(this.total.toString()).append("\r\n");
+        re.append("SUBTOTAL: ").append(new BigDecimal(this.subtotal.toString()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
+        re.append("TOTALNETO: ").append(new BigDecimal(this.total.toString()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
         re.append("LEYENDA: ").append(this.fact.getLeyenda()).append("\r\n");
         re.append("[/DATOS_CFD]\r\n\r\n");
         
@@ -365,6 +375,28 @@ public class Layout {
             re.append(concepto).append("\r\n");
         }
         re.append("[/CONCEPTOS]\r\n\r\n");
+        
+        if(fact.traslados.size() > 0){
+            re.append("[TRASLADADOS_CONCEPTOS]\r\n");
+            for (int i = 0; i < fact.traslados.size(); i++) {
+                Factura.ConceptoTraslado tr = fact.traslados.get(i);
+                re.append("TC"+(i+1)+": ").append("C"+tr.getNumConcepto()).append("@").append(tr.getBase().toString())
+                        .append("@").append(tr.getImpuesto()).append("@").append(tr.getTipoFactor()).append("@").append(tr.getTasa().toString())
+                        .append("@").append(tr.getImporte().toString()).append("\r\n");
+            }
+            re.append("[/TRASLADADOS_CONCEPTOS]\r\n\r\n");
+        }
+        
+        if(fact.retenciones.size() > 0 && !fact.tipoCfd.equals('N')){
+            re.append("[RETENCIONES_CONCEPTOS]\r\n");
+            for (int i = 0; i < fact.retenciones.size(); i++) {
+                Factura.ConceptoRetencion rr = fact.retenciones.get(i);
+                re.append("RC"+(i+1)+": ").append("C"+rr.getNumConcepto()).append("@").append(rr.getBase().toString())
+                        .append("@").append(rr.getImpuesto()).append("@").append(rr.getTipoFactor()).append("@").append(rr.getTasa().toString())
+                        .append("@").append(rr.getImporte().toString()).append("\r\n");
+            }
+            re.append("[/RETENCIONES_CONCEPTOS]\r\n\r\n");
+        }
         
         if(fact.getDonataria() != null){
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -379,14 +411,17 @@ public class Layout {
         if (this.iva.doubleValue() == 0.0) {
             porcentaje = 0.0;
         } else {
-            porcentaje = 16.0;
+            porcentaje = 0.16;
         }
-        re.append("IT1: IVA·").append(porcentaje).append("·").append(this.iva.toString()).append("\r\n");
-        re.append("IT2: IEPS·").append(porIeps.toString()).append("·").append(totalIeps.toString()).append("\r\n");
-        re.append("[/IMPUESTOS_TRASLADADOS]\r\n");
+        re.append("IT1: 002@Tasa@").append(new BigDecimal(porcentaje).setScale(2, RoundingMode.HALF_UP)).append("@").append(this.iva.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+        re.append("IT2: 003@Tasa@").append(porIeps.toString()).append("@").append(totalIeps.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+        re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");
+        
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        re.append("IR1: IVA·").append(this.fact.getIvaRetenido()).append("\r\n");
-        re.append("IR2: ISR·").append(this.fact.getIsrRetenido()).append("\r\n");
+        if(this.fact.getIvaRetenido() > 0)
+            re.append("IR1: 002@").append(new BigDecimal(this.fact.getIvaRetenido()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
+        if(this.fact.getIsrRetenido() > 0)
+            re.append("IR2: 001@").append(new BigDecimal(this.fact.getIsrRetenido()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
         re.append("[/IMPUESTOS_RETENIDOS]\r\n");
         this.texto = re.toString();
         return this.texto;

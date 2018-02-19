@@ -249,20 +249,22 @@ public class Configurar extends javax.swing.JFrame {
         plantillaRD.setText("");
 
         try {
-            rs = stmt.executeQuery("SELECT * FROM Folios f, Comprobantes tc WHERE rfc like \'" + rfcE + "\' AND f.idComprobante = tc.idComprobante");
+            rs = stmt.executeQuery("SELECT f.serie, f.ultimo_folio, f.plantilla, tc.tiposcomprobante "
+                    + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
+                    + "WHERE rfc = \'" + rfcE + "\'");
             while (rs.next()) {
-                String nom = rs.getString("nombre");
-                if (nom.equalsIgnoreCase("Factura")) {
+                String nom = rs.getString("tiposcomprobante");
+                if (nom.equalsIgnoreCase("I")) {
                     serieFact.setText(rs.getString("serie"));
                     folioFact.setText(rs.getString("ultimo_folio"));
                     plantillaFact.setText(rs.getString("plantilla"));
                 }
-                if (nom.equalsIgnoreCase("Nota de Credito")) {
+                if (nom.equalsIgnoreCase("E")) {
                     serieNC.setText(rs.getString("serie"));
                     folioNC.setText(rs.getString("ultimo_folio"));
                     plantillaNC.setText(rs.getString("plantilla"));
                 }
-                if (nom.equalsIgnoreCase("Recibo de Donativos")) {
+                if (nom.equalsIgnoreCase("D")) {
                     serieRD.setText(rs.getString("serie"));
                     folioRD.setText(rs.getString("ultimo_folio"));
                     plantillaRD.setText(rs.getString("plantilla"));
@@ -1420,7 +1422,7 @@ public class Configurar extends javax.swing.JFrame {
         ResultSet rs;
         int idEmisor = 0;
         try {
-            rs = stmt.executeQuery("SELECT id FROM Emisores WHERE rfc like \'" + rfcE + "\'");
+            rs = stmt.executeQuery("SELECT id FROM Emisores WHERE rfc = \'" + rfcE + "\'");
             if (rs.next()) {
                 idEmisor = rs.getInt("id");
             }

@@ -51,7 +51,7 @@ public class Emisores extends javax.swing.JFrame {
                 id = rs.getInt("id");
                 nombre.setText(rs.getString("nombre").trim());
                 rfc.setText(rs.getString("rfc").trim());
-                calle.setText(rs.getString("calle").trim());
+                /*calle.setText(rs.getString("calle").trim());
                 noExterior.setText(rs.getString("noExterior").trim());
                 noInterior.setText(rs.getString("noInterior") == null ? "" : rs.getString("noInterior").trim());
                 colonia.setText(rs.getString("colonia").trim());
@@ -59,9 +59,9 @@ public class Emisores extends javax.swing.JFrame {
                 municipio.setText(rs.getString("municipio").trim());
                 pais.setSelectedItem(rs.getString("pais"));
                 estado.setSelectedItem(rs.getString("estado"));
-                cp.setText(rs.getString("cp").trim());
-                email.setText(rs.getString("email").trim());
-                pass.setText(rs.getString("pass").trim());
+                cp.setText(rs.getString("cp").trim());*/
+                email.setText(rs.getString("email"));
+                pass.setText(rs.getString("pass"));
                 registroPatronal.setText(rs.getString("registroPatronal"));
                 emiteNominas.setSelected(rs.getBoolean("emiteNominas"));
                 curp.setText(rs.getString("curp"));

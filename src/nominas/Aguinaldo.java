@@ -74,7 +74,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 double d = /*obtenerNetoDeducciones(emp.getIdEmpleado())*/ 0.0;
                 row[0] = numEmpleados.get(j);
                 row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
-                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral());
+                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(),this.fechaFinalPago.getDate());
                 row[3] = 0;
                 row[4] = i;
                 row[5] = d;
@@ -102,10 +102,12 @@ public class Aguinaldo extends javax.swing.JFrame {
             int num = new Integer(model.getValueAt(i, 0).toString());
             int idE = idEmpleados.get(i);
             emp = this.getEmpleadoCompleto(num, idE);
+            int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
             BigDecimal sd = emp.getSalarioDiarioInt();
             BigDecimal agui = util.redondearBigDecimal(obtenerAguinaldo(diasA, sd.doubleValue()));
             BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
             importes.add(agui.doubleValue());
+            model.setValueAt(anti, i, 2);
             model.setValueAt(agui, i, 4);
             totalA += agui.doubleValue();
             totalI += isr.doubleValue();
@@ -125,9 +127,11 @@ public class Aguinaldo extends javax.swing.JFrame {
             int num = new Integer(model.getValueAt(i, 0).toString());
             int idE = idEmpleados.get(i);
             emp = this.getEmpleadoCompleto(num, idE);
+            int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), this.fechaFinalPago.getDate());
             BigDecimal sd = emp.getSalarioDiarioInt();
             BigDecimal agui = util.redondearBigDecimal(obtenerAguinaldo(diasA, sd.doubleValue()));
             BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
+            model.setValueAt(anti, i, 2);
             model.setValueAt(agui, i, 4);
             totalA += agui.doubleValue();
             totalI += isr.doubleValue();
@@ -169,7 +173,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         Empleado emp = null;
 
         try {
-            rs = stmt.executeQuery("SELECT idEmpleado,fechaInicialRelLaboral FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado like \'" + numEmpleado + "\'");
+            rs = stmt.executeQuery("SELECT idEmpleado,fechaInicialRelLaboral FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado = \'" + numEmpleado + "\'");
             if (rs.next()) {
                 emp = new Empleado();
                 emp.setNumEmpleado(numEmpleado);
@@ -196,7 +200,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         Empleado emp = null;
 
         try {
-            rs = stmt.executeQuery("SELECT * FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado like \'" + numEmpleado + "\'");
+            rs = stmt.executeQuery("SELECT * FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado = \'" + numEmpleado + "\'");
             if (rs.next()) {
                 emp = new Empleado();
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
@@ -211,7 +215,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 emp.setPuesto(rs.getString("puesto"));
                 emp.setTipoContrato(rs.getString("tipoContrato"));
                 emp.setTipoJornada(rs.getString("tipoJornada"));
-                emp.setPeriodicidadPago(rs.getString("periodicidadPago"));
+                emp.setPeriodicidadPago("99"); //Para el aguinaldo asi va
                 emp.setRiesgoPuesto(rs.getString("riesgoPuesto"));
                 emp.setSalarioDiarioInt(rs.getBigDecimal("salarioDiarioInt"));
                 emp.setSalarioBaseCotApor(rs.getBigDecimal("salarioBaseCotApor"));
@@ -258,15 +262,6 @@ public class Aguinaldo extends javax.swing.JFrame {
                 fact = new Factura();
                 fact.nombre = rs.getString("nombre");
                 fact.rfc = rs.getString("rfc");
-                fact.calle = rs.getString("calle");
-                fact.numExt = rs.getString("noExterior");
-                fact.numInt = rs.getString("noInterior");
-                fact.colonia = rs.getString("colonia");
-                fact.localidad = rs.getString("localidad");
-                fact.municipio = rs.getString("municipio");
-                fact.estado = rs.getString("estado");
-                fact.pais = rs.getString("pais");
-                fact.cp = rs.getString("cp");
                 fact.idEmpleado = rs.getInt("id");
             }
             rs.close();
@@ -301,18 +296,23 @@ public class Aguinaldo extends javax.swing.JFrame {
         return util.redondear(neto);
     }
 
-    public long calcularAntiguedadSemanas(Date fechaInicial) {
+    public int calcularAntiguedadSemanas(Date fechaInicial, Date fechaFinalPay) {
         try {
             Date date = fechaInicial;
-            Date date2 = new Date();
-
+            Date date2;
+            if(fechaFinalPay == null){
+                date2 = new Date();
+            }else{
+                date2 = fechaFinalPay;
+            }
+            
             GregorianCalendar cal = new GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
             GregorianCalendar cal2 = new GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
 
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
-            long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
-            long difd = difms / (1000 * 60 * 60 * 24 * 7);
-            return difd;
+            long difms = date2.getTime() - date.getTime();
+            long difd = (difms / 86400000) + 1;
+            return (int) (difd / 7);
         } catch (Exception ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al calcular los dias pagados: ", ex);
@@ -352,8 +352,6 @@ public class Aguinaldo extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaEmpleados = new javax.swing.JTable();
         timbrarNomina = new javax.swing.JToggleButton();
-        jLabel2 = new javax.swing.JLabel();
-        metodoCombo = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         totalNetoLabel = new javax.swing.JLabel();
         recalcularBoton = new javax.swing.JButton();
@@ -440,15 +438,6 @@ public class Aguinaldo extends javax.swing.JFrame {
             }
         });
 
-        jLabel2.setText("Metodo de Pago");
-
-        metodoCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "No Aplica", "Efectivo", "Cheque", "Cheque Nominativo", "Tarjeta de Debito", "Tarjeta de Credito", "Transferencia Electronica de Fondos", "Deposito Bancario" }));
-        metodoCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                metodoComboActionPerformed(evt);
-            }
-        });
-
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel1.setText("Total a Pagar: ");
 
@@ -472,13 +461,9 @@ public class Aguinaldo extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(timbrarNomina)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addGap(257, 257, 257)
                         .addComponent(recalcularBoton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(totalNetoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -517,10 +502,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2)
-                        .addComponent(recalcularBoton))
+                    .addComponent(recalcularBoton)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
                         .addComponent(totalNetoLabel)
@@ -544,13 +526,9 @@ public class Aguinaldo extends javax.swing.JFrame {
         if (fechaFinalPago.getDate() != null) {
             fechaInicialPago.setDate(fechaFinalPago.getDate());
             fechaPago.setDate(fechaFinalPago.getDate());
+            this.recalcularAguinaldo();
         }
         timbrarNomina.setEnabled(true);
-        DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
-        int dias = calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate());
-        for (int i = 0; i < model.getRowCount(); i++) {
-            model.setValueAt(dias, i, 3);
-        }
     }//GEN-LAST:event_fechaFinalPagoPropertyChange
 
     private void fechaFinalPagoCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaFinalPagoCaretPositionChanged
@@ -591,14 +569,16 @@ public class Aguinaldo extends javax.swing.JFrame {
                     fact.folio = "" + folio;
                     folio++;
                     fact.serie = serie;
-                    fact.metodoPago = metodoCombo.getSelectedItem().toString();
+                    fact.formaPago = "99";
+                    fact.metodoPago = "PUE";
                     fact.cuentaBancaria = "";
                     fact.leyenda = "";
-                    fact.tipoCfd = "recibo de nomina";
+                    fact.tipoCfd = "N";
                     fact.lugarExpedicion = lugarExpedicion;
                     fact.moneda = "MXN";
                     fact.tipoCambio = "1.0";
                     fact.prefactura = "";
+                    fact.usoCfdi = "P01";
 
                     nom.setAntiguedad(new Integer(model.getValueAt(i, 2).toString()));
                     nom.setTipoNomina("E"); //Extraordinaria
@@ -612,16 +592,22 @@ public class Aguinaldo extends javax.swing.JFrame {
                     nom.setRegistroPatronal(fact.emisor.getRegistroPatronal());
 
                     //Seteamos deducciones
-                    dedu.setDeducciones(getDeducciones(i));
-                    dedu.setTotalRetenido(0.0);
-                    dedu.setTotalOtras(new Double(model.getValueAt(i, 5).toString()));
-                    nom.setDeducciones(dedu);
+                    List<complementos.nominas.Deducciones.Deduccion> d = getDeducciones(i);
+                    dedu.setDeducciones(d);
+                    dedu.setTotalRetenido(new Double(model.getValueAt(i, 5).toString()));
+                    dedu.setTotalOtras(0.0);
+                    nom.setDeducciones(d.size() > 0 ? dedu : null);
+                    nom.setTotalDeducciones(new BigDecimal(dedu.getTotalRetenido()));
 
                     //Seteamos percepciones
                     perc.setPercepciones(getPercepciones(i));
                     perc.setTotalExento(new Double(model.getValueAt(i, 4).toString()));
                     perc.setTotalGravado(0.0);
+                    perc.setTotalSueldos(new Double(model.getValueAt(i, 4).toString()));
                     nom.setPercepciones(perc);
+                    nom.setTotalPercepciones(new BigDecimal(perc.getTotalSueldos()));
+                    
+                    nom.setTotalOtrosPagos(BigDecimal.ZERO);
 
                     fact.conceptos = getConceptos(perc);
                     fact = getTotales(perc, dedu, fact);
@@ -637,7 +623,7 @@ public class Aguinaldo extends javax.swing.JFrame {
     private List<String> getConceptos(complementos.nominas.Percepciones perc) {
         List<String> conceptos = new ArrayList();
         BigDecimal pers = util.redondearBigDecimal(perc.getTotalGravado() + perc.getTotalExento());
-        String con = "C1: 001@1@SERVICIO@PAGO DE AGUINALDO@" + pers.toString() + "@" + pers.toString() + "@false@false\r\n";
+        String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@" + pers.toString() + "@false@false\r\n";
         conceptos.add(con);
         return conceptos;
     }
@@ -680,14 +666,15 @@ public class Aguinaldo extends javax.swing.JFrame {
         List<complementos.nominas.Deducciones.Deduccion> lista = new ArrayList();
         complementos.nominas.Deducciones.Deduccion ded;
         complementos.nominas.Deducciones dedus = new complementos.nominas.Deducciones();
-
-        ded = dedus.getClase();
-        ded.setTipoDeduccion(cc.getTipoConcepto());
-        ded.setClave(cc.getCodigo());
-        ded.setConcepto(cc.getDescripcion());
-        ded.setImporte(new Double(model.getValueAt(pos, 5).toString()));
-        lista.add(ded);
-
+        double importe = new Double(model.getValueAt(pos, 5).toString());
+        if(importe > 0){
+            ded = dedus.getClase();
+            ded.setTipoDeduccion(cc.getTipoConcepto());
+            ded.setClave(cc.getCodigo());
+            ded.setConcepto(cc.getDescripcion());
+            ded.setImporte(importe);
+            lista.add(ded);
+        }
         return lista;
     }
 
@@ -722,8 +709,11 @@ public class Aguinaldo extends javax.swing.JFrame {
             case 'D':
                 query += "ConceptosDeducciones ";
                 break;
+            case 'O':
+                query += "ConceptosOtrosPagos ";
+                break;
         }
-        query += "WHERE tipo like \'" + codigoSat + "\'";
+        query += "WHERE tipo = \'" + codigoSat + "\'";
 
         try {
             rs = stmt.executeQuery(query);
@@ -751,7 +741,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         int folio = 0;
 
         try {
-            rs = stmt.executeQuery("SELECT serie, ultimo_folio FROM Folios WHERE idComprobante = 4 AND rfc like \'" + rfc + "\'");
+            rs = stmt.executeQuery("SELECT serie, ultimo_folio FROM Folios WHERE idComprobante = 4 AND rfc = \'" + rfc + "\'");
             if (rs.next()) {
                 folio = rs.getInt("ultimo_folio");
                 serie = rs.getString("serie");
@@ -777,18 +767,10 @@ public class Aguinaldo extends javax.swing.JFrame {
                 emi = new Emisor();
                 emi.setNombre(rs.getString("nombre"));
                 emi.setRfc(rs.getString("rfc"));
-                emi.setCalle(rs.getString("calle"));
-                emi.setNoExterior(rs.getString("noExterior"));
-                emi.setNoInterior(rs.getString("noInterior"));
-                emi.setColonia(rs.getString("colonia"));
-                emi.setLocalidad(rs.getString("localidad"));
-                emi.setMunicipio(rs.getString("municipio"));
-                emi.setEstado(rs.getString("estado"));
-                emi.setPais(rs.getString("pais"));
-                emi.setCp(rs.getString("cp"));
                 emi.setRegistroPatronal(rs.getString("registroPatronal"));
                 emi.setEmitirNominas(rs.getBoolean("emiteNominas"));
                 emi.setRegimenFiscal(getRegimenFiscal(con, emi.getRfc()));
+                emi.setCurp(rs.getString("curp"));
             }
             rs.close();
             stmt.close();
@@ -805,7 +787,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         ResultSet rs;
         String regimenFiscal = "";
         try {
-            rs = stmt.executeQuery("SELECT regimenFiscal,lugarExpedicion FROM Cuentas WHERE rfc like \'" + rfc + "\'");
+            rs = stmt.executeQuery("SELECT regimenFiscal,lugarExpedicion FROM Cuentas WHERE rfc = \'" + rfc + "\'");
             if (rs.next()) {
                 regimenFiscal = rs.getString("regimenFiscal");
                 lugarExpedicion = rs.getString("lugarExpedicion");
@@ -818,10 +800,6 @@ public class Aguinaldo extends javax.swing.JFrame {
         }
         return regimenFiscal;
     }
-
-    private void metodoComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metodoComboActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_metodoComboActionPerformed
 
     private void recalcularBotonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recalcularBotonActionPerformed
         // TODO add your handling code here:
@@ -903,12 +881,10 @@ public class Aguinaldo extends javax.swing.JFrame {
     private com.toedter.calendar.JDateChooser fechaInicialPago;
     private com.toedter.calendar.JDateChooser fechaPago;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JComboBox metodoCombo;
     private javax.swing.JButton recalcularBoton;
     private javax.swing.JTable tablaEmpleados;
     private javax.swing.JToggleButton timbrarNomina;

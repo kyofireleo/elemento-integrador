@@ -64,7 +64,7 @@ public class Elemento {
                 log.info("El archivo de propiedades no existe, se crea uno nuevo con los valores por default");
                 out = new FileOutputStream(propFile);
                 tipoConexion = "archivo";
-                baseDatos = unidad + ":\\Facturas\\config\\ElementoBD2.mdb";
+                baseDatos = unidad + ":\\Facturas\\config\\ElementoBD3.mdb";
                 estructuraNombre = "serie_folio_rfce_rfcr_uuid";
                 prop.setProperty("tipo_conexion", tipoConexion);
                 prop.setProperty("base_datos", baseDatos);
@@ -185,6 +185,9 @@ public class Elemento {
 
         try {
             try {
+                Properties props = new Properties();
+                props.put ("charSet", "iso-8859-1");
+                
                 Class.forName("sun.jdbc.odbc.JdbcOdbcDriver").newInstance();
                 String dbURL;
                 if (tipoConexion.equalsIgnoreCase("archivo")) {
@@ -198,7 +201,7 @@ public class Elemento {
                     dbURL = "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb)};DBQ=" + dataSource;
                 }
                 
-                con = DriverManager.getConnection(dbURL, "", "administradorID");
+                con = DriverManager.getConnection(dbURL, props);
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | SQLException e) {
                 log.error("Se presento una excepcion crear la instancia JDBC-ODBC: " + e.getMessage(), e);
                 e.printStackTrace();
@@ -225,7 +228,7 @@ public class Elemento {
             user = "ZAG4";
             pass = "ZAG.2015";
         } else {
-            user = "DEMOZag4";
+            user = "DEMOGon";
             pass = "cfdi";
         }
 

@@ -23,10 +23,19 @@ public class AddProductos extends javax.swing.JFrame {
      */
     ConnectionFactory factory = new ConnectionFactory();
     DefaultTableModel model;
+    Integer idClaveSat, idClaveUnidadSat;
     
     public AddProductos() {
         initComponents();
         setLocationRelativeTo(null);
+        tablaProductos.getColumnModel().getColumn(7).setMaxWidth(0);
+        tablaProductos.getColumnModel().getColumn(7).setMinWidth(0);
+        tablaProductos.getColumnModel().getColumn(7).setPreferredWidth(0);
+        
+        tablaProductos.getColumnModel().getColumn(8).setMaxWidth(0);
+        tablaProductos.getColumnModel().getColumn(8).setMinWidth(0);
+        tablaProductos.getColumnModel().getColumn(8).setPreferredWidth(0);
+        tablaProductos.doLayout();
         cargarProductos();
     }
     
@@ -35,20 +44,32 @@ public class AddProductos extends javax.swing.JFrame {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs = null;
+        String query = "SELECT p.noIdentificacion, p.c_claveunidad_id, cu.claveunidad, "
+                    + "cu.nombre as unidad, p.descripcion, "
+                    + "p.precio, p.aplicaIva, p.c_claveprodserv_id, cc.claveprodserv "
+                    + "FROM (Productos p "
+                    + "INNER JOIN c_claveprodserv cc ON p.c_claveprodserv_id = cc.c_claveprodserv_id) "
+                    + "INNER JOIN c_claveunidad cu ON p.c_claveunidad_id = cu.c_claveunidad_id";
+        System.out.println(query);
         try{
-            rs = stmt.executeQuery("SELECT * FROM Productos");
+            rs = stmt.executeQuery(query);
             model = (DefaultTableModel) tablaProductos.getModel();
             model.setRowCount(0);
-            String noIden,uni,desc,prec;
+            String noIden,claveuni,uni,desc,prec,clave;
+            Integer idClave, idClaveUni;
             Boolean iva;
             while(rs.next()){
                 noIden = rs.getString("noIdentificacion");
+                claveuni = rs.getString("claveunidad");
                 uni = rs.getString("unidad");
+                idClaveUni = rs.getInt("c_claveunidad_id");
                 desc = rs.getString("descripcion");
                 prec = ""+rs.getDouble("precio");
                 iva = rs.getBoolean("aplicaIva");
+                clave = rs.getString("claveprodserv");
+                idClave = rs.getInt("c_claveprodserv_id");
                 
-                Object [] row = {noIden,uni,desc,prec,iva};
+                Object [] row = {noIden,claveuni,uni,desc,prec,clave,iva,idClave,idClaveUni};
                 model.addRow(row);
             }
         }catch(Exception e){
@@ -71,11 +92,13 @@ public class AddProductos extends javax.swing.JFrame {
     
     private void borrarCampos(){
         noIdentificacion.setText("");
-        unidad.setSelectedIndex(0);
+        claveunidad.setText("");
         descripcion.setText("");
         precio.setText("");
         aplicaIva.setSelected(false);
-        unidad.transferFocusBackward();
+        claveprodserv.setText("");
+        idClaveSat = null;
+        claveunidad.transferFocusBackward();
     }
 
     /**
@@ -102,11 +125,15 @@ public class AddProductos extends javax.swing.JFrame {
         agregar = new javax.swing.JButton();
         actualizar = new javax.swing.JButton();
         borrar = new javax.swing.JButton();
-        unidad = new javax.swing.JComboBox();
+        claveprodserv = new javax.swing.JTextField();
+        buscarClaveProd = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        claveunidad = new javax.swing.JTextField();
+        buscarClaveUni = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setText("No Identificacion");
+        jLabel1.setText("Código");
 
         noIdentificacion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -148,14 +175,14 @@ public class AddProductos extends javax.swing.JFrame {
 
             },
             new String [] {
-                "No. Identificacion", "Unidad", "Descripcion", "Precio", "Aplica IVA"
+                "Código", "Clave Unidad", "Unidad", "Descripcion", "Precio", "Clave SAT", "Aplica IVA", "idClaveSat", "idClaveUnidadSat"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.Integer.class, java.lang.Integer.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, true, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -172,6 +199,23 @@ public class AddProductos extends javax.swing.JFrame {
             }
         });
         jScrollPane2.setViewportView(tablaProductos);
+        if (tablaProductos.getColumnModel().getColumnCount() > 0) {
+            tablaProductos.getColumnModel().getColumn(0).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(0).setPreferredWidth(100);
+            tablaProductos.getColumnModel().getColumn(1).setPreferredWidth(100);
+            tablaProductos.getColumnModel().getColumn(2).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(2).setPreferredWidth(100);
+            tablaProductos.getColumnModel().getColumn(3).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(3).setPreferredWidth(200);
+            tablaProductos.getColumnModel().getColumn(4).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(4).setPreferredWidth(100);
+            tablaProductos.getColumnModel().getColumn(5).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(5).setPreferredWidth(100);
+            tablaProductos.getColumnModel().getColumn(6).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(6).setPreferredWidth(100);
+            tablaProductos.getColumnModel().getColumn(7).setResizable(false);
+            tablaProductos.getColumnModel().getColumn(8).setResizable(false);
+        }
 
         aplicaIva.setText("Aplica IVA");
 
@@ -196,7 +240,29 @@ public class AddProductos extends javax.swing.JFrame {
             }
         });
 
-        unidad.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "-", "NA", "ACT", "NO APLICA", "SERVICIO", "DONATIVO", "KILOGRAMO", "GRAMO", "METRO", "METRO CUADRADO", "METRO CUBICO", "PIEZA", "SEGUNDO", "CABEZA", "LITRO", "PAR", "KILOWATT", "MILLAR", "JUEGO", "KILOWATT/HORA", "TONELADA", "BARRIL", "GRAMO NETO", "DECENAS", "CIENTOS", "DOCENAS", "CAJA", "BOTELLA" }));
+        claveprodserv.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                claveprodservActionPerformed(evt);
+            }
+        });
+
+        buscarClaveProd.setText("...");
+        buscarClaveProd.setToolTipText("Buscar Clave de Producto o Servicio");
+        buscarClaveProd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buscarClaveProdActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Clave SAT");
+
+        buscarClaveUni.setText("...");
+        buscarClaveUni.setToolTipText("Buscar Clave de Unidad de Medida");
+        buscarClaveUni.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buscarClaveUniActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -213,27 +279,36 @@ public class AddProductos extends javax.swing.JFrame {
                                     .addComponent(jLabel4))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(noIdentificacion, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(precio, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(aplicaIva)
                                     .addGroup(layout.createSequentialGroup()
+                                        .addComponent(precio, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(12, 12, 12)
+                                        .addComponent(jLabel5))
+                                    .addComponent(noIdentificacion, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                         .addComponent(jLabel2)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(claveunidad, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(buscarClaveUni)
                                         .addGap(18, 18, 18)
-                                        .addComponent(unidad, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel3))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addComponent(claveprodserv, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(buscarClaveProd)
                                         .addGap(18, 18, 18)
-                                        .addComponent(jLabel3)))
-                                .addGap(18, 18, 18))
+                                        .addComponent(aplicaIva))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(168, 168, 168)
                                 .addComponent(agregar, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(actualizar)
                                 .addGap(18, 18, 18)
-                                .addComponent(borrar, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(borrar, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -246,7 +321,7 @@ public class AddProductos extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(16, 16, 16)
+                .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -257,19 +332,23 @@ public class AddProductos extends javax.swing.JFrame {
                             .addComponent(noIdentificacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3)
                             .addComponent(jLabel2)
-                            .addComponent(unidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(claveunidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(buscarClaveUni))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(precio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4)
-                            .addComponent(aplicaIva))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(aplicaIva)
+                            .addComponent(claveprodserv, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(buscarClaveProd)
+                            .addComponent(jLabel5))
+                        .addGap(18, 18, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(agregar)
                             .addComponent(actualizar)
                             .addComponent(borrar))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(cancelar)
                 .addGap(10, 10, 10))
@@ -320,30 +399,62 @@ public class AddProductos extends javax.swing.JFrame {
         model = (DefaultTableModel) tablaProductos.getModel();
         int row = tablaProductos.getSelectedRow();
         noIdentificacion.setText(model.getValueAt(row, 0).toString());
-        unidad.setSelectedItem(model.getValueAt(row, 1).toString().trim());
-        descripcion.setText(model.getValueAt(row, 2).toString());
-        precio.setText(model.getValueAt(row, 3).toString());
-        aplicaIva.setSelected((Boolean)model.getValueAt(row, 4));
+        claveunidad.setText(model.getValueAt(row, 1).toString().trim());
+        descripcion.setText(model.getValueAt(row, 3).toString());
+        precio.setText(model.getValueAt(row, 4).toString());
+        claveprodserv.setText(model.getValueAt(row, 5).toString());
+        aplicaIva.setSelected((Boolean)model.getValueAt(row, 6));
+        idClaveSat = new Integer(model.getValueAt(row,7).toString());
+        idClaveUnidadSat = new Integer(model.getValueAt(row,8).toString());
     }//GEN-LAST:event_tablaProductosMouseClicked
 
+    private void claveprodservActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_claveprodservActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_claveprodservActionPerformed
+
+    private void buscarClaveProdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buscarClaveProdActionPerformed
+        // TODO add your handling code here:
+        ClaveProdServ cl = new ClaveProdServ();
+        cl.setVisible(true);
+        cl.setVentanaActual(this);
+    }//GEN-LAST:event_buscarClaveProdActionPerformed
+
+    private void buscarClaveUniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buscarClaveUniActionPerformed
+        // TODO add your handling code here:
+        ClavesUnidad cu = new ClavesUnidad();
+        cu.setVisible(true);
+        cu.setVentanaActual(this);
+    }//GEN-LAST:event_buscarClaveUniActionPerformed
+    
+    public void setClaveSat(String clave){
+        claveprodserv.setText(clave);
+    }
+    
+    public void setClaveUnidadSat(String clave){
+        claveunidad.setText(clave);
+    }
+    
     private void agregarProducto(){
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
-        String query = "INSERT INTO Productos VALUES ("
-                    + "\'"+noIdentificacion.getText().trim()+"\',\'"+descripcion.getText().trim()+"\', \'"+unidad.getSelectedItem().toString().trim()+"\',\'"
-                    +precio.getText().trim()+"\',";
+        String query = "INSERT INTO Productos (noIdentificacion,descripcion,c_claveunidad_id,precio,aplicaIva,c_claveprodserv_id) VALUES ("
+                    + "\'"+noIdentificacion.getText().trim()+"\',\'"+descripcion.getText().trim()+"\', "+idClaveUnidadSat+", "
+                    +precio.getText().trim()+",";
         try{
             if(aplicaIva.isSelected()){
-                query += Boolean.TRUE + ")";
+                query += Boolean.TRUE;
             }else{
-                query += Boolean.FALSE + ")";
+                query += Boolean.FALSE;
             }
+            
+            query += ", " + idClaveSat + ")";
+            System.out.println(query);
             stmt.executeUpdate(query);
             stmt.close();
             con.close();
             Elemento.log.info("El producto " + descripcion.getText().trim() + " fue agregado correctamente...");
             cargarProductos();
-        }catch(Exception e){
+        }catch(SQLException e){
             e.printStackTrace();
             System.out.println(e.getCause().getMessage());
             Elemento.log.error("Excepcion al agregar un producto: " + e.getMessage(),e);
@@ -354,15 +465,16 @@ public class AddProductos extends javax.swing.JFrame {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
         String query = "UPDATE Productos SET "
-                    + "noIdentificacion=\'"+noIdentificacion.getText().trim()+"\',descripcion=\'"+descripcion.getText().trim()+"\', unidad=\'"+unidad.getSelectedItem().toString().trim()+"\',"
-                + "precio=\'"+precio.getText().trim()+"\',aplicaIva=";
+                    + "noIdentificacion=\'"+noIdentificacion.getText().trim()+"\',descripcion=\'"+descripcion.getText().trim()+"\', c_claveunidad_id="+this.idClaveUnidadSat+","
+                + "precio="+precio.getText().trim()+",aplicaIva=";
         try{
             if(aplicaIva.isSelected()){
                 query += Boolean.TRUE;
             }else{
                 query += Boolean.FALSE;
             }
-            query += " WHERE noIdentificacion like \'"+claveActual+"\'";
+            query += ", c_claveprodserv_id=" + idClaveSat
+                    + " WHERE noIdentificacion = \'"+claveActual+"\'";
             stmt.executeUpdate(query);
             stmt.close();
             con.close();
@@ -379,7 +491,7 @@ public class AddProductos extends javax.swing.JFrame {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
         try{
-            stmt.executeUpdate("DELETE FROM Productos WHERE noIdentificacion like \'"+claveActual+"\'");
+            stmt.executeUpdate("DELETE FROM Productos WHERE noIdentificacion = \'"+claveActual+"\'");
             Elemento.log.info("El producto con clave " + claveActual + " ha sido borrado");
             stmt.close();
             con.close();
@@ -394,16 +506,26 @@ public class AddProductos extends javax.swing.JFrame {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs = null;
+        String query = "SELECT p.noIdentificacion, p.descripcion, u.claveunidad, p.precio, "
+                    + "p.aplicaIva, s.claveprodserv, p.c_claveprodserv_id, p.c_claveunidad_id "
+                    + "FROM (Productos p "
+                    + "INNER JOIN c_claveunidad u ON p.c_claveunidad_id = u.c_claveunidad_id) "
+                    + "INNER JOIN c_claveprodserv s ON p.c_claveprodserv_id = s.c_claveprodserv_id"
+                    + " WHERE "+columna+" = \'" + dato + "\'";
+        System.out.println(query);
         try{
-            rs = stmt.executeQuery("SELECT * FROM Productos WHERE "+columna+" like \'" + dato + "\'");
+            rs = stmt.executeQuery(query);
             if(rs.next()){
-                noIdentificacion.setText(rs.getString(1));
-                descripcion.setText(rs.getString(2));
-                unidad.setSelectedItem(rs.getString(3).trim());
-                precio.setText(""+rs.getDouble(4));
-                aplicaIva.setSelected(rs.getBoolean(5));
+                noIdentificacion.setText(rs.getString("noIdentificacion"));
+                descripcion.setText(rs.getString("descripcion"));
+                claveunidad.setText(rs.getString("claveunidad"));
+                precio.setText(""+rs.getDouble("precio"));
+                aplicaIva.setSelected(rs.getBoolean("aplicaIva"));
+                claveprodserv.setText((rs.getString("claveprodserv")));
+                idClaveSat = rs.getInt("c_claveprodserv_id");
+                idClaveUnidadSat = rs.getInt("c_claveunidad_id");
             }
-        }catch(Exception ex){
+        }catch(SQLException ex){
             ex.printStackTrace();
             Elemento.log.error("Excepcion al consultar el producto: " + dato + " : " + ex.getMessage(),ex);
         }finally{
@@ -457,17 +579,29 @@ public class AddProductos extends javax.swing.JFrame {
     private javax.swing.JButton agregar;
     private javax.swing.JCheckBox aplicaIva;
     private javax.swing.JButton borrar;
+    private javax.swing.JButton buscarClaveProd;
+    private javax.swing.JButton buscarClaveUni;
     private javax.swing.JButton cancelar;
+    private javax.swing.JTextField claveprodserv;
+    private javax.swing.JTextField claveunidad;
     private javax.swing.JTextArea descripcion;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField noIdentificacion;
     private javax.swing.JTextField precio;
     private javax.swing.JTable tablaProductos;
-    private javax.swing.JComboBox unidad;
     // End of variables declaration//GEN-END:variables
+
+    public void setIdClaveSat(Integer idClaveSat) {
+        this.idClaveSat = idClaveSat;
+    }
+    
+    public void setIdClaveUnidadSat(Integer idClaveUnidadSat) {
+        this.idClaveUnidadSat = idClaveUnidadSat;
+    }
 }

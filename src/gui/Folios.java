@@ -46,13 +46,17 @@ public class Folios extends javax.swing.JFrame {
     String nombreXml;
     List<String> rfcEmisor = new ArrayList(), uuid = new ArrayList();
     List<Long> transId = new ArrayList();
+    boolean activar;
+    public static List<String> cfdisAsoc;
+    public static Boolean finishWhile = true;
+    public static Boolean isCancelado;
 
     public Folios() {
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         try {
-            con = Elemento.odbc();
+            con = conexion();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
                 ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas ORDER BY serie ASC, folio DESC");
@@ -60,7 +64,9 @@ public class Folios extends javax.swing.JFrame {
                 rfcEmisor.clear();
                 uuid.clear();
                 transId.clear();
-
+                
+                activar = true;
+                
                 while (rs.next()) {
                     String rfcE = rs.getString("rfcEmisor");
                     fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
@@ -91,6 +97,59 @@ public class Folios extends javax.swing.JFrame {
 
     public Folios(String nada) {
         con = conexion();
+    }
+    
+    public Folios(String rfcEmi, String rfcReceptor){
+        initComponents();
+        setLocationRelativeTo(null);
+        model = (DefaultTableModel) folios.getModel();
+        try {
+            con = conexion();
+            if (con != null) {
+                Statement stmt = factory.stmtLectura(con);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND status = 'VIGENTE' ORDER BY serie ASC, folio DESC");
+                Object[] fila = new Object[7];
+                rfcEmisor.clear();
+                uuid.clear();
+                transId.clear();
+
+                //Deshabilitar los controles
+                activar = false;
+                consultar.setEnabled(false);
+                //verificar.setEnabled(false);
+                reporte.setEnabled(false);
+                folioTxt.setEnabled(false);
+                noTimbrados.setEnabled(false);
+                porEmisores.setEnabled(false);
+
+                verificar.setText("Asociar");
+
+                while (rs.next()) {
+                    String rfcE = rs.getString("rfcEmisor");
+                    fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
+                    fila[1] = ((String) rfcE);
+                    fila[2] = ((String) rs.getString("rfc"));
+                    fila[3] = ((String) rs.getString("status"));
+                    fila[4] = ((String) rs.getString("fecha"));
+                    fila[5] = ((String) rs.getString("total"));
+                    fila[6] = ((Boolean) rs.getBoolean("timbrado"));
+
+                    rfcEmisor.add(rs.getString("rfcEmisor"));
+                    transId.add(rs.getLong("transId"));
+                    uuid.add(rs.getString("UUID"));
+
+                    model.addRow(fila);
+                    fila = new Object[7];
+                }
+
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+        } catch (SQLException e) {
+            Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -378,21 +437,23 @@ public class Folios extends javax.swing.JFrame {
     private void foliosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_foliosMouseClicked
         int row = folios.getSelectedRow();
         Boolean tim = (Boolean) model.getValueAt(row, 6);
-        if (!tim.booleanValue()) {
-            enviar.setEnabled(false);
-            verPdf.setEnabled(false);
-            cancelar.setEnabled(false);
-            timbrar.setEnabled(true);
-        } else if (model.getValueAt(row, 3).toString().equalsIgnoreCase("PREFACTURA")) {
-            enviar.setEnabled(false);
-            verPdf.setEnabled(true);
-            cancelar.setEnabled(false);
-            timbrar.setEnabled(true);
-        } else {
-            enviar.setEnabled(true);
-            verPdf.setEnabled(true);
-            cancelar.setEnabled(true);
-            timbrar.setEnabled(false);
+        if(activar){
+            if (!tim) {
+                enviar.setEnabled(false);
+                verPdf.setEnabled(false);
+                cancelar.setEnabled(false);
+                timbrar.setEnabled(true);
+            } else if (model.getValueAt(row, 3).toString().equalsIgnoreCase("PREFACTURA")) {
+                enviar.setEnabled(false);
+                verPdf.setEnabled(true);
+                cancelar.setEnabled(false);
+                timbrar.setEnabled(true);
+            } else {
+                enviar.setEnabled(true);
+                verPdf.setEnabled(true);
+                cancelar.setEnabled(true);
+                timbrar.setEnabled(false);
+            }
         }
         System.out.println("RFC: " + rfcEmisor.get(row) + " Row: " + row + " y UUID: " + uuid.get(row));
     }//GEN-LAST:event_foliosMouseClicked
@@ -436,7 +497,8 @@ public class Folios extends javax.swing.JFrame {
             File pdf = new File(pathPdf + name + ".pdf");
             File pdfCancel = new File(pathPdf + name + "_CANCELADA" + ".pdf");
             String path;
-
+            isCancelado = model.getValueAt(row, 3).toString().equalsIgnoreCase("CANCELADA");
+            
             if (pdf.exists()) {
                 path = pdf.getAbsolutePath();
                 if (pdfCancel.exists()) {
@@ -645,24 +707,39 @@ public class Folios extends javax.swing.JFrame {
 
     private void verificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verificarActionPerformed
         // TODO add your handling code here:
-        TestValidator validar = new TestValidator();
-        int row = folios.getSelectedRow();
-        String re = model.getValueAt(row, 1).toString();
-        String rr = model.getValueAt(row, 2).toString();
-        String tt = model.getValueAt(row, 5).toString();
-        String uid = uuid.get(row);
-        try {
-            obtenerCadenaOriginal(new File(Elemento.pathXml + obtenerNombreComprobante(row) + ".xml"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Elemento.log.error("Excepcion al obtener la cadena original del comprobante: " + uuid, ex);
+        if(activar){
+            TestValidator validar = new TestValidator();
+            int row = folios.getSelectedRow();
+            String re = model.getValueAt(row, 1).toString();
+            String rr = model.getValueAt(row, 2).toString();
+            String tt = model.getValueAt(row, 5).toString();
+            String uid = uuid.get(row);
+            try {
+                obtenerCadenaOriginal(new File(Elemento.pathXml + obtenerNombreComprobante(row) + ".xml"));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Elemento.log.error("Excepcion al obtener la cadena original del comprobante: " + uuid, ex);
+            }
+
+            util.print(validar.consultar(validar.formarXml(re, rr, tt, uid)));
+        }else{
+            cfdisAsoc = new ArrayList();
+            int select[] = folios.getSelectedRows();
+            if(select.length > 0){
+                for (int i = 0; i < select.length; i++) {
+                    int pos = select[i];
+                    cfdisAsoc.add(uuid.get(pos));
+                }
+                finishWhile = false;
+                this.setVisible(false);
+            }else{
+                JOptionPane.showMessageDialog(null,"Debe seleccionar almenos un documento", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            }
         }
-
-        util.print(validar.consultar(validar.formarXml(re, rr, tt, uid)));
     }//GEN-LAST:event_verificarActionPerformed
-
+    
     private String obtenerCadenaOriginal(File xml) throws Exception {
-        File stylesheet = new File("/Facturas/config/cadenaoriginal_3_2.xslt");
+        File stylesheet = new File("/Facturas/config/cadenaoriginal_3_3.xslt");
         Stylezer st = new Stylezer();
         st.obtener(xml, stylesheet);
         return "";
@@ -698,13 +775,13 @@ public class Folios extends javax.swing.JFrame {
         ResultSet rs;
         if (con != null) {
             stmt = factory.stmtLectura(con);
-            rs = stmt.executeQuery("SELECT pass FROM Emisores WHERE rfc like \'" + rfcr + "\'");
+            rs = stmt.executeQuery("SELECT pass FROM Emisores WHERE rfc = \'" + rfcr + "\'");
             if (rs.next()) {
                 String tmp = rs.getString("pass");
                 rs.close();
                 stmt.close();
                 con.close();
-                return tmp.trim();
+                return tmp != null ? tmp.trim() : tmp;
             } else {
                 return "";
             }
@@ -720,7 +797,7 @@ public class Folios extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(final String args[]) {
         /* Set the Windows look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Windows (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -750,7 +827,6 @@ public class Folios extends javax.swing.JFrame {
                 new Folios().setVisible(true);
             }
         });
-
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelar;

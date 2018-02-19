@@ -4,6 +4,7 @@
  */
 package elemento;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -15,10 +16,15 @@ public class Factura {
     public double ivaRetenido, isrRetenido, porIeps;
     public String moneda,tipoCambio,leyenda,condicionPago;
     public int idEmpleado;
+    public String usoCfdi;
+    public String cfdisAsociados;
+    public String tipoRelacion;
     
     public List<String> descripcion, unidad;    //Datos conceptos
     public List<Double> cantidad, precio, importe;
     public List<String> conceptos;
+    public List<ConceptoTraslado> traslados;
+    public List<ConceptoRetencion> retenciones;
     
     public String numEmpleado;
     
@@ -29,6 +35,14 @@ public class Factura {
 
     public Factura(){
         
+    }
+    
+    public List<ConceptoTraslado> getTraslados(){
+        return traslados;
+    }
+    
+    public List<ConceptoRetencion> getRetenciones(){
+        return retenciones;
     }
 
     public double getPorIeps() {
@@ -221,5 +235,128 @@ public class Factura {
     
     public Donataria getDonataria(){
         return donat;
+    }
+    
+    public String getUsoCfdi(){
+        return usoCfdi;
+    }
+    
+        
+    public class ConceptoTraslado{
+        private int numConcepto;
+        private BigDecimal base, tasa, importe;
+        private String impuesto, tipoFactor;
+        
+        public ConceptoTraslado(){
+            
+        }
+
+        public int getNumConcepto() {
+            return numConcepto;
+        }
+
+        public void setNumConcepto(int numConcepto) {
+            this.numConcepto = numConcepto;
+        }
+
+        public BigDecimal getBase() {
+            return base;
+        }
+
+        public void setBase(BigDecimal base) {
+            this.base = base;
+        }
+
+        public BigDecimal getTasa() {
+            return tasa;
+        }
+
+        public void setTasa(BigDecimal tasa) {
+            this.tasa = tasa;
+        }
+
+        public BigDecimal getImporte() {
+            return importe;
+        }
+
+        public void setImporte(BigDecimal importe) {
+            this.importe = importe;
+        }
+
+        public String getImpuesto() {
+            return impuesto;
+        }
+
+        public void setImpuesto(String impuesto) {
+            this.impuesto = impuesto;
+        }
+
+        public String getTipoFactor() {
+            return tipoFactor;
+        }
+
+        public void setTipoFactor(String tipoFactor) {
+            this.tipoFactor = tipoFactor;
+        }
+        
+    }
+    
+    public class ConceptoRetencion{
+        private int numConcepto;
+        private BigDecimal base, tasa, importe;
+        private String impuesto, tipoFactor;
+        
+        public ConceptoRetencion(){
+            
+        }
+
+        public int getNumConcepto() {
+            return numConcepto;
+        }
+
+        public void setNumConcepto(int numConcepto) {
+            this.numConcepto = numConcepto;
+        }
+
+        public BigDecimal getBase() {
+            return base;
+        }
+
+        public void setBase(BigDecimal base) {
+            this.base = base;
+        }
+
+        public BigDecimal getTasa() {
+            return tasa;
+        }
+
+        public void setTasa(BigDecimal tasa) {
+            this.tasa = tasa;
+        }
+
+        public BigDecimal getImporte() {
+            return importe;
+        }
+
+        public void setImporte(BigDecimal importe) {
+            this.importe = importe;
+        }
+
+        public String getImpuesto() {
+            return impuesto;
+        }
+
+        public void setImpuesto(String impuesto) {
+            this.impuesto = impuesto;
+        }
+
+        public String getTipoFactor() {
+            return tipoFactor;
+        }
+
+        public void setTipoFactor(String tipoFactor) {
+            this.tipoFactor = tipoFactor;
+        }
+        
     }
 }

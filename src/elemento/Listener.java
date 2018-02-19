@@ -107,6 +107,7 @@ public class Listener implements JNotifyListener {
                 Elemento.leerConfig(rfcEmi);
                 //ConectorSP con = new ConectorSP(Elemento.log, lay);
                 ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, rootPath + name, Elemento.log, Elemento.unidad, false, Elemento.estructuraNombre);
+                //JOptionPane.showMessageDialog(null,con.consultarTimbres());
                 ConstruirXML cons = con.getObjXml();
                 Factura_View fv = new Factura_View("");
                 cons.setNoCertificado(Elemento.noCertificado);
@@ -136,7 +137,7 @@ public class Listener implements JNotifyListener {
                 } else {
                     String tipoComprobante = cons.getTipoComprobanteLayout();
 
-                    fv.consultar("Folio", "SELECT * FROM Folios WHERE rfc like \'" + cons.getRfcEmisor() + "\' AND idComprobante = " + fv.getIdComprobante(tipoComprobante));
+                    fv.consultar("Folio", "SELECT * FROM Folios WHERE rfc = \'" + cons.getRfcEmisor() + "\' AND idComprobante = " + fv.getIdComprobante(tipoComprobante));
 
                     //con.crearLayout(layout, name);
                     if (!tipoComprobante.equalsIgnoreCase("recibo de nomina")) {
@@ -187,7 +188,7 @@ public class Listener implements JNotifyListener {
                                     Boolean tim = Boolean.TRUE;
                                     fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
                                     
-                                    this.aumentarFolio(cons.getFolio(), rfcEmi, cons.getTipoComprobanteLayout());
+                                    this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
                                     this.restarCredito(rfcEmi);
 
                                     Elemento.log.info("Se agrega el folio timbrado " + folio + " en la base de datos");
@@ -280,7 +281,7 @@ public class Listener implements JNotifyListener {
         boolean re;
 
         try {
-            rs = stmt.executeQuery("SELECT rfc FROM Clientes WHERE rfc like \'" + rfc + "\'");
+            rs = stmt.executeQuery("SELECT rfc FROM Clientes WHERE rfc = \'" + rfc + "\'");
             if (rs.next()) {
                 re = true;
             } else {
@@ -333,32 +334,25 @@ public class Listener implements JNotifyListener {
         MatrixToImageWriter.writeToFile(matrix, "PNG", file);
     }
 
-    private void aumentarFolio(int folio, String rfcE, String tipocfd) {
+    private void aumentarFolio(String rfcE, String tipocfd) {
         Connection con = Elemento.odbc();
         Statement stmtLeer = factory.stmtLectura(con);
         Statement stmtEscri = factory.stmtEscritura(con);
         ResultSet rs;
         String nom = tipocfd.trim();
         int idComprobante = getIdComprobante(nom);
-
+        Elemento.log.info("Se aumentara el folio actual");
         try {
-            rs = stmtLeer.executeQuery("SELECT * FROM Folios WHERE rfc like \'" + rfcE + "\' AND idComprobante = " + idComprobante);
-            rs.next();
-            int folioActual = rs.getInt("ultimo_folio");
-            rs.close();
-            stmtLeer.close();
+            rs = stmtLeer.executeQuery("SELECT ultimo_folio FROM Folios WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
+            if(rs.next()){
+                int folioActual = rs.getInt("ultimo_folio");
+                rs.close();
+                stmtLeer.close();
 
-            if (folio == folioActual) {
-                folio++;
-                stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = " + folio + " WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
-                Elemento.log.info("Se ha actualizado al folio: " + folio);
-            } else {
-                if (folioActual == (folio - 1)) {
-                    stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = " + folio + " WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
-                    Elemento.log.info("Se ha actualizado al folio: " + folio);
-                }
+                folioActual++;
+                stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = " + folioActual + " WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
+                Elemento.log.info("Se ha actualizado al folio: " + folioActual);
             }
-
             stmtEscri.close();
             con.close();
         } catch (SQLException e) {
@@ -394,17 +388,17 @@ public class Listener implements JNotifyListener {
 
     public int getIdComprobante(String tipo) {
         int idComprobante = 0;
-        switch (tipo.toLowerCase()) {
-            case "factura":
+        switch (tipo) {
+            case "I":
                 idComprobante = 1;
                 break;
-            case "nota de credito":
+            case "E":
                 idComprobante = 2;
                 break;
-            case "recibo de donativos":
-                idComprobante = 3;
+            case "D":
+                idComprobante = 6;
                 break;
-            case "recibo de nomina":
+            case "N":
                 idComprobante = 4;
                 break;
         }

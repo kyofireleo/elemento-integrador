@@ -200,7 +200,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="v3.0"/>
+            <Property name="text" type="java.lang.String" value="v3.3"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="jButton6">

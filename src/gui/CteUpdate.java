@@ -38,6 +38,7 @@ public class CteUpdate extends javax.swing.JFrame {
         texter = new TextAutoCompleter(nombreCte);
         texter.setCaseSensitive(false);
         texter.setItems(ctes);
+        texter.setMode(0);
     }
     
     public CteUpdate(String idCliente){
@@ -53,9 +54,9 @@ public class CteUpdate extends javax.swing.JFrame {
         ResultSet rs;
         List<String> items = new ArrayList();
         try{
-            rs = stmt.executeQuery("SELECT nombre FROM Clientes");
+            rs = stmt.executeQuery("SELECT id,nombre FROM Clientes");
             while(rs.next()){
-                items.add(rs.getString("nombre"));
+                items.add(rs.getInt("id") + "," + rs.getString("nombre"));
             }
         }catch(SQLException ex){
             ex.printStackTrace();
@@ -348,7 +349,11 @@ public class CteUpdate extends javax.swing.JFrame {
         String country = pais.getSelectedItem().toString().trim();
         try {
             stmt.executeUpdate("UPDATE Clientes SET "
-                    + "nombre = \'" + nombre.getText().trim() + "\', rfc = \'" + rfc.getText().trim() + "\', calle = \'" + calle.getText().trim() + "\', noExterior = \'" + noExterior.getText().trim() + "\', noInterior = \'" + noInterior.getText().trim() + "\', colonia = \'" + colonia.getText().trim() + "\', localidad = \'" + localidad.getText().trim() + "\', municipio = \'" + municipio.getText().trim() + "\', estado = \'" + estado.getSelectedItem().toString() + "\', pais = \'" + country + "\', cp = \'" + cp.getText().trim() + "\', email = \'"+email.getText().trim()+"\'"
+                    + "nombre = \'" + nombre.getText().trim() + "\', rfc = \'" + rfc.getText().trim() + "\', calle = \'" + calle.getText().trim() + "\', "
+                    + "noExterior = \'" + noExterior.getText().trim() + "\', noInterior = \'" + noInterior.getText().trim() + "\', "
+                    + "colonia = \'" + colonia.getText().trim() + "\', localidad = \'" + localidad.getText().trim() + "\', "
+                    + "municipio = \'" + municipio.getText().trim() + "\', estado = \'" + estado.getSelectedItem().toString() + "\', "
+                    + "pais = \'" + country + "\', cp = \'" + cp.getText().trim() + "\', email = \'"+email.getText().trim()+"\'"
                     + " WHERE id = "+id);
             
             JOptionPane.showMessageDialog(null, "El cliente " + nombre.getText().trim() + " fue actualizado correctamente");
@@ -510,7 +515,7 @@ public class CteUpdate extends javax.swing.JFrame {
     private void buscarCteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buscarCteActionPerformed
         // TODO add your handling code here:
         if(nombreCte.getText().length() >= 3){
-            this.consulCtes("SELECT * FROM Clientes WHERE nombre like \'%"+nombreCte.getText()+"%\'");
+            this.consulCtes("SELECT * FROM Clientes WHERE id = "+nombreCte.getText().split(",")[0]);
         }
         else{
             JOptionPane.showMessageDialog(null, "Tiene que haber por lo menos 3 caracteres en el nombre");

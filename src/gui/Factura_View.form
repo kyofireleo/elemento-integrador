@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.JProgressBar" name="jProgressBar1">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" value="Crear CFDI"/>
@@ -24,180 +28,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel24" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="listaEmisores" min="-2" pref="269" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="jLabel18" min="-2" max="-2" attributes="0"/>
-                                          <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Component id="metodoCombo" min="-2" pref="152" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
-                                              <Component id="jLabel19" min="-2" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="cuenta" min="-2" pref="57" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" attributes="0">
-                                              <Component id="formaPago" min="-2" pref="175" max="-2" attributes="0"/>
-                                              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                                              <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="noIdentificacion" max="32767" attributes="0"/>
-                                          <Component id="jLabel25" min="-2" pref="95" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="cantidad" min="-2" pref="101" max="-2" attributes="1"/>
-                                          <Component id="jLabel3" min="-2" pref="101" max="-2" attributes="1"/>
-                                      </Group>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="jLabel7" min="-2" pref="129" max="-2" attributes="1"/>
-                                          <Component id="unidad" alignment="0" min="-2" pref="129" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jLabel4" alignment="1" min="-2" pref="376" max="-2" attributes="0"/>
-                                          <Component id="jScrollPane1" alignment="1" min="-2" pref="376" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="jLabel5" min="-2" pref="123" max="-2" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="precio" alignment="0" min="-2" pref="123" max="-2" attributes="0"/>
-                                                  <Component id="aplicaIva" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="aplicaIeps" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="editarConcepto" alignment="0" pref="0" max="32767" attributes="0"/>
-                                                  <Component id="agregarConcepto" alignment="0" min="-2" pref="36" max="-2" attributes="0"/>
-                                                  <Component id="quitar" pref="0" max="32767" attributes="0"/>
-                                              </Group>
-                                          </Group>
-                                      </Group>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="condicionPago" min="-2" pref="203" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="jLabel28" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="moneda" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="tipoCambio" min="-2" pref="59" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="jLabel21" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                                      <Component id="tipocfd" min="-2" pref="169" max="-2" attributes="0"/>
-                                                      <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                                                      <Group type="103" groupAlignment="0" attributes="0">
-                                                          <Component id="jLabel27" alignment="1" min="-2" max="-2" attributes="0"/>
-                                                          <Group type="102" alignment="0" attributes="0">
-                                                              <EmptySpace min="2" pref="2" max="-2" attributes="0"/>
-                                                              <Component id="jLabel26" min="-2" max="-2" attributes="0"/>
-                                                          </Group>
-                                                      </Group>
-                                                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                          <Component id="folioText" max="32767" attributes="0"/>
-                                                          <Component id="serieText" min="-2" pref="59" max="-2" attributes="0"/>
-                                                      </Group>
-                                                  </Group>
-                                              </Group>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                                              <Component id="listaClientes" min="-2" pref="251" max="-2" attributes="0"/>
-                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                              <Component id="verCte" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="jLabel2" max="32767" attributes="0"/>
-                                          <Component id="lbl_Restantes" max="32767" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                              <EmptySpace pref="5" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="jScrollPane2" max="32767" attributes="2"/>
-                      </Group>
-                      <EmptySpace max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jLabel30" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel22" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="descuentoIva" max="32767" attributes="0"/>
-                                  <Component id="descuentoSinIva" pref="130" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jLabel23" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel29" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="isrRetenido" max="32767" attributes="0"/>
-                                  <Component id="ivaRetenido" min="-2" pref="130" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
-                              <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="ieps" min="-2" pref="77" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
-                                          <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                          <Component id="iva" max="32767" attributes="0"/>
-                                          <Component id="subtotal" min="-2" pref="116" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Component id="ajusteManual" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
                               <Component id="emitir" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
                               <Component id="preFactura" min="-2" max="-2" attributes="0"/>
@@ -205,13 +41,178 @@
                               <Component id="agregarLeyenda" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
                               <Component id="cancelar" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="tipoRelacion" alignment="0" min="-2" pref="330" max="-2" attributes="0"/>
+                          <Component id="jLabel14" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" min="-2" pref="542" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="244" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Component id="jLabel8" min="-2" pref="45" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="total" min="-2" pref="151" max="-2" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="subtotal" min="-2" pref="116" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="jLabel30" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
+                                          <Component id="jLabel29" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="isrRetenido" max="32767" attributes="0"/>
+                                  <Component id="descuentoTotal" pref="116" max="32767" attributes="0"/>
+                                  <Component id="ieps" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="iva" min="-2" pref="116" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jLabel23" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="ivaRetenido" min="-2" pref="116" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="48" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel24" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="listaEmisores" min="-2" pref="269" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
+                              <Component id="listaClientes" min="-2" pref="287" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="verCte" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jLabel27" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="serieText" min="-2" pref="59" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jLabel26" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                              <Component id="folioText" min="-2" pref="59" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="metodoCombo" pref="236" max="32767" attributes="0"/>
+                                  <Component id="formasPagoCombo" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="condicionPago" min="-2" pref="203" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="tipocfd" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="asociarCfdi" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="jLabel28" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="moneda" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="tipoCambio" min="-2" pref="59" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="usocfdi" min="-2" pref="273" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="jLabel2" max="32767" attributes="0"/>
+                                  <Component id="lbl_Restantes" min="-2" pref="92" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="jScrollPane2" alignment="0" max="32767" attributes="2"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="noIdentificacion" max="32767" attributes="0"/>
+                                      <Component id="jLabel25" min="-2" pref="95" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="claveProdSat" max="32767" attributes="0"/>
+                                      <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="jLabel3" max="32767" attributes="1"/>
+                                      <Component id="cantidad" min="-2" pref="69" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="claveUnidad" min="-2" pref="75" max="-2" attributes="0"/>
+                                      <Component id="jLabel11" min="-2" pref="75" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                      <Component id="jLabel7" max="32767" attributes="1"/>
+                                      <Component id="unidad" min="-2" pref="75" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="jScrollPane1" max="32767" attributes="0"/>
+                                      <Component id="jLabel4" min="-2" pref="304" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="precio" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
+                                              <Component id="jLabel5" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="descuento" max="32767" attributes="0"/>
+                                              <Component id="jLabel1" alignment="0" min="-2" pref="76" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="aplicaIva" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="aplicaIeps" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="aplicaIsr" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="aplicaIvaRet" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="editarConcepto" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="agregarConcepto" alignment="0" min="-2" pref="36" max="-2" attributes="0"/>
+                                      <Component id="quitar" min="-2" pref="36" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -221,165 +222,179 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel24" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="listaEmisores" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="listaClientes" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="verCte" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace pref="56" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jLabel18" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="metodoCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel19" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="cuenta" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel21" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="tipocfd" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="formasPagoCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="condicionPago" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel28" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="moneda" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="tipoCambio" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                              <Component id="jLabel26" alignment="3" max="32767" attributes="0"/>
+                              <Component id="folioText" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jLabel27" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="serieText" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="verCte" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jLabel2" alignment="0" min="-2" pref="20" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="jLabel26" alignment="3" max="32767" attributes="0"/>
-                                  <Component id="folioText" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="metodoCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="tipocfd" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="asociarCfdi" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="usocfdi" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="jLabel2" min="-2" pref="20" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="lbl_Restantes" min="-2" pref="20" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace pref="34" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="formaPago" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="condicionPago" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel28" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="moneda" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="tipoCambio" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace pref="3" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="unidad" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabel25" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="noIdentificacion" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="claveProdSat" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel5" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="precio" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
-                                  <Component id="aplicaIva" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="aplicaIeps" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="jScrollPane1" max="32767" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="unidad" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="claveUnidad" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cantidad" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="agregarConcepto" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="editarConcepto" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="quitar" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                       </Group>
-                  </Group>
-                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jLabel5" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
+                              <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="cantidad" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" attributes="0">
-                          <Component id="jLabel25" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="precio" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="descuento" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="aplicaIva" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="aplicaIsr" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="noIdentificacion" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="aplicaIeps" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="aplicaIvaRet" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane2" min="-2" pref="180" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="subtotal" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="tipoRelacion" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="descuentoTotal" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel30" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="descuentoSinIva" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel29" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="isrRetenido" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="ieps" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jLabel22" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="descuentoIva" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel23" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="ivaRetenido" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="ajusteManual" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="subtotal" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="iva" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="total" min="-2" pref="26" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                                  <Component id="emitir" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="preFactura" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cancelar" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="agregarLeyenda" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="jLabel8" min="-2" pref="26" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jScrollPane3" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel23" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="ivaRetenido" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="total" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
+                          <Component id="jLabel8" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                      <Component id="emitir" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="preFactura" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cancelar" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="agregarLeyenda" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="jLabel1">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Cliente"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="0"/>
@@ -409,8 +424,8 @@
         <Property name="horizontalAlignment" type="int" value="0"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cantidadActionPerformed"/>
         <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="cantidadFocusGained"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cantidadActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="precio">
@@ -447,16 +462,93 @@
         <Component class="javax.swing.JTable" name="conceptos">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="8" rowCount="0">
-                <Column editable="false" title="Clave" type="java.lang.String"/>
-                <Column editable="false" title="Cantidad" type="java.lang.String"/>
+              <Table columnCount="13" rowCount="0">
+                <Column editable="false" title="C&#xf3;digo" type="java.lang.String"/>
+                <Column editable="true" title="Clave Sat" type="java.lang.String"/>
+                <Column editable="false" title="Cant." type="java.lang.String"/>
+                <Column editable="false" title="Cve. Uni." type="java.lang.String"/>
                 <Column editable="false" title="Unidad" type="java.lang.String"/>
                 <Column editable="false" title="Descripcion" type="java.lang.String"/>
                 <Column editable="false" title="Precio" type="java.lang.String"/>
+                <Column editable="true" title="Dcto." type="java.lang.String"/>
                 <Column editable="false" title="Importe" type="java.lang.String"/>
                 <Column editable="false" title="IVA" type="java.lang.Boolean"/>
                 <Column editable="false" title="IEPS" type="java.lang.Boolean"/>
+                <Column editable="false" title="ISR" type="java.lang.Boolean"/>
+                <Column editable="false" title="IVA Ret." type="java.lang.Boolean"/>
               </Table>
+            </Property>
+            <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+              <TableColumnModel selectionModel="0">
+                <Column maxWidth="-1" minWidth="-1" prefWidth="70" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="70" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="50" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="70" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="100" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="300" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="100" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="100" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="100" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="50" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="50" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="50" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+                <Column maxWidth="-1" minWidth="-1" prefWidth="60" resizable="true">
+                  <Title/>
+                  <Editor/>
+                  <Renderer/>
+                </Column>
+              </TableColumnModel>
+            </Property>
+            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+              <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
             </Property>
           </Properties>
         </Component>
@@ -536,34 +628,21 @@
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="1">
-            <StringItem index="0" value="Seleccione un M&#xe9;todo"/>
+            <StringItem index="0" value="Seleccione un M&#xe9;todo de Pago"/>
           </StringArray>
+        </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[171, 20]"/>
         </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="metodoComboActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel18">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="M&#xe9;todo de Pago"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel19">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Cuenta"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="cuenta">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="_"/>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JCheckBox" name="aplicaIva">
       <Properties>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="Aplica IVA"/>
+        <Property name="text" type="java.lang.String" value="IVA"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="listaClientes">
@@ -573,41 +652,29 @@
             <StringItem index="0" value="Seleccione un cliente"/>
           </StringArray>
         </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[124, 20]"/>
+        </Property>
         <Property name="name" type="java.lang.String" value="" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="listaClientesActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel21">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Tipo de comprobante"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JComboBox" name="tipocfd">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
+          <StringArray count="1">
+            <StringItem index="0" value="Seleccione un Tipo de Comprobante"/>
+          </StringArray>
+        </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[196, 20]"/>
         </Property>
       </Properties>
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="tipocfdItemStateChanged"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel22">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Dcto. Art. IVA"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="descuentoIva">
-      <Properties>
-        <Property name="horizontalAlignment" type="int" value="4"/>
-        <Property name="text" type="java.lang.String" value="0.00"/>
-      </Properties>
-      <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="descuentoIvaMouseClicked"/>
-        <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="descuentoIvaInputMethodTextChanged"/>
-        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="descuentoIvaKeyPressed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tipocfdActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel24">
@@ -617,13 +684,13 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="listaEmisores">
       <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[28, 20]"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="listaEmisoresMouseClicked"/>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="listaEmisoresItemStateChanged"/>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="listaEmisoresMouseClicked"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel25">
@@ -651,6 +718,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="ivaRetenido">
       <Properties>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value="0.00"/>
       </Properties>
@@ -700,42 +768,6 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editarConceptoActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JComboBox" name="unidad">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="28">
-            <StringItem index="0" value="-"/>
-            <StringItem index="1" value="NA"/>
-            <StringItem index="2" value="ACT"/>
-            <StringItem index="3" value="NO APLICA"/>
-            <StringItem index="4" value="SERVICIO"/>
-            <StringItem index="5" value="DONATIVO"/>
-            <StringItem index="6" value="KILOGRAMO"/>
-            <StringItem index="7" value="GRAMO"/>
-            <StringItem index="8" value="METRO"/>
-            <StringItem index="9" value="METRO CUADRADO"/>
-            <StringItem index="10" value="METRO CUBICO"/>
-            <StringItem index="11" value="PIEZA"/>
-            <StringItem index="12" value="SEGUNDO"/>
-            <StringItem index="13" value="CABEZA"/>
-            <StringItem index="14" value="LITRO"/>
-            <StringItem index="15" value="PAR"/>
-            <StringItem index="16" value="KILOWATT"/>
-            <StringItem index="17" value="MILLAR"/>
-            <StringItem index="18" value="JUEGO"/>
-            <StringItem index="19" value="KILOWATT/HORA"/>
-            <StringItem index="20" value="TONELADA"/>
-            <StringItem index="21" value="BARRIL"/>
-            <StringItem index="22" value="GRAMO NETO"/>
-            <StringItem index="23" value="DECENAS"/>
-            <StringItem index="24" value="CIENTOS"/>
-            <StringItem index="25" value="DOCENAS"/>
-            <StringItem index="26" value="CAJA"/>
-            <StringItem index="27" value="BOTELLA"/>
-          </StringArray>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="jLabel28">
       <Properties>
         <Property name="text" type="java.lang.String" value="Moneda"/>
@@ -757,19 +789,10 @@
     </Component>
     <Component class="javax.swing.JTextField" name="tipoCambio">
       <Properties>
+        <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value="1.0"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="ajusteManual">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Ajuste Manual"/>
-      </Properties>
-      <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="ajusteManualMouseClicked"/>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ajusteManualActionPerformed"/>
-        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="ajusteManualPropertyChange"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel29">
       <Properties>
@@ -778,6 +801,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="isrRetenido">
       <Properties>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value="0.00"/>
       </Properties>
@@ -789,17 +813,18 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel30">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Dcto. Art. S/IVA"/>
+        <Property name="text" type="java.lang.String" value="Descuento"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="descuentoSinIva">
+    <Component class="javax.swing.JTextField" name="descuentoTotal">
       <Properties>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value="0.00"/>
       </Properties>
       <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="descuentoSinIvaMouseClicked"/>
-        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="descuentoSinIvaKeyPressed"/>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="descuentoTotalMouseClicked"/>
+        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="descuentoTotalKeyPressed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="agregarLeyenda">
@@ -839,35 +864,146 @@
     </Component>
     <Component class="javax.swing.JTextField" name="ieps">
       <Properties>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value="0.00"/>
-        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="aplicaIeps">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Aplica IEPS"/>
+        <Property name="text" type="java.lang.String" value="IEPS"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel11">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Foma de Pago"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="formaPago">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="En una sola exhibici&#xf3;n"/>
-      </Properties>
-      <Events>
-        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formaPagoFocusGained"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel12">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Condiciones de Pago"/>
+        <Property name="text" type="java.lang.String" value="Condici&#xf3;n de Pago"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="condicionPago">
+    </Component>
+    <Component class="javax.swing.JComboBox" name="formasPagoCombo">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="1">
+            <StringItem index="0" value="Seleccione una Forma de Pago"/>
+          </StringArray>
+        </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[171, 20]"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="formasPagoComboItemStateChanged"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="formasPagoComboActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="unidad">
+    </Component>
+    <Component class="javax.swing.JTextField" name="claveProdSat">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel13">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+        <Property name="text" type="java.lang.String" value="Clave Prod. SAT"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="usocfdi">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="1">
+            <StringItem index="0" value="Seleccione un Uso de CFDi"/>
+          </StringArray>
+        </Property>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[151, 20]"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel11">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+        <Property name="text" type="java.lang.String" value="Clave Unidad"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="claveUnidad">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="aplicaIsr">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ISR"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="aplicaIvaRet">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="IVA Ret."/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+        <Property name="text" type="java.lang.String" value="Descuento %"/>
+        <Property name="horizontalTextPosition" type="int" value="0"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="descuento">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="4"/>
+        <Property name="text" type="java.lang.String" value="0"/>
+      </Properties>
+      <Events>
+        <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="descuentoFocusGained"/>
+        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="descuentoFocusLost"/>
+        <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="descuentoInputMethodTextChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="asociarCfdi">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Asociar CFDIs"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="asociarCfdiActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel14">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="CFDIS Asociados:"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextPane" name="cfdisAsociados">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="enabled" type="boolean" value="false"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JComboBox" name="tipoRelacion">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="1">
+            <StringItem index="0" value="Selecciona el tipo de relaci&#xf3;n"/>
+          </StringArray>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tipoRelacionActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

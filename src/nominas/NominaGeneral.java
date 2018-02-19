@@ -52,7 +52,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         this.numEmpleados = numEmpleados;
         util = new utils.Utils(Elemento.log);
         factory = new utils.ConnectionFactory(Elemento.log);
-        llenarComboMetodos();
         llenarTabla();
     }
 
@@ -76,8 +75,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         generarNomina = new javax.swing.JToggleButton();
         jLabel1 = new javax.swing.JLabel();
         totalNetoLabel = new javax.swing.JLabel();
-        metodoCombo = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         cmbTipoNomina = new javax.swing.JComboBox();
 
@@ -91,37 +88,37 @@ public class NominaGeneral extends javax.swing.JFrame {
             }
         });
         fechaPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaPagoInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
 
         fechaInicialPago.setDateFormatString("yyyy-MM-dd");
 
         fechaFinalPago.setDateFormatString("yyyy-MM-dd");
-        fechaFinalPago.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fechaFinalPagoFocusLost(evt);
-            }
-        });
         fechaFinalPago.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 fechaFinalPagoMouseExited(evt);
             }
         });
-        fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoCaretPositionChanged(evt);
-            }
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoInputMethodTextChanged(evt);
+        fechaFinalPago.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                fechaFinalPagoFocusLost(evt);
             }
         });
         fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 fechaFinalPagoPropertyChange(evt);
+            }
+        });
+        fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                fechaFinalPagoInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                fechaFinalPagoCaretPositionChanged(evt);
             }
         });
 
@@ -171,15 +168,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         totalNetoLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         totalNetoLabel.setText("0.0");
 
-        metodoCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "NA", "01 Efectivo", "02 Cheque Nominativo", "03 Transferencia electrónica de fondos", "04 Tarjeta de Crédito", "05 Monederos Electrónicos", "06 Dinero Electrónico", "08 Vales de Despensa", "28 Tarjeta de Débito", "29 Tarjeta de Servicio", "98 NA", "99 Otros" }));
-        metodoCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                metodoComboActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setText("Metodo de Pago");
-
         jLabel3.setText("Tipo Nomina");
 
         cmbTipoNomina.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ordinaria", "Extraordinaria" }));
@@ -193,10 +181,6 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(generarNomina)
-                        .addGap(26, 26, 26)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -240,14 +224,11 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(generarNomina)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
-                        .addComponent(totalNetoLabel))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(metodoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(totalNetoLabel)))
                 .addContainerGap())
         );
 
@@ -276,11 +257,7 @@ public class NominaGeneral extends javax.swing.JFrame {
     private void fechaFinalPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaFinalPagoPropertyChange
         // TODO add your handling code here:
         generarNomina.setEnabled(true);
-        DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
-        int dias = calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate());
-        for (int i = 0; i < model.getRowCount(); i++) {
-            model.setValueAt(dias, i, 3);
-        }
+        llenarTabla();
     }//GEN-LAST:event_fechaFinalPagoPropertyChange
 
     private void generarNominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generarNominaActionPerformed
@@ -312,14 +289,16 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact.folio = "" + folio;
                 folio++;
                 fact.serie = serie;
-                fact.metodoPago = metodoCombo.getSelectedItem().toString().split(" ")[0];
+                fact.metodoPago = "PUE";
+                fact.formaPago = "99";
                 fact.cuentaBancaria = "";
                 fact.leyenda = "";
-                fact.tipoCfd = "recibo de nomina";
+                fact.tipoCfd = "N";
                 fact.lugarExpedicion = lugarExpedicion;
                 fact.moneda = "MXN";
                 fact.tipoCambio = "1.0";
                 fact.prefactura = "";
+                fact.usoCfdi = "P01";
                 
                 otr = new OtrosPagos(emp.getIdEmpleado(), false);
                 per = new Percepciones(emp.getIdEmpleado(), false);
@@ -347,7 +326,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 dedu.setTotalRetenido(dec.getTotalRetenido());
                 dedu.setTotalOtras(dec.getTotalOtras());
                 nom.setDeducciones(dedu);
-                nom.setTotalDeducciones(new BigDecimal(dec.getTotalRetenido() + dec.getTotalOtras()));
+                nom.setTotalDeducciones(util.redondearBigDecimal(dec.getTotalRetenido() + dec.getTotalOtras()));
 
                 //Seteamos percepciones
                 perc.setPercepciones(getPercepciones(per));
@@ -357,7 +336,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 nom.setPercepciones(perc);
                 nom.setTotalPercepciones(new BigDecimal(per.getTotalSueldos()));
 
-                fact.conceptos = getConceptos(perc,otro);
+                fact.conceptos = getConceptos(perc,otro,dedu);
                 fact = getTotales(perc, dedu, otro, fact);
 
                 lay = new Layout(fact, emp, nom);
@@ -365,10 +344,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_generarNominaActionPerformed
-
-    private void metodoComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metodoComboActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_metodoComboActionPerformed
 
     private void fechaPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaPagoPropertyChange
         // TODO add your handling code here:
@@ -378,24 +353,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_fechaPagoInputMethodTextChanged
 
-    private void llenarComboMetodos(){
-        Connection con = Elemento.odbc();
-        Statement stmt = factory.stmtLectura(con);
-        ResultSet rs;
-        
-        try {
-            rs = stmt.executeQuery("SELECT idMetodo, nombre FROM MetodosPago");
-            while(rs.next()){
-                metodoCombo.addItem(rs.getString("nombre"));
-            }
-            rs.close();
-            stmt.close();
-            con.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Elemento.log.error("Excepcion al obtener los metodos de pago", e);
-        }
-    }
     
     public int calcularDiasPagados(Date date, Date date2) {
         try {
@@ -416,7 +373,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
     }
 
-    public long calcularAntiguedadSemanas(Date fechaInicial, Date fechaFinalPay) {
+    public int calcularAntiguedadSemanas(Date fechaInicial, Date fechaFinalPay) {
         try {
             Date date = fechaInicial;
             Date date2;
@@ -431,9 +388,8 @@ public class NominaGeneral extends javax.swing.JFrame {
 
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
             long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
-            long undia = 24 * 60 * 60 * 1000;
-            long difd = difms / (1000 * 60 * 60 * 24 * 8);
-            return difd;
+            long difd = difms / (((1000 * 60 * 60 * 24)+1) * 7);
+            return (int) difd;
         } catch (Exception ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al calcular los dias pagados: ", ex);
@@ -483,13 +439,11 @@ public class NominaGeneral extends javax.swing.JFrame {
     private com.toedter.calendar.JDateChooser fechaPago;
     private javax.swing.JToggleButton generarNomina;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JComboBox metodoCombo;
     private javax.swing.JTable tablaEmpleados;
     private javax.swing.JLabel totalNetoLabel;
     // End of variables declaration//GEN-END:variables
@@ -500,27 +454,29 @@ public class NominaGeneral extends javax.swing.JFrame {
         Object row[];
         BigDecimal totalNeto;
         double tn = 0.0;
-        for (int j = 0; j < numEmpleados.size(); j++) {
-            row = new Object[6];
-            Empleado emp = getEmpleado(numEmpleados.get(j), idEmpleados.get(j));
-            if (emp != null) {
-                Percepciones per = new Percepciones(emp.getIdEmpleado(), true);
-                Deducciones dec = new Deducciones(emp.getIdEmpleado(), true);
-                double i = util.redondear(per.getTotalExento() + per.getTotalGravado());
-                double d = util.redondear(dec.getTotalRetenido()+ dec.getTotalOtras());
-                row[0] = numEmpleados.get(j);
-                row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
-                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
-                row[3] = 0;
-                row[4] = i;
-                row[5] = d;
-                tn += (i - d);
-                model.addRow(row);
+        if(numEmpleados != null){
+            for (int j = 0; j < numEmpleados.size(); j++) {
+                row = new Object[6];
+                Empleado emp = getEmpleado(numEmpleados.get(j), idEmpleados.get(j));
+                if (emp != null) {
+                    Percepciones per = new Percepciones(emp.getIdEmpleado(), true);
+                    Deducciones dec = new Deducciones(emp.getIdEmpleado(), true);
+                    double i = util.redondear(per.getTotalExento() + per.getTotalGravado());
+                    double d = util.redondear(dec.getTotalRetenido()+ dec.getTotalOtras());
+                    row[0] = numEmpleados.get(j);
+                    row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
+                    row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
+                    row[3] = this.calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate());
+                    row[4] = i;
+                    row[5] = d;
+                    tn += (i - d);
+                    model.addRow(row);
+                }
             }
+            totalNeto = util.redondearBigDecimal(tn);
+            DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+            totalNetoLabel.setText(df.format(totalNeto.doubleValue()));
         }
-        totalNeto = util.redondearBigDecimal(tn);
-        DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
-        totalNetoLabel.setText(df.format(totalNeto.doubleValue()));
     }
 
     private Empleado getEmpleado(int numEmpleado, int idEmpleado) {
@@ -619,7 +575,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact = new Factura();
                 fact.nombre = rs.getString("nombre");
                 fact.rfc = rs.getString("rfc");
-                fact.calle = rs.getString("calle");
+                /*fact.calle = rs.getString("calle");
                 fact.numExt = rs.getString("noExterior");
                 fact.numInt = rs.getString("noInterior");
                 fact.colonia = rs.getString("colonia");
@@ -627,7 +583,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact.municipio = rs.getString("municipio");
                 fact.estado = rs.getString("estado");
                 fact.pais = rs.getString("pais");
-                fact.cp = rs.getString("cp");
+                fact.cp = rs.getString("cp");*/
                 fact.idEmpleado = rs.getInt("id");
             }
             rs.close();
@@ -695,7 +651,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emi = new Emisor();
                 emi.setNombre(rs.getString("nombre"));
                 emi.setRfc(rs.getString("rfc"));
-                emi.setCalle(rs.getString("calle"));
+                /*emi.setCalle(rs.getString("calle"));
                 emi.setNoExterior(rs.getString("noExterior"));
                 emi.setNoInterior(rs.getString("noInterior"));
                 emi.setColonia(rs.getString("colonia"));
@@ -703,7 +659,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emi.setMunicipio(rs.getString("municipio"));
                 emi.setEstado(rs.getString("estado"));
                 emi.setPais(rs.getString("pais"));
-                emi.setCp(rs.getString("cp"));
+                emi.setCp(rs.getString("cp"));*/
                 emi.setRegistroPatronal(rs.getString("registroPatronal"));
                 emi.setCurp(rs.getString("curp"));
                 emi.setEmitirNominas(rs.getBoolean("emiteNominas"));
@@ -796,10 +752,11 @@ public class NominaGeneral extends javax.swing.JFrame {
         return lista;
     }
 
-    private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.OtrosPagos otro) {
+    private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.OtrosPagos otro, complementos.nominas.Deducciones dec) {
         List<String> conceptos = new ArrayList();
         BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos() + otro.getTotalOtrosPagos());
-        String con = "C1: 001@1@ACT@Pago de nómina@" + pers.toString() + "@" + pers.toString() + "@false@false\r\n";
+        BigDecimal deds = util.redondearBigDecimal(dec.getTotalRetenido() + dec.getTotalOtras());
+        String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@"+deds.toString()+"@" + pers.toString() + "\r\n";
         conceptos.add(con);
         return conceptos;
     }

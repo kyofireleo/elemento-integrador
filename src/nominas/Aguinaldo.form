@@ -29,13 +29,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="timbrarNomina" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="metodoCombo" min="-2" pref="147" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="257" max="-2" attributes="0"/>
                       <Component id="recalcularBoton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="22" max="32767" attributes="0"/>
+                      <EmptySpace pref="28" max="32767" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="totalNetoLabel" min="-2" pref="182" max="-2" attributes="0"/>
@@ -84,11 +80,7 @@
               <Component id="jScrollPane1" min="-2" pref="200" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                      <Component id="metodoCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="recalcularBoton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="recalcularBoton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="totalNetoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -137,11 +129,11 @@
         <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
       </Properties>
       <Events>
-        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="fechaFinalPagoMouseExited"/>
         <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fechaFinalPagoFocusLost"/>
-        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="fechaFinalPagoPropertyChange"/>
+        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="fechaFinalPagoMouseExited"/>
         <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="fechaFinalPagoInputMethodTextChanged"/>
         <EventHandler event="caretPositionChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="fechaFinalPagoCaretPositionChanged"/>
+        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="fechaFinalPagoPropertyChange"/>
       </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -175,30 +167,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="timbrarNominaActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel2">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Metodo de Pago"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="metodoCombo">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="8">
-            <StringItem index="0" value="No Aplica"/>
-            <StringItem index="1" value="Efectivo"/>
-            <StringItem index="2" value="Cheque"/>
-            <StringItem index="3" value="Cheque Nominativo"/>
-            <StringItem index="4" value="Tarjeta de Debito"/>
-            <StringItem index="5" value="Tarjeta de Credito"/>
-            <StringItem index="6" value="Transferencia Electronica de Fondos"/>
-            <StringItem index="7" value="Deposito Bancario"/>
-          </StringArray>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="metodoComboActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">

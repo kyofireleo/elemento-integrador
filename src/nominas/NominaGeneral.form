@@ -29,10 +29,6 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="generarNomina" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                      <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="metodoCombo" min="-2" pref="152" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -86,15 +82,11 @@
               <EmptySpace type="unrelated" max="32767" attributes="0"/>
               <Component id="jScrollPane1" min="-2" pref="200" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="generarNomina" min="-2" max="-2" attributes="0"/>
                   <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="totalNetoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                      <Component id="jLabel2" alignment="3" max="32767" attributes="0"/>
-                      <Component id="metodoCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -191,34 +183,6 @@
         </Property>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="text" type="java.lang.String" value="0.0"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="metodoCombo">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="12">
-            <StringItem index="0" value="NA"/>
-            <StringItem index="1" value="01 Efectivo"/>
-            <StringItem index="2" value="02 Cheque Nominativo"/>
-            <StringItem index="3" value="03 Transferencia electr&#xf3;nica de fondos"/>
-            <StringItem index="4" value="04 Tarjeta de Cr&#xe9;dito"/>
-            <StringItem index="5" value="05 Monederos Electr&#xf3;nicos"/>
-            <StringItem index="6" value="06 Dinero Electr&#xf3;nico"/>
-            <StringItem index="7" value="08 Vales de Despensa"/>
-            <StringItem index="8" value="28 Tarjeta de D&#xe9;bito"/>
-            <StringItem index="9" value="29 Tarjeta de Servicio"/>
-            <StringItem index="10" value="98 NA"/>
-            <StringItem index="11" value="99 Otros"/>
-          </StringArray>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="metodoComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel2">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Metodo de Pago"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
