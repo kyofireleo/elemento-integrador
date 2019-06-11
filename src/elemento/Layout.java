@@ -6,6 +6,7 @@ import complementos.nominas.Incapacidad;
 import complementos.nominas.Nominas;
 import complementos.nominas.OtrosPagos;
 import complementos.nominas.Percepciones;
+import elemento.Factura.ConceptoTraslado;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
 import nominas.Empleado;
+import pagos.Documento;
+import pagos.Pago;
 
 public class Layout {
     public String folio;
@@ -127,6 +130,23 @@ public class Layout {
         catch (Error | Exception e) {
             e.printStackTrace();
             Elemento.log.error((Object)"Error al procesar el layout: ", e);
+        }
+    }
+    
+    public Layout(Factura fact, List<Pago> pagos){
+        this.fact = fact;
+        this.emisor = fact.emisor;
+        this.nombre = fact.nombre;
+        this.rfc = fact.rfc;
+        this.rfcEmi = fact.emisor.getRfc();
+        this.folio = fact.folio;
+        this.serie = fact.serie;
+        fol = this.folio;
+        try{
+            this.crearLayout(this.rellenarPagos(pagos));
+        }catch(Error | Exception e){
+            e.printStackTrace();
+            Elemento.log.error("Error al procesar el layout para pagos: ",e);
         }
     }
 
@@ -294,9 +314,86 @@ public class Layout {
         }
         return re.toString();
     }
+    
+    private String rellenarPagos(List<Pago> pagos)throws Error, Exception{
+        Elemento.log.info((Object)"Se comienza a llenar el Layout...");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        StringBuilder re = new StringBuilder();
+        
+        re.append("[DATOS_EMISOR]\r\n");
+        re.append("NOMBRE1: ").append(this.emisor.getNombre()).append("\r\n");
+        re.append("REGIMENFISCAL: ").append(this.emisor.getRegimenFiscal()).append("\r\n");
+        re.append("RFC1: ").append(this.emisor.getRfc()).append("\r\n");
+        
+        re.append("[/DATOS_EMISOR]\r\n\r\n");
+        re.append("[DATOS_RECEPTOR]\r\n");
+        re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
+        re.append("RFC2: ").append(this.rfc).append("\r\n");
+        re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
+        re.append("[/DATOS_RECEPTOR]\r\n\r\n");
+        
+        re.append("[DATOS_CFD]\r\n");
+        re.append("FOLIO: ").append(this.folio).append("\r\n");
+        re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
+        re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
+        re.append("TIPO_COMPROBANTE: P\r\n");
+        re.append("FORMAPAGO: \r\n");
+        re.append("METODOPAGO: \r\n");
+        re.append("DESCUENTO: 0.00\r\n");
+        re.append("MOTIVODESCUENTO: \r\n");
+        re.append("MONEDA: ").append(this.fact.getMoneda()).append("\r\n");
+        re.append("TIPOCAMBIO: \r\n");
+        re.append("TOTALRETENIDOS: 0\r\n");
+        re.append("TOTALTRASLADOS: 0\r\n");
+        re.append("SUBTOTAL: 0\r\n");
+        re.append("TOTALNETO: 0\r\n");
+        re.append("LEYENDA: ").append(this.fact.getLeyenda()).append("\r\n");
+        re.append("[/DATOS_CFD]\r\n\r\n");
+        
+        re.append("[CONCEPTOS]\r\n");
+        re.append("C1: 84111506@ACT@.@.@1@Pago@0@0@0\r\n");
+        re.append("[/CONCEPTOS]\r\n\r\n");
+        
+        re.append("[PAGOS]\r\n");
+        for (int i = 0; i < pagos.size(); i++) {
+            Pago p = pagos.get(i);
+            re.append("P").append((i+1)).append(": ").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getCuentaBeneficiario());
+            re.append("@").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getRfcCtaBen());
+            re.append("@").append(p.getCuentaOrdenante().isEmpty() ? "." : p.getCuentaOrdenante());
+            re.append("@").append(p.getCuentaOrdenante().isEmpty() ? "." : p.getRfcCtaOrd());
+            re.append("@").append(p.getMonto().toString());
+            re.append("@").append(p.getMoneda());
+            re.append("@").append(p.getTipoCambio() == null ? "." : p.getTipoCambio().toString());
+            re.append("@").append(p.getFormaPago());
+            re.append("@").append(sdf.format(p.getFechaPago())).append("\r\n");
+        }
+        re.append("[/PAGOS]\r\n\r\n");
+        
+        re.append("[DOCTOS_PAGOS]\r\n");
+        for(int h = 0; h < pagos.size(); h++){
+            Pago p = pagos.get(h);
+            for (int i = 0; i < p.getDocumentos().size(); i++) {
+                Documento d = p.getDocumentos().get(i);
+                re.append("DP").append((i+1)).append(": P").append((h+1));
+                re.append("@").append(d.getFolio());
+                re.append("@").append(d.getSerie());
+                re.append("@").append(d.getImpSaldoInsoluto().toString());
+                re.append("@").append(d.getImpPagado().toString());
+                re.append("@").append(d.getImpSaldoAnterior().toString());
+                re.append("@").append(d.getNumParcialidad());
+                re.append("@").append(d.getMetodoPago());
+                re.append("@").append(d.getMoneda());
+                re.append("@").append(d.getTipoCambio() == null ? "." : d.getTipoCambio().toString());
+                re.append("@").append(d.getUuid()).append("\r\n");
+            }
+        }
+        re.append("[/DOCTOS_PAGOS]\r\n");
+        
+        return re.toString();
+    }
 
     private String rellenar(String preFactura) {
-        double porcentaje;
+        double porcentaje = 0.0;
         Elemento.log.info((Object)"Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
         this.fecha = this.getFecha();
@@ -375,14 +472,20 @@ public class Layout {
             re.append(concepto).append("\r\n");
         }
         re.append("[/CONCEPTOS]\r\n\r\n");
-        
+        boolean writeIva = false;
         if(fact.traslados.size() > 0){
             re.append("[TRASLADADOS_CONCEPTOS]\r\n");
             for (int i = 0; i < fact.traslados.size(); i++) {
                 Factura.ConceptoTraslado tr = fact.traslados.get(i);
-                re.append("TC"+(i+1)+": ").append("C"+tr.getNumConcepto()).append("@").append(tr.getBase().toString())
+                if(tr.getTasa().compareTo(BigDecimal.ZERO) >= 0){
+                    writeIva = true;
+                    if(tr.getTasa().compareTo(BigDecimal.ZERO) > 0 && porcentaje == 0.0){
+                        porcentaje = tr.getTasa().doubleValue();
+                    }
+                    re.append("TC"+(i+1)+": ").append("C"+tr.getNumConcepto()).append("@").append(tr.getBase().toString())
                         .append("@").append(tr.getImpuesto()).append("@").append(tr.getTipoFactor()).append("@").append(tr.getTasa().toString())
                         .append("@").append(tr.getImporte().toString()).append("\r\n");
+                }
             }
             re.append("[/TRASLADADOS_CONCEPTOS]\r\n\r\n");
         }
@@ -408,13 +511,20 @@ public class Layout {
         }
         
         re.append("[IMPUESTOS_TRASLADADOS]\r\n");
-        if (this.iva.doubleValue() == 0.0) {
-            porcentaje = 0.0;
-        } else {
-            porcentaje = 0.16;
+//        if (this.iva.doubleValue() == 0.0) {
+//            porcentaje = 0.0;
+//        } else {
+//            porcentaje = 0.16;
+//        }
+        
+        int contTras = 1;
+        if(writeIva){
+            re.append("IT").append(contTras).append(": 002@Tasa@").append(new BigDecimal(porcentaje).setScale(2, RoundingMode.HALF_UP)).append("@").append(this.iva.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+            contTras++;
         }
-        re.append("IT1: 002@Tasa@").append(new BigDecimal(porcentaje).setScale(2, RoundingMode.HALF_UP)).append("@").append(this.iva.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-        re.append("IT2: 003@Tasa@").append(porIeps.toString()).append("@").append(totalIeps.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+        if(porIeps.compareTo(BigDecimal.ZERO) == 1){
+            re.append("IT").append(contTras).append(": 003@Tasa@").append(porIeps.toString()).append("@").append(totalIeps.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+        }
         re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");
         
         re.append("[IMPUESTOS_RETENIDOS]\r\n");

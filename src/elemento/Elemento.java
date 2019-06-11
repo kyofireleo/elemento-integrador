@@ -77,6 +77,7 @@ public class Elemento {
                         + "Cualquier otro caracter sera un separador.\r\n"
                         + "Las palabras claves son:\r\n"
                         + "serie\r\nfolio\r\nrfce (RFC Emisor)\r\nrfcr (RFC Receptor)\r\nuuid");
+                
                 out.close();
             }
         } catch (Exception e) {
@@ -188,13 +189,16 @@ public class Elemento {
                 Properties props = new Properties();
                 props.put ("charSet", "iso-8859-1");
                 
-                Class.forName("sun.jdbc.odbc.JdbcOdbcDriver").newInstance();
+                Class.forName("net.ucanaccess.jdbc.UcanaccessDriver").newInstance();
                 String dbURL;
-                if (tipoConexion.equalsIgnoreCase("archivo")) {
+                if (tipoConexion.equalsIgnoreCase("directo")) {
                     String dataSource = baseDatos.trim();
-                    dbURL = "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb)};DBQ=" + dataSource;
+                    dbURL = "jdbc:ucanaccess://" + dataSource;
                 }else if(tipoConexion.equalsIgnoreCase("odbc")){
                     dbURL = "jdbc:odbc:"+baseDatos.trim();
+                }else if(tipoConexion.equalsIgnoreCase("archivo")){
+                    String dataSource = baseDatos.trim();
+                    dbURL = "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb)};DBQ=" + dataSource;
                 }else{
                     JOptionPane.showMessageDialog(null, "El tipo definido de conexion es invalido, se utilizara el tipo\narchivo por default.", "Error en conexion", JOptionPane.ERROR_MESSAGE);
                     String dataSource = baseDatos.trim();
@@ -400,6 +404,33 @@ public class Elemento {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public static String getMailConfiguration(String email){
+        String resp = "";
+        
+        String prov = (email.trim().isEmpty() ? "gmail" : email.split("@")[1].split("\\.")[0]);
+        Connection con = odbc();
+        Statement stmt;
+        ResultSet rs;
+        
+        try{
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT TOP 1 smtp_server, port, tls FROM ConfiguracionMail WHERE proveedor = '" + prov + "'");
+            
+            if(rs.next()){
+                resp += rs.getString(1) + "|" + rs.getString(2) + "|" + rs.getBoolean(3);
+                
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+        }catch(SQLException ex){
+            ex.printStackTrace();
+            log.error("Excepcion al obtener la configuracion del correo: " + email, ex);
+        }
+        
+        return resp;
     }
 
     private void print(String msg) {

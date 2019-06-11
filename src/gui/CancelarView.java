@@ -28,11 +28,11 @@ public class CancelarView extends javax.swing.JFrame {
      */
     utils.Utils util = new utils.Utils(Elemento.log);
     utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
-    String rfcE, rfcR, uu, idIntegrador;
+    String rfcE, rfcR, uu, total;
     String folio, xml, logo, serie;
     Long trans;
     
-    public CancelarView(String folio, String xml, String logo, String uu, String rfcE, String rfcR, Long trans, String idIntegrador,String serie) {
+    public CancelarView(String folio, String xml, String logo, String uu, String rfcE, String rfcR, Long trans, String total,String serie) {
         this.rfcE = rfcE;
         this.rfcR = rfcR;
         this.folio = folio;
@@ -40,7 +40,7 @@ public class CancelarView extends javax.swing.JFrame {
         this.logo = logo;
         this.uu = uu;
         this.trans = trans;
-        this.idIntegrador = idIntegrador;
+        this.total = total;
         this.serie = serie;
         
         initComponents();
@@ -125,7 +125,7 @@ public class CancelarView extends javax.swing.JFrame {
     }//GEN-LAST:event_quienCancelaActionPerformed
 
     private void cancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelarActionPerformed
-        // TODO add your handling code here:
+         // TODO add your handling code here:
          String texto = "";
         String ruta = Elemento.pathXml;
         String nameXml = xml + ".xml";
@@ -139,30 +139,31 @@ public class CancelarView extends javax.swing.JFrame {
             String mensaje = "Se mando a cancelar la factura con folio: " + serie+folio
                     + "\r\nPor la persona: " + quienCancela.getText().trim()
                     + "\r\nPor el motivo: " + motivoCancelacion.getText().trim();
+            
             ConectorDF con = new ConectorDF(Elemento.produccion,Elemento.user,Elemento.pass,Elemento.log,Elemento.unidad);
-            Boolean estatus = con.cancelarCfdi(rfcE,uu,pathXml,nameXml);
+            Boolean estatus = con.cancelarCfdi(rfcE,rfcR,total,uu,pathXml,nameXml);
             String msg = con.getMensajeError();
             if(estatus){
                 texto = "Se ha cancelado el comprobante con serie y folio: " + serie+folio+"\n Se guardo el acuse en la carpeta de acuses de cancelacion.";
+                Elemento.restarCredito(rfcE);
+                cambiarEstadoFactura(uu);
+                this.generarPdfCancelado(pathXml, pathPdf, namePdf, logo);
+                //new File(pathXml).renameTo(new File(ruta+namePdf+".xml"));
+                util.enviarEmail("", "", email, mensaje, pathXml, pathPdf+namePdf+".pdf", nameXml, namePdf+".pdf","");
+                Exe.exeSinTiempo(pathPdf+namePdf+".pdf");
+            }else if(msg.contains("211")){
+                texto = msg;
             }else{
                 texto = "No se pudo cancelar el comprobante:" + msg;
             }
             
             Elemento.log.info(texto);
             JOptionPane.showMessageDialog(null,texto);
-            if(texto.contains("Se ha cancelado")){
-                Elemento.restarCredito(rfcE);
-                cambiarEstadoFactura(uu);
-                this.generarPdfCancelado(pathXml, pathPdf, namePdf, logo);
-                //new File(pathXml).renameTo(new File(ruta+namePdf+".xml"));
-                util.enviarEmail("", "", email, mensaje, pathXml, pathPdf+namePdf+".pdf", nameXml, namePdf+".pdf");
-                Exe.exeSinTiempo(pathPdf+namePdf+".pdf");
-            }
         } catch (SQLException | HeadlessException | IOException | NullPointerException ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al cancelar: " + ex.getMessage() + " - Texto de Respuesta: " +texto,ex);
         } catch (Exception ex) {
-            Logger.getLogger(CancelarView.class.getName()).log(Level.SEVERE, null, ex);
+            Elemento.log.error("Excepcion al cancelar: ", ex);
         }
     }//GEN-LAST:event_cancelarActionPerformed
 

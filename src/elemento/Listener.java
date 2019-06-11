@@ -28,6 +28,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import net.contentobjects.jnotify.JNotifyListener;
+import nominas.NominaGeneral;
 
 /**
  *
@@ -205,24 +206,36 @@ public class Listener implements JNotifyListener {
                                     }
                                     
                                     this.crearQR(nameXml, "?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid);
-                                    if(!cons.getTipoComprobanteLayout().equalsIgnoreCase("recibo de nomina")){
+                                    if(!(cons.getTipoComprobanteLayout().equalsIgnoreCase("recibo de nomina") || cons.getTipoComprobanteLayout().equalsIgnoreCase("N"))){
                                         int selec = JOptionPane.showConfirmDialog(null, "Desea enviar la factura por e-mail?", "Enviar", JOptionPane.YES_NO_OPTION);
+                                        
+                                        String emailO = fol.getEmail("Emisores", rfcEmi);
+                                        
+                                        String conf = Elemento.getMailConfiguration(emailO);
                                         
                                         switch (selec) {
                                             case JOptionPane.NO_OPTION:
                                                 break;
                                             case JOptionPane.YES_OPTION:
-                                                String args[] = new String[7];
+                                                String args[] = new String[8];
                                                 args[0] = pathXml + nameXml + ".xml";
                                                 args[1] = Elemento.pathPdf + nameXml + ".pdf";
                                                 args[2] = nameXml + ".xml";
                                                 args[3] = nameXml + ".pdf";
                                                 args[4] = fol.getEmail("Clientes", cons.getRfcReceptor());
-                                                args[5] = fol.getEmail("Emisores", rfcEmi);
+                                                args[5] = emailO;
                                                 args[6] = fol.getPass(rfcEmi);
+                                                args[7] = conf;
                                                 SendMail.main(args);
                                                 break;
                                         }
+                                    }else{
+                                        /*NominaGeneral.contRecibos++;
+                                        if(NominaGeneral.contRecibos == NominaGeneral.totalRecibos){
+                                            NominaGeneral.contRecibos = 0;
+                                            
+                                            
+                                        }*/
                                     }
 
                                 } catch (NumberFormatException | SQLException | HeadlessException ex) {
@@ -394,6 +407,9 @@ public class Listener implements JNotifyListener {
                 break;
             case "E":
                 idComprobante = 2;
+                break;
+            case "P":
+                idComprobante = 5;
                 break;
             case "D":
                 idComprobante = 6;

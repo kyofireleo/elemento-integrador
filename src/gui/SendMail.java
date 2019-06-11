@@ -20,9 +20,10 @@ public class SendMail extends javax.swing.JFrame {
     String pathXml,nameXml;
     String pathPdf,namePdf;
     String correo, emailO, passO;
+    String conf;
     
-    public SendMail(String emailO,String passO,String pathXml,String pathPdf,String nameXml,String namePdf,String correo) {
-        this.setValues(emailO,passO,pathXml, pathPdf, nameXml, namePdf, correo);
+    public SendMail(String emailO,String passO,String pathXml,String pathPdf,String nameXml,String namePdf,String correo,String conf) {
+        this.setValues(emailO,passO,pathXml, pathPdf, nameXml, namePdf, correo, conf);
         initComponents();
         setLocationRelativeTo(null);
         email.setText(correo);
@@ -143,12 +144,12 @@ public class SendMail extends javax.swing.JFrame {
             pathPdfs = pathPdf.split(",");
             nameXmls = nameXml.split(",");
             namePdfs = namePdf.split(",");
-             
-            util.enviarEmail(emailO,passO,email.getText().trim(), mensaje.getText().trim(), pathXmls, pathPdfs, nameXmls, namePdfs);
+            
+            util.enviarEmail(emailO,passO,email.getText().trim(), mensaje.getText().trim(), pathXmls, pathPdfs, nameXmls, namePdfs, conf);
             
         }else{
             try{
-                util.enviarEmail(emailO,passO,email.getText().trim(), mensaje.getText().trim(), pathXml, pathPdf, nameXml, namePdf);
+                util.enviarEmail(emailO,passO,email.getText().trim(), mensaje.getText().trim(), pathXml, pathPdf, nameXml, namePdf, conf);
             }catch(Exception e){
                 e.printStackTrace();
                 Elemento.log.info("Excepcion: No se pudo enviar el correo electronico: " + e.getLocalizedMessage());
@@ -214,16 +215,17 @@ public class SendMail extends javax.swing.JFrame {
         final String correo = args[4];
         final String emailO = args[5];
         final String passO = args[6];
+        final String conf = args[7];
         
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new SendMail(emailO,passO,pathXml,pathPdf,nameXml,namePdf,correo).setVisible(true);
+                new SendMail(emailO,passO,pathXml,pathPdf,nameXml,namePdf,correo,conf).setVisible(true);
             }
         });
     }
     
-    private void setValues(String emailO,String passO,String pathXml, String pathPdf, String nameXml, String namePdf, String correo){
+    private void setValues(String emailO,String passO,String pathXml, String pathPdf, String nameXml, String namePdf, String correo, String conf){
         this.pathPdf = pathPdf;
         this.pathXml = pathXml;
         this.namePdf = namePdf;
@@ -231,6 +233,7 @@ public class SendMail extends javax.swing.JFrame {
         this.correo = correo;
         this.emailO = emailO;
         this.passO = passO;
+        this.conf = conf;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

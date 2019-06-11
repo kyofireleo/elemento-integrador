@@ -18,6 +18,7 @@ import elemento.Listener;
 import elemento.Stylezer;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import nominas.configuracion.NominaCorreos;
 import utils.Utils;
+import pagos.Documento;
+import utils.cfdi.Comprobante;
 
 /**
  *
@@ -48,6 +52,7 @@ public class Folios extends javax.swing.JFrame {
     List<Long> transId = new ArrayList();
     boolean activar;
     public static List<String> cfdisAsoc;
+    public static List<Documento> docsPagar;
     public static Boolean finishWhile = true;
     public static Boolean isCancelado;
 
@@ -103,11 +108,12 @@ public class Folios extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
+        finishWhile = true;
         try {
             con = conexion();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND status = 'VIGENTE' ORDER BY serie ASC, folio DESC");
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND status = 'VIGENTE' and idComprobante <> 4 ORDER BY serie ASC, folio DESC");
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -458,7 +464,7 @@ public class Folios extends javax.swing.JFrame {
         System.out.println("RFC: " + rfcEmisor.get(row) + " Row: " + row + " y UUID: " + uuid.get(row));
     }//GEN-LAST:event_foliosMouseClicked
 
-    private String obtenerNombreComprobante(int row) throws Exception {
+    private String obtenerNombreComprobante(int row) {
         String rfcEmi = model.getValueAt(row, 1).toString().trim();
         String rfcRec = model.getValueAt(row, 2).toString().trim();
         String folioSerie = model.getValueAt(row, 0).toString().trim();
@@ -475,7 +481,12 @@ public class Folios extends javax.swing.JFrame {
             name = folioSerie + "_" + rfcEmi + "_" + rfcRec;
             if (!new File(pathXml + name + ".xml").exists()) {
                 name = name + "_" + uid;
-                util.escribirArchivo(getTextXml(serie, folio, rfcEmi, rfcRec), pathXml, name + ".xml");
+                try {
+                    util.escribirArchivo(getTextXml(serie, folio, rfcEmi, rfcRec), pathXml, name + ".xml");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Elemento.log.error("Ocurrio un error al regenerar el XML:",ex);
+                }
                 return name;
             } else {
                 return name;
@@ -527,17 +538,22 @@ public class Folios extends javax.swing.JFrame {
         String emailO = "";
         String passO = "";
         String rfcEmi, rfcRec, uid;
+        List<String> emis = new ArrayList();
         List<String> recs = new ArrayList();
+        List<String> series = new ArrayList();
+        List<String> correos = new ArrayList();
 
-        StringBuilder xmls, pdfs, nameXmls, namePdfs;
+        StringBuilder xmls, pdfs, nameX, nameP;
         String serie = "";
+        String nombre = "";
+        char coma = ',';
 
         revisando:
         if (selec.length > 1) {
             xmls = new StringBuilder();
             pdfs = new StringBuilder();
-            nameXmls = new StringBuilder();
-            namePdfs = new StringBuilder();
+            nameX = new StringBuilder();
+            nameP = new StringBuilder();
 
             for (int i = 0; i < selec.length; i++) {
                 row = selec[i];
@@ -545,16 +561,20 @@ public class Folios extends javax.swing.JFrame {
                 rfcRec = model.getValueAt(row, 2).toString().trim();
                 Boolean tim = (Boolean) model.getValueAt(row, 6);
                 serie = model.getValueAt(row, 0).toString().trim().split("_")[0];
+                series.add(serie);
+                emis.add(rfcEmi);
                 recs.add(rfcRec);
-
-                String nombre = "";
-                try {
-                    emailO = this.getEmail("Emisores", rfcEmi);
-                    passO = this.getPass(rfcEmi);
-                    nombre = this.obtenerNombreComprobante(row);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    Elemento.log.error("Excepcion al obtener el nombre del XML: ", ex);
+                
+                nombre = this.obtenerNombreComprobante(row);
+                
+                if(i == 0){
+                    try {
+                        emailO = this.getEmail("Emisores", rfcEmi);
+                        passO = this.getPass(rfcEmi);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        Elemento.log.error("Excepcion al obtener el nombre del XML: ", ex);
+                    }
                 }
 
                 if (!tim) {
@@ -562,59 +582,84 @@ public class Folios extends javax.swing.JFrame {
                     break revisando;
                 }
 
-                xmls.append(Elemento.pathXml).append(nombre).append(".xml,");
-                pdfs.append(Elemento.pathPdf).append(nombre).append(".pdf,");
-                nameXmls.append(nombre).append(".xml,");
-                namePdfs.append(nombre).append(".pdf,");
+                xmls.append(Elemento.pathXml).append(nombre).append(".xml").append((i == (selec.length -1) ? "" : coma));
+                pdfs.append(Elemento.pathPdf).append(nombre).append(".pdf").append((i == (selec.length -1) ? "" : coma));
+                nameX.append(nombre).append(".xml").append((i == (selec.length -1) ? "" : coma));
+                nameP.append(nombre).append(".pdf").append((i == (selec.length -1) ? "" : coma));
             }
 
             try {
-                boolean si = false;
-                String ant = recs.get(0);
+                boolean continuar = true;
+                String ent = emis.get(0);
+                
+                for(String x : emis){
+                    if(!x.equals(ent)){
+                        continuar = false;
+                    }
+                }
+                
+                if(continuar){
+                    boolean enviarNomi = true;
+                    String nant = series.get(0);
+                    
+                    for(String x: series){
+                        if(!x.equals(nant)){
+                            enviarNomi = false;
+                        }
+                    }
+                    
+                    if(enviarNomi){
+                        String pathXmls[] = xmls.toString().split(",");
+                        String pathPdfs[] = pdfs.toString().split(",");
+                        String nameXmls[] = nameX.toString().split(",");
+                        String namePdfs[] = nameP.toString().split(",");
+                        
+                        NominaCorreos nc = new NominaCorreos(emailO, passO, recs, pathXmls, pathPdfs, nameXmls, namePdfs);
+                        nc.setVisible(true);
+                        
+                    }else{
+                        boolean si = true;
+                        String ant = recs.get(0);
 
-                for (String x : recs) {
-                    if (x.equals(ant)) {
-                        si = true;
-                        ant = x;
-                    } else {
-                        si = false;
-                        break;
+                        for (String x : recs) {
+                            if (!x.equals(ant)) {
+                                si = false;
+                            } 
+                        }
+                        if (si) {
+                            if (!serie.equalsIgnoreCase("NOM")) {
+                                correo = getEmail("Clientes", ant);
+                            } else {
+                                correo = getEmail("EmpleadosRec", ant);
+                            }
+                        }
+                        
+                        String args[] = new String[8];
+                        args[0] = xmls.toString();
+                        args[1] = pdfs.toString();
+                        args[2] = nameX.toString();
+                        args[3] = nameP.toString();
+                        args[4] = correo;
+                        args[5] = emailO;
+                        args[6] = passO;
+                        args[7] = Elemento.getMailConfiguration(emailO);
+
+                        SendMail.main(args);
                     }
+                }else{
+                    util.printError("Solo puede enviar comprobantes del mismo emisor");
                 }
-                if (si) {
-                    if (!serie.equalsIgnoreCase("NOM")) {
-                        correo = getEmail("Clientes", ant);
-                    } else {
-                        correo = getEmail("EmpleadosRec", ant);
-                    }
-                }
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 ex.printStackTrace();
                 Elemento.log.error("Excepcion al obtener el email del receptor con RFC: " + recs.get(0) + " || SQLException: " + ex.getMessage(), ex);
             }
-
-            String args[] = new String[7];
-            args[0] = xmls.toString();
-            args[1] = pdfs.toString();
-            args[2] = nameXmls.toString();
-            args[3] = namePdfs.toString();
-            args[4] = correo;
-            args[5] = emailO;
-            args[6] = passO;
-
-            SendMail.main(args);
 
         } else {
             row = selec[0];
             rfcEmi = model.getValueAt(row, 1).toString().trim();
             rfcRec = model.getValueAt(row, 2).toString().trim();
-            String nombre = "";
-            try {
-                nombre = this.obtenerNombreComprobante(row);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Elemento.log.error("Excepcion al obtener el nombre del XML: ", ex);
-            }
+            
+            nombre = this.obtenerNombreComprobante(row);
 
             try {
                 correo = getEmail("Clientes", rfcRec);
@@ -625,7 +670,7 @@ public class Folios extends javax.swing.JFrame {
                 Elemento.log.error("Excepcion al obtener el email del cliente con RFC: " + rfcRec + " || SQLException: " + ex.getMessage(), ex);
             }
 
-            String args[] = new String[7];
+            String args[] = new String[8];
             args[0] = Elemento.pathXml + nombre + ".xml";
             args[1] = Elemento.pathPdf + nombre + ".pdf";
             args[2] = nombre + ".xml";
@@ -633,6 +678,7 @@ public class Folios extends javax.swing.JFrame {
             args[4] = correo;
             args[5] = emailO;
             args[6] = passO;
+            args[7] = Elemento.getMailConfiguration(emailO);
 
             SendMail.main(args);
         }
@@ -648,6 +694,7 @@ public class Folios extends javax.swing.JFrame {
         int pos = folios.getSelectedRow();
         String rfcE = rfcEmisor.get(pos);
         String rfcR = model.getValueAt(pos, 2).toString().trim();
+        String tot = model.getValueAt(pos, 5).toString().trim();
 
         Elemento.leerConfig(rfcE);
 
@@ -665,8 +712,8 @@ public class Folios extends javax.swing.JFrame {
         String uu = uuid.get(pos);
         Long trans = transId.get(pos);
         Elemento.log.info("Se cancelara la factura del RFC Emisor: " + rfcE + " y con RFC Receptor: " + rfcR + " con UUID: " + uu);
-        String idIntegrador = "59548258-e908-48d3-9b07-6e9d3ff9c64f";
-        String args[] = {folio, xml, logo, uu, rfcE, rfcR, "" + trans, idIntegrador, serie};
+        //String idIntegrador = "59548258-e908-48d3-9b07-6e9d3ff9c64f";
+        String args[] = {folio, xml, logo, uu, rfcE, rfcR, "" + trans, tot, serie};
         CancelarView.main(args);
     }//GEN-LAST:event_cancelarActionPerformed
 
@@ -724,11 +771,42 @@ public class Folios extends javax.swing.JFrame {
             util.print(validar.consultar(validar.formarXml(re, rr, tt, uid)));
         }else{
             cfdisAsoc = new ArrayList();
+            docsPagar = new ArrayList();
+            Documento doc;
+            Comprobante comp;
             int select[] = folios.getSelectedRows();
             if(select.length > 0){
                 for (int i = 0; i < select.length; i++) {
-                    int pos = select[i];
-                    cfdisAsoc.add(uuid.get(pos));
+                    try {
+                        int pos = select[i];
+                        doc = new Documento();
+                        cfdisAsoc.add(uuid.get(pos));
+                        String nameXml = folios.getModel().getValueAt(pos,0).toString() + "_" + folios.getModel().getValueAt(pos,1).toString() + "_" + folios.getModel().getValueAt(pos,2).toString();
+                        File xml = new File(Elemento.pathXml + nameXml + ".xml");
+                        
+                        if(!xml.exists()){
+                            nameXml += "_" + uuid.get(pos) + ".xml";
+                        }
+                        
+                        comp = util.analizarXml(Elemento.pathXml+nameXml);
+                        
+                        doc.setFolio(comp.getFolio());
+                        doc.setSerie(comp.getSerie());
+                        doc.setImpPagado(new BigDecimal(comp.getTotal()));
+                        doc.setImpSaldoAnterior(new BigDecimal(comp.getTotal()));
+                        doc.setImpSaldoInsoluto(BigDecimal.ZERO);
+                        doc.setMoneda(comp.getMoneda());
+                        doc.setNumParcialidad(1);
+                        doc.setTipoCambio(comp.getTipoCambio() == null || comp.getTipoCambio().isEmpty() ? null : new BigDecimal(comp.getTipoCambio()));
+                        doc.setMetodoPago(comp.getMetodoPago());
+                        doc.setUuid(uuid.get(pos));
+                        docsPagar.add(doc);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        String msg = "Error al obtener los datos de las documentos";
+                        Elemento.log.error(msg, ex);
+                        util.printError(msg + " - " + ex.getMessage());
+                    }
                 }
                 finishWhile = false;
                 this.setVisible(false);

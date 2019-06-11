@@ -9,6 +9,7 @@ import elemento.Elemento;
 import elemento.Emisor;
 import elemento.Factura;
 import elemento.Layout;
+import java.awt.Component;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -20,8 +21,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
 /**
  *
@@ -36,6 +41,7 @@ public class NominaGeneral extends javax.swing.JFrame {
     List<Integer> numEmpleados;
     String serie;
     String lugarExpedicion;
+    private int totalRecibos = 0;
 
     public NominaGeneral() {
         initComponents();
@@ -74,9 +80,14 @@ public class NominaGeneral extends javax.swing.JFrame {
         tablaEmpleados = new javax.swing.JTable();
         generarNomina = new javax.swing.JToggleButton();
         jLabel1 = new javax.swing.JLabel();
-        totalNetoLabel = new javax.swing.JLabel();
+        totalPer = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         cmbTipoNomina = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        totalOtros = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        totalDed = new javax.swing.JLabel();
+        lblNumRecibos = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Nomina General");
@@ -88,10 +99,10 @@ public class NominaGeneral extends javax.swing.JFrame {
             }
         });
         fechaPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaPagoInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
 
@@ -114,11 +125,11 @@ public class NominaGeneral extends javax.swing.JFrame {
             }
         });
         fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoInputMethodTextChanged(evt);
-            }
             public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
                 fechaFinalPagoCaretPositionChanged(evt);
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                fechaFinalPagoInputMethodTextChanged(evt);
             }
         });
 
@@ -133,14 +144,14 @@ public class NominaGeneral extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Numero", "Empleado", "Antiguedad", "Dias Pagados", "Percepciones", "Deducciones"
+                "Numero", "Empleado", "Antiguedad", "Dias Pagados", "Percepciones", "Otros Pagos", "Deducciones"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Long.class, java.lang.Integer.class, java.lang.Double.class, java.lang.Double.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Long.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -162,15 +173,31 @@ public class NominaGeneral extends javax.swing.JFrame {
         });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jLabel1.setText("Total a Pagar: ");
+        jLabel1.setText("Total Percepciones: ");
 
-        totalNetoLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        totalNetoLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        totalNetoLabel.setText("0.0");
+        totalPer.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        totalPer.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        totalPer.setText("0.0");
 
         jLabel3.setText("Tipo Nomina");
 
         cmbTipoNomina.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ordinaria", "Extraordinaria" }));
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel2.setText("Total Otros Pagos: ");
+
+        totalOtros.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        totalOtros.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        totalOtros.setText("0.0");
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel4.setText("Total Deducciones: ");
+
+        totalDed.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        totalDed.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        totalDed.setText("0.0");
+
+        lblNumRecibos.setText("Número de Recibos: ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -181,10 +208,19 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(generarNomina)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
                         .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(totalNetoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(2, 2, 2)
+                        .addComponent(totalPer, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel2)
+                        .addGap(2, 2, 2)
+                        .addComponent(totalOtros, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(totalDed, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addGap(10, 10, 10)
@@ -200,7 +236,9 @@ public class NominaGeneral extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cmbTipoNomina, 0, 112, Short.MAX_VALUE))
+                        .addComponent(cmbTipoNomina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblNumRecibos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
         );
@@ -220,15 +258,22 @@ public class NominaGeneral extends javax.swing.JFrame {
                     .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(cmbTipoNomina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cmbTipoNomina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblNumRecibos)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(generarNomina)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel1)
-                        .addComponent(totalNetoLabel)))
+                        .addComponent(jLabel4)
+                        .addComponent(totalDed)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(totalOtros)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel1)
+                                .addComponent(totalPer)))))
                 .addContainerGap())
         );
 
@@ -439,43 +484,73 @@ public class NominaGeneral extends javax.swing.JFrame {
     private com.toedter.calendar.JDateChooser fechaPago;
     private javax.swing.JToggleButton generarNomina;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblNumRecibos;
     private javax.swing.JTable tablaEmpleados;
-    private javax.swing.JLabel totalNetoLabel;
+    private javax.swing.JLabel totalDed;
+    private javax.swing.JLabel totalOtros;
+    private javax.swing.JLabel totalPer;
     // End of variables declaration//GEN-END:variables
 
     private void llenarTabla() {
+        DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
-        BigDecimal totalNeto;
-        double tn = 0.0;
+        
+        BigDecimal tp = BigDecimal.ZERO;
+        BigDecimal to = BigDecimal.ZERO;
+        BigDecimal td = BigDecimal.ZERO;
+        
+        TableCellRenderer render = new TableCellRenderer(){
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = new JLabel(value == null ? "" : value.toString());
+                lbl.setHorizontalAlignment(SwingConstants.RIGHT);
+                return lbl;
+            }
+        };
+        
         if(numEmpleados != null){
             for (int j = 0; j < numEmpleados.size(); j++) {
-                row = new Object[6];
+                row = new Object[7];
                 Empleado emp = getEmpleado(numEmpleados.get(j), idEmpleados.get(j));
                 if (emp != null) {
                     Percepciones per = new Percepciones(emp.getIdEmpleado(), true);
+                    OtrosPagos op = new OtrosPagos(emp.getIdEmpleado(), true);
                     Deducciones dec = new Deducciones(emp.getIdEmpleado(), true);
-                    double i = util.redondear(per.getTotalExento() + per.getTotalGravado());
-                    double d = util.redondear(dec.getTotalRetenido()+ dec.getTotalOtras());
+                    BigDecimal i = util.redondearBigDecimal(per.getTotalExento() + per.getTotalGravado());
+                    BigDecimal o = util.redondearBigDecimal(op.getTotalOtrosPagos());
+                    BigDecimal d = util.redondearBigDecimal(dec.getTotalRetenido()+ dec.getTotalOtras());
                     row[0] = numEmpleados.get(j);
                     row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
                     row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
                     row[3] = this.calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate());
-                    row[4] = i;
-                    row[5] = d;
-                    tn += (i - d);
+                    row[4] = df.format(i);
+                    row[5] = df.format(o);
+                    row[6] = df.format(d);
+                    tp = tp.add(i);
+                    to = to.add(o);
+                    td = td.add(d);
                     model.addRow(row);
                 }
             }
-            totalNeto = util.redondearBigDecimal(tn);
-            DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
-            totalNetoLabel.setText(df.format(totalNeto.doubleValue()));
+            
+            tablaEmpleados.getColumnModel().getColumn(4).setCellRenderer(render);
+            tablaEmpleados.getColumnModel().getColumn(5).setCellRenderer(render);
+            tablaEmpleados.getColumnModel().getColumn(6).setCellRenderer(render);
+            
+            totalRecibos = numEmpleados.size();
+            lblNumRecibos.setText("Número de Recibos: " + totalRecibos);
+            totalPer.setText("$"+df.format(tp));
+            totalOtros.setText("$"+df.format(to));
+            totalDed.setText("$"+df.format(td));
         }
     }
 
