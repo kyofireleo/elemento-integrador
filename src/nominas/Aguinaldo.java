@@ -48,7 +48,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         factory = new utils.ConnectionFactory(Elemento.log);
     }
 
-    public Aguinaldo(List<Integer> numEmpleados, int idEmisor, List<Integer> idEmpleados) {
+    public Aguinaldo(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados) {
         initComponents();
         this.setLocationRelativeTo(null);
         this.idEmisor = idEmisor;
@@ -60,7 +60,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         calcularAguinaldo();
     }
 
-    private void llenarTabla(List<Integer> numEmpleados) {
+    private void llenarTabla(List<String> numEmpleados) {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
@@ -95,7 +95,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         int di = new Integer(model.getValueAt(0, 3).toString());
         int diasA = new Integer(JOptionPane.showInputDialog(null, "Ingrese el numero de dias de Aguinaldo:", di).trim());
         Empleado emp;
-        double totalA = 0.0, totalI = 0.0;
+        BigDecimal totalA = BigDecimal.ZERO, totalI = BigDecimal.ZERO;
         BigDecimal total;
         for (int i = 0; i < model.getRowCount(); i++) {
             model.setValueAt(diasA, i, 3);
@@ -104,22 +104,22 @@ public class Aguinaldo extends javax.swing.JFrame {
             emp = this.getEmpleadoCompleto(num, idE);
             int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
             BigDecimal sd = emp.getSalarioDiarioInt();
-            BigDecimal agui = util.redondearBigDecimal(obtenerAguinaldo(diasA, sd.doubleValue()));
+            BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
             BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
             importes.add(agui.doubleValue());
             model.setValueAt(anti, i, 2);
             model.setValueAt(agui, i, 4);
-            totalA += agui.doubleValue();
-            totalI += isr.doubleValue();
+            totalA = totalA.add(agui);
+            totalI = totalI.add(isr);
         }
-        total = util.redondearBigDecimal(totalA - totalI);
+        total = util.redondear(totalA.subtract(totalI));
         totalNetoLabel.setText(total.toString());
     }
 
     private void recalcularAguinaldo() {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         Empleado emp;
-        double totalA = 0.0, totalI = 0.0;
+        BigDecimal totalA = BigDecimal.ZERO, totalI = BigDecimal.ZERO;
         BigDecimal total;
         for (int i = 0; i < model.getRowCount(); i++) {
             int diasA = new Integer(model.getValueAt(i, 3).toString());
@@ -129,19 +129,20 @@ public class Aguinaldo extends javax.swing.JFrame {
             emp = this.getEmpleadoCompleto(num, idE);
             int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), this.fechaFinalPago.getDate());
             BigDecimal sd = emp.getSalarioDiarioInt();
-            BigDecimal agui = util.redondearBigDecimal(obtenerAguinaldo(diasA, sd.doubleValue()));
+            BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
             BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
             model.setValueAt(anti, i, 2);
             model.setValueAt(agui, i, 4);
-            totalA += agui.doubleValue();
-            totalI += isr.doubleValue();
+            totalA = totalA.add(agui);
+            totalI = totalI.add(isr);
+            
         }
-        total = util.redondearBigDecimal(totalA - totalI);
+        total = util.redondear(totalA.subtract(totalI));
         totalNetoLabel.setText(total.toString());
     }
 
-    private double obtenerAguinaldo(int dias, double sueldoDiario) {
-        return dias * sueldoDiario;
+    private BigDecimal obtenerAguinaldo(int dias, BigDecimal sueldoDiario) {
+        return sueldoDiario.multiply(new BigDecimal(dias));
     }
 
     private Double obtenerNetoDeducciones(int idEmpleado) {
@@ -166,7 +167,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         return util.redondear(neto);
     }
 
-    private Empleado getEmpleado(int numEmpleado, int idEmpleado) {
+    private Empleado getEmpleado(String numEmpleado, int idEmpleado) {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs;
@@ -204,7 +205,7 @@ public class Aguinaldo extends javax.swing.JFrame {
             if (rs.next()) {
                 emp = new Empleado();
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
-                emp.setNumEmpleado(rs.getInt("numEmpleado"));
+                emp.setNumEmpleado(rs.getString("numEmpleado"));
                 emp.setCurp(rs.getString("curp"));
                 emp.setTipoRegimen(rs.getString("tipoRegimen"));
                 emp.setNss(rs.getString("nss"));
@@ -593,23 +594,25 @@ public class Aguinaldo extends javax.swing.JFrame {
 
                     //Seteamos deducciones
                     List<complementos.nominas.Deducciones.Deduccion> d = getDeducciones(i);
-                    dedu.setDeducciones(d);
-                    dedu.setTotalRetenido(new Double(model.getValueAt(i, 5).toString()));
-                    dedu.setTotalOtras(0.0);
-                    nom.setDeducciones(d.size() > 0 ? dedu : null);
-                    nom.setTotalDeducciones(new BigDecimal(dedu.getTotalRetenido()));
+                    if(d.size() > 0){
+                        dedu.setDeducciones(d);
+                        dedu.setTotalRetenido(d.get(0).getImporte());
+                        dedu.setTotalOtras(0.0);
+                        nom.setDeducciones(dedu);
+                        nom.setTotalDeducciones(util.redondearBigDecimal(dedu.getTotalRetenido()));
+                    }
 
                     //Seteamos percepciones
                     perc.setPercepciones(getPercepciones(i));
-                    perc.setTotalExento(new Double(model.getValueAt(i, 4).toString()));
-                    perc.setTotalGravado(0.0);
-                    perc.setTotalSueldos(new Double(model.getValueAt(i, 4).toString()));
+                    perc.setTotalExento(0.0);
+                    perc.setTotalGravado(perc.getPercepciones().get(0).getImporteGravado() + perc.getPercepciones().get(0).getImporteExento());
+                    perc.setTotalSueldos(perc.getTotalGravado() + perc.getTotalExento());
                     nom.setPercepciones(perc);
                     nom.setTotalPercepciones(new BigDecimal(perc.getTotalSueldos()));
                     
                     nom.setTotalOtrosPagos(BigDecimal.ZERO);
 
-                    fact.conceptos = getConceptos(perc);
+                    fact.conceptos = getConceptos(perc, dedu);
                     fact = getTotales(perc, dedu, fact);
 
                     lay = new Layout(fact, emp, nom);
@@ -620,40 +623,32 @@ public class Aguinaldo extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_timbrarNominaActionPerformed
 
-    private List<String> getConceptos(complementos.nominas.Percepciones perc) {
+    private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dec) {
         List<String> conceptos = new ArrayList();
-        BigDecimal pers = util.redondearBigDecimal(perc.getTotalGravado() + perc.getTotalExento());
-        String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@" + pers.toString() + "@false@false\r\n";
+        BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos());
+        BigDecimal deds = util.redondearBigDecimal(dec.getTotalRetenido());
+        String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@"+deds.toString()+"@" + pers.toString() + "\r\n";
         conceptos.add(con);
         return conceptos;
     }
 
     private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, Factura fact) {
-        double des = 0;
-        double isR = 0;
-        for (int i = 0; i < dedu.getDeducciones().size(); i++) {
-            if (!dedu.getDeducciones().get(i).getTipoDeduccion().equals("002")) {
-                des += dedu.getDeducciones().get(i).getImporte();
-            } else {
-                isR = dedu.getDeducciones().get(i).getImporte();
-            }
-        }
+        double sub = perc.getTotalSueldos();
 
-        fact.isrRetenido = util.redondear(isR);
-        fact.descuento = util.redondear(des);
+        fact.isrRetenido = dedu.getTotalRetenido();
+        fact.descuento = dedu.getTotalOtras() + dedu.getTotalRetenido();
         fact.totalRetenidos = fact.isrRetenido;
         fact.totalTraslados = 0.0;
         fact.iva = 0.0;
         fact.ivaRetenido = 0.0;
 
-        if (fact.descuento > 0.0) {
+        if (fact.descuento > 0) {
             fact.motivoDescuento = "Deducciones Nómina";
         } else {
             fact.motivoDescuento = "";
         }
 
-        double sub = (perc.getTotalGravado() + perc.getTotalExento());
-        double to = sub - des - isR;
+        double to = sub - fact.descuento;
         fact.subtotal = util.redondear(sub);
         fact.total = util.redondear(to);
 
@@ -689,8 +684,8 @@ public class Aguinaldo extends javax.swing.JFrame {
         perc.setTipoPercepcion(cc.getTipoConcepto());
         perc.setClave(cc.getCodigo());
         perc.setConcepto(cc.getDescripcion());
-        perc.setImporteGravado(0.0);
-        perc.setImporteExento(new Double(model.getValueAt(pos, 4).toString()));
+        perc.setImporteGravado(new Double(model.getValueAt(pos, 4).toString()));
+        perc.setImporteExento(0.0);
         lista.add(perc);
 
         return lista;

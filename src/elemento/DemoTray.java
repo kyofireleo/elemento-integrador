@@ -4,6 +4,7 @@
  */
 package elemento;
 
+import gui.Configurar;
 import gui.Factura_View;
 import gui.Folios;
 import gui.Login;
@@ -58,7 +59,7 @@ public class DemoTray {
             
             optConfigurar.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent arg0){
-                    Login.main(new String[2]);
+                    Configurar.main(new String[2]);
                 }
             });
             

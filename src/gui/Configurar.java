@@ -3,14 +3,22 @@ package gui;
 import elemento.Elemento;
 import static elemento.Elemento.pass;
 import static elemento.Elemento.user;
+import elemento.TextPrompt;
+import java.awt.Font;
+import java.awt.HeadlessException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -22,6 +30,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import utils.ConnectionFactory;
@@ -43,6 +52,8 @@ public class Configurar extends javax.swing.JFrame {
     private int idSucursal;
     private Sucursales suc;
     private Map<String,Integer> mapemi;
+    private TextPrompt holder;
+    private boolean isUpdateFolios = false;
 
     ConnectionFactory fact = new ConnectionFactory(Elemento.log);
     Utils util = new Utils(Elemento.log);
@@ -59,6 +70,9 @@ public class Configurar extends javax.swing.JFrame {
         } else {
             prod = true;
         }
+        
+        setHolders();
+        setFoliosTablaColumnWidths();
     }
 
     public Configurar() {
@@ -72,19 +86,51 @@ public class Configurar extends javax.swing.JFrame {
         } else {
             prod = true;
         }
+        
+        setHolders();
+        setFoliosTablaColumnWidths();
+    }
+    
+    private void setHolders(){
+        holder = new TextPrompt("Serie", this.serie);
+        holder.changeAlpha(0.75f);
+        holder.changeStyle(Font.ITALIC);
+        
+        holder = new TextPrompt("Folio Inicial", this.folio);
+        holder.changeAlpha(0.75f);
+        holder.changeStyle(Font.ITALIC);
+        
+        holder = new TextPrompt("Plantilla", this.plantilla);
+        holder.changeAlpha(0.75f);
+        holder.changeStyle(Font.ITALIC);
+    }
+    
+    public void setFoliosTablaColumnWidths() {
+        TableColumnModel columnModel = foliosTabla.getColumnModel();
+        int widths[] = {150,75,75,350};
+        for (int i = 0; i < widths.length; i++) {
+            if (i < columnModel.getColumnCount()) {
+                columnModel.getColumn(i).setMaxWidth(widths[i]);
+            }
+            else break;
+        }
     }
 
     private void llenarFormulario(boolean consulta) {
         Connection con;
-        Statement stmt, stmt2, stmt3;
-        ResultSet rs, rs2, rs3;
+        Statement stmt, stmt2, stmt3, stmt4;
+        ResultSet rs, rs2, rs3, rs4;
         DefaultTableModel model = (DefaultTableModel) datos.getModel();
         model.setRowCount(0);
 
         DefaultComboBoxModel combo = (DefaultComboBoxModel) rfc.getModel();
         combo.removeAllElements();
         combo.addElement("Seleccione un RFC");
-
+        
+        DefaultComboBoxModel comboTipos = (DefaultComboBoxModel) tipoComprobante.getModel();
+        comboTipos.removeAllElements();
+        comboTipos.addElement("Tipos de Comprobante");
+        
         try {
             rfc.setSelectedIndex(0);
             certificado.setText("");
@@ -92,18 +138,17 @@ public class Configurar extends javax.swing.JFrame {
             regimenText.setText("");
             lugarExpedicion.setText("");
             esSucursalCheck.setSelected(false);
-            facturas.setSelected(true);
-            notasCredito.setSelected(false);
-            donativos.setSelected(false);
 
             con = Elemento.odbc();
             stmt = fact.stmtLectura(con);
             stmt2 = fact.stmtLectura(con);
             stmt3 = fact.stmtLectura(con);
+            stmt4 = fact.stmtLectura(con);
 
             rs = consultar(stmt);
             rs2 = consultar(stmt2, "rfc", rfce);
             rs3 = stmt3.executeQuery("SELECT Id,rfc,nombre FROM Emisores");
+            rs4 = stmt4.executeQuery("SELECT c_tiposcomprobante_id, tiposcomprobante, descripcion FROM c_tiposcomprobante");
 
             String rfct, cert, activados, regimen, restantes, usados;
             boolean esSucursal;
@@ -127,7 +172,6 @@ public class Configurar extends javax.swing.JFrame {
                     idSucursal = 0;
                 }
 
-                bloquearInfoFolios();
                 //consultarInfoFolios();
 
                 if (consulta) {
@@ -156,12 +200,6 @@ public class Configurar extends javax.swing.JFrame {
                 lugarExpedicion.setText(rs2.getString("lugarExpedicion").trim());
                 esSucursalCheck.setSelected(rs2.getBoolean("esSucursal"));
 
-                facts = rs2.getBoolean("facturas");
-                notas = rs2.getBoolean("notasCredito");
-                dona = rs2.getBoolean("recibosDonativos");
-                facturas.setSelected(facts);
-                notasCredito.setSelected(notas);
-                donativos.setSelected(dona);
             }
             nombres = new ArrayList();
             while (rs3.next()) {
@@ -170,14 +208,32 @@ public class Configurar extends javax.swing.JFrame {
                 combo.addElement(rr);
                 nombres.add(rs3.getString("nombre"));
             }
+            
+            while(rs4.next()){
+                String tipo = rs4.getString("tiposcomprobante");
+                String descripcion = tipo + ", " + rs4.getString("descripcion");
+                String nom = "";
+                switch(tipo){
+                    case "I":
+                        nom = " (Factura)";
+                    break;
+                    
+                    case "E":
+                        nom = " (Nota de Crédito)";
+                    break;
+                }
+                comboTipos.addElement(descripcion + nom);
+            }
 
-            bloquearInfoFolios();
             //consultarInfoFolios();
             rs.close();
             rs2.close();
             rs3.close();
+            rs4.close();
             stmt.close();
             stmt2.close();
+            stmt3.close();
+            stmt4.close();
             con.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -185,92 +241,49 @@ public class Configurar extends javax.swing.JFrame {
         }
     }
 
-    private void bloquearInfoFolios() {
-        boolean enable;
-
-        if (!facturas.isSelected()) {
-            enable = false;
-            serieFact.setEnabled(enable);
-            folioFact.setEnabled(enable);
-            plantillaFact.setEnabled(enable);
-            exaFact.setEnabled(enable);
-        } else {
-            enable = true;
-            serieFact.setEnabled(enable);
-            folioFact.setEnabled(enable);
-            plantillaFact.setEnabled(enable);
-            exaFact.setEnabled(enable);
-        }
-
-        if (!notasCredito.isSelected()) {
-            enable = false;
-            serieNC.setEnabled(enable);
-            folioNC.setEnabled(enable);
-            plantillaNC.setEnabled(enable);
-            exaNC.setEnabled(enable);
-        } else {
-            enable = true;
-            serieNC.setEnabled(enable);
-            folioNC.setEnabled(enable);
-            plantillaNC.setEnabled(enable);
-            exaNC.setEnabled(enable);
-        }
-
-        if (!donativos.isSelected()) {
-            enable = false;
-            serieRD.setEnabled(enable);
-            folioRD.setEnabled(enable);
-            plantillaRD.setEnabled(enable);
-            exaRD.setEnabled(enable);
-            btnDonat.setEnabled(enable);
-        } else {
-            enable = true;
-            serieRD.setEnabled(enable);
-            folioRD.setEnabled(enable);
-            plantillaRD.setEnabled(enable);
-            exaRD.setEnabled(enable);
-            btnDonat.setEnabled(enable);
-        }
-
-    }
-
     private void consultarInfoFolios(String rfcE) {
         Connection con = Elemento.odbc();
         Statement stmt = fact.stmtLectura(con);
         ResultSet rs;
-        serieFact.setText("");
-        serieNC.setText("");
-        serieRD.setText("");
-        folioFact.setText("");
-        folioNC.setText("");
-        folioRD.setText("");
-        plantillaFact.setText("");
-        plantillaNC.setText("");
-        plantillaRD.setText("");
-
+        DefaultTableModel model = (DefaultTableModel)foliosTabla.getModel();
+        model.setRowCount(0);
+        
+        this.tipoComprobante.setSelectedIndex(0);
+        this.serie.setText("");
+        this.folio.setText("");
+        this.plantilla.setText("");
+        
         try {
-            rs = stmt.executeQuery("SELECT f.serie, f.ultimo_folio, f.plantilla, tc.tiposcomprobante "
+            rs = stmt.executeQuery("SELECT f.serie, f.ultimo_folio, f.plantilla, tc.tiposcomprobante, tc.descripcion, tc.c_tiposcomprobante_id "
                     + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
-                    + "WHERE rfc = \'" + rfcE + "\'");
+                    + "WHERE rfc = \'" + rfcE + "\' "
+                    + "ORDER BY f.idComprobante ASC");
             while (rs.next()) {
-                String nom = rs.getString("tiposcomprobante");
-                if (nom.equalsIgnoreCase("I")) {
-                    serieFact.setText(rs.getString("serie"));
-                    folioFact.setText(rs.getString("ultimo_folio"));
-                    plantillaFact.setText(rs.getString("plantilla"));
+                String tipo = rs.getString("tiposcomprobante");
+                String serieT = rs.getString("serie");
+                String folioT = rs.getString("ultimo_folio");
+                String plantillaT = rs.getString("plantilla");
+                String idTipo = rs.getString("c_tiposcomprobante_id");
+                
+                String nom = "";
+                switch(tipo){
+                    case "I":
+                        nom = " (Factura)";
+                    break;
+                    
+                    case "E":
+                        nom = " (Nota de Crédito)";
+                    break;
                 }
-                if (nom.equalsIgnoreCase("E")) {
-                    serieNC.setText(rs.getString("serie"));
-                    folioNC.setText(rs.getString("ultimo_folio"));
-                    plantillaNC.setText(rs.getString("plantilla"));
-                }
-                if (nom.equalsIgnoreCase("D")) {
-                    serieRD.setText(rs.getString("serie"));
-                    folioRD.setText(rs.getString("ultimo_folio"));
-                    plantillaRD.setText(rs.getString("plantilla"));
-                }
+                
+                String tipoComprobanteT = idTipo + ", " + rs.getString("descripcion") + nom;
+                
+                Object row [] = {tipoComprobanteT, serieT, folioT, plantillaT};
+                model.addRow(row);
             }
             rs.close();
+            stmt.close();
+            con.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al consultar la informacion de los folios y series: " + ex.getMessage(), ex);
@@ -279,7 +292,7 @@ public class Configurar extends javax.swing.JFrame {
 
     private ResultSet consultar(Statement stmt, String dato, String valor) throws Exception {
         ResultSet rs;
-        rs = stmt.executeQuery("SELECT * FROM Cuentas WHERE " + dato + " like \'" + valor + "\'");
+        rs = stmt.executeQuery("SELECT * FROM Cuentas WHERE " + dato + " = \'" + valor + "\'");
         return rs;
     }
 
@@ -367,24 +380,6 @@ public class Configurar extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        facturas = new javax.swing.JCheckBox();
-        notasCredito = new javax.swing.JCheckBox();
-        donativos = new javax.swing.JCheckBox();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        serieFact = new javax.swing.JTextField();
-        folioFact = new javax.swing.JTextField();
-        plantillaFact = new javax.swing.JTextField();
-        serieNC = new javax.swing.JTextField();
-        folioNC = new javax.swing.JTextField();
-        plantillaNC = new javax.swing.JTextField();
-        folioRD = new javax.swing.JTextField();
-        plantillaRD = new javax.swing.JTextField();
-        serieRD = new javax.swing.JTextField();
-        exaFact = new javax.swing.JButton();
-        exaNC = new javax.swing.JButton();
-        exaRD = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         lugarExpedicion = new javax.swing.JTextField();
         borrar = new javax.swing.JButton();
@@ -396,6 +391,16 @@ public class Configurar extends javax.swing.JFrame {
         infoSucursal = new javax.swing.JButton();
         esSucursalCheck = new javax.swing.JCheckBox();
         btnDonat = new javax.swing.JButton();
+        lblFechaCert = new javax.swing.JLabel();
+        plantilla = new javax.swing.JTextField();
+        exaFact = new javax.swing.JButton();
+        tipoComprobante = new javax.swing.JComboBox();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        foliosTabla = new javax.swing.JTable();
+        agregarComprobante = new javax.swing.JButton();
+        serie = new javax.swing.JTextField();
+        folio = new javax.swing.JTextField();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Configuracion");
@@ -410,7 +415,7 @@ public class Configurar extends javax.swing.JFrame {
             }
         });
 
-        actualizar.setText("Actualizar");
+        actualizar.setText("Guardar Cuenta");
         actualizar.setEnabled(false);
         actualizar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -448,14 +453,14 @@ public class Configurar extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        datos.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                datosMouseClicked(evt);
-            }
-        });
         datos.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 datosFocusLost(evt);
+            }
+        });
+        datos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                datosMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(datos);
@@ -489,76 +494,7 @@ public class Configurar extends javax.swing.JFrame {
 
         jLabel8.setText("Tipos de Comprobantes a Emitir:");
 
-        facturas.setSelected(true);
-        facturas.setText("Facturas");
-        facturas.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                facturasMouseClicked(evt);
-            }
-        });
-
-        notasCredito.setText("Notas de Credito");
-        notasCredito.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                notasCreditoMouseClicked(evt);
-            }
-        });
-
-        donativos.setText("Recibos de Donativos");
-        donativos.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                donativosMouseClicked(evt);
-            }
-        });
-
-        jLabel9.setText("Serie:");
-
-        jLabel10.setText("Folio Actual:");
-
-        jLabel11.setText("Plantilla:");
-
-        serieFact.setNextFocusableComponent(folioFact);
-
-        folioFact.setNextFocusableComponent(plantillaFact);
-
-        plantillaFact.setNextFocusableComponent(serieNC);
-
-        serieNC.setNextFocusableComponent(folioNC);
-
-        folioNC.setNextFocusableComponent(plantillaNC);
-
-        plantillaNC.setNextFocusableComponent(serieRD);
-
-        folioRD.setNextFocusableComponent(plantillaRD);
-
-        plantillaRD.setNextFocusableComponent(agregar);
-
-        serieRD.setNextFocusableComponent(folioRD);
-
-        exaFact.setText("...");
-        exaFact.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exaFactActionPerformed(evt);
-            }
-        });
-
-        exaNC.setText("...");
-        exaNC.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exaNCActionPerformed(evt);
-            }
-        });
-
-        exaRD.setText("...");
-        exaRD.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exaRDActionPerformed(evt);
-            }
-        });
-
         jLabel7.setText("Lugar Exp.");
-
-        lugarExpedicion.setNextFocusableComponent(serieFact);
 
         borrar.setText("Borrar Cuenta");
         borrar.setEnabled(false);
@@ -618,6 +554,65 @@ public class Configurar extends javax.swing.JFrame {
             }
         });
 
+        plantilla.setName("plantilla"); // NOI18N
+
+        exaFact.setText("...");
+        exaFact.setName("examinarPlantilla"); // NOI18N
+        exaFact.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exaFactActionPerformed(evt);
+            }
+        });
+
+        tipoComprobante.setName("tipoComprobante"); // NOI18N
+
+        foliosTabla.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Tipo de Comprobante", "Serie", "Folio Actual", "Plantilla"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        foliosTabla.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                foliosTablaFocusLost(evt);
+            }
+        });
+        foliosTabla.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                foliosTablaMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(foliosTabla);
+
+        agregarComprobante.setText("Agregar");
+        agregarComprobante.setName("agregar"); // NOI18N
+        agregarComprobante.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                agregarComprobanteActionPerformed(evt);
+            }
+        });
+
+        serie.setName("serie"); // NOI18N
+
+        folio.setName("folio"); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -628,115 +623,81 @@ public class Configurar extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1))
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(61, 61, 61)
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jSeparator2))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addGap(18, 18, 18)
+                        .addComponent(agregarEmisor)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(produccion))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
+                                .addGap(20, 20, 20)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel7))
+                                .addGap(24, 24, 24)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(examinar, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addGap(26, 26, 26)
+                                .addComponent(regimenText, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(50, 50, 50)
+                                        .addComponent(jLabel4))
+                                    .addComponent(jLabel3))
+                                .addGap(24, 24, 24)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(certificado, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                                    .addComponent(rfc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
-                                .addComponent(agregarEmisor)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(produccion))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(esSucursalCheck)))
+                            .addComponent(agregar))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                                .addGap(20, 20, 20)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(jLabel1)
-                                                    .addComponent(jLabel7))
-                                                .addGap(24, 24, 24)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addComponent(examinar, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                            .addComponent(agregar)
-                                                            .addComponent(agregarCreditos)))))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                                .addComponent(jLabel2)
-                                                .addGap(26, 26, 26)
-                                                .addComponent(regimenText, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGap(23, 23, 23)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel10)
-                                            .addComponent(jLabel11)))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(50, 50, 50)
-                                                .addComponent(jLabel4))
-                                            .addComponent(jLabel3))
-                                        .addGap(24, 24, 24)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(certificado, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
-                                            .addComponent(rfc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addGap(18, 18, 18)
-                                        .addComponent(esSucursalCheck)
-                                        .addGap(144, 144, 144)
-                                        .addComponent(jLabel9)))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(0, 35, Short.MAX_VALUE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(jLabel8)
-                                                .addGroup(layout.createSequentialGroup()
-                                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addGroup(layout.createSequentialGroup()
-                                                            .addGap(134, 134, 134)
-                                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                                .addComponent(serieNC, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(folioNC, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(plantillaNC, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                            .addComponent(exaNC, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addGap(6, 6, 6))
-                                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                            .addComponent(notasCredito)
-                                                            .addGap(30, 30, 30)))
-                                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(donativos)
-                                                        .addGroup(layout.createSequentialGroup()
-                                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                                .addGroup(layout.createSequentialGroup()
-                                                                    .addGap(21, 21, 21)
-                                                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                                        .addComponent(serieRD, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                                                                        .addComponent(folioRD)))
-                                                                .addComponent(plantillaRD, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                            .addComponent(exaRD, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addComponent(infoSucursal)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(infoEmisor)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(borrar)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(actualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(31, 31, 31)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(facturas)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addComponent(folioFact)
-                                                    .addComponent(serieFact, javax.swing.GroupLayout.Alignment.TRAILING)
-                                                    .addComponent(plantillaFact, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(exaFact, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btnDonat, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addContainerGap())))
+                                .addGap(6, 6, 6)
+                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(plantilla)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(exaFact, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(agregarComprobante))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 653, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(agregarCreditos)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(borrar, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(actualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnDonat, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(infoSucursal)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(infoEmisor)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -746,50 +707,25 @@ public class Configurar extends javax.swing.JFrame {
                     .addComponent(jLabel5)
                     .addComponent(produccion)
                     .addComponent(agregarEmisor))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel6)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(facturas)
-                            .addComponent(notasCredito)
-                            .addComponent(donativos))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(serieFact, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(serieNC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(serieRD, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel9))
-                        .addGap(7, 7, 7)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(folioFact, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel10)
-                            .addComponent(folioNC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(folioRD, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(plantillaFact, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel11)
-                            .addComponent(plantillaNC, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(plantillaRD, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(exaFact)
-                            .addComponent(exaRD)
-                            .addComponent(exaNC)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
-                            .addComponent(rfc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(certificado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3)
+                            .addComponent(rfc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(esSucursalCheck))
-                        .addGap(9, 9, 9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(certificado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel3)))
+                        .addGap(11, 11, 11)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(regimenText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
@@ -797,21 +733,35 @@ public class Configurar extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel1)
-                            .addComponent(examinar))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(agregar)
-                    .addComponent(btnDonat))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(actualizar)
-                    .addComponent(infoEmisor)
-                    .addComponent(borrar)
-                    .addComponent(agregarCreditos)
-                    .addComponent(infoSucursal))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(examinar))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel7)
+                            .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(agregar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(exaFact)
+                            .addComponent(agregarComprobante))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(infoEmisor)
+                        .addComponent(infoSucursal)
+                        .addComponent(btnDonat))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(agregarCreditos)
+                        .addComponent(borrar)
+                        .addComponent(actualizar)))
+                .addGap(11, 11, 11)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -867,8 +817,23 @@ public class Configurar extends javax.swing.JFrame {
         String cert, logot, regi, ser;
         boolean esSuc;
         habilitarBotones(true);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
 
         try {
+            File certFile = new File(Elemento.pathConfig+rfct+".cer");
+            if(certFile.exists()){
+                CertificateFactory fac = CertificateFactory.getInstance("X509");
+                FileInputStream is = new FileInputStream(certFile);
+                X509Certificate certi = (X509Certificate) fac.generateCertificate(is);
+                //System.out.println("From: " + certi.getNotBefore());
+                lblFechaCert.setText("Caduca el " + sdf.format(certi.getNotAfter()));
+                byte[] byteArray = certi.getSerialNumber().toByteArray();
+                String noSerie = new String(byteArray);
+                Elemento.log.info("Se selecciono cuenta con certificado: " + noSerie);
+            }else{
+                lblFechaCert.setText("");
+            }
+            
             Connection con = Elemento.odbc();
             Statement stmt = fact.stmtLectura(con);
 
@@ -887,11 +852,7 @@ public class Configurar extends javax.swing.JFrame {
                 regimenText.setText(regi);
                 lugarExpedicion.setText(ser);
                 esSucursalCheck.setSelected(esSuc);
-                facturas.setSelected(rs.getBoolean("facturas"));
-                notasCredito.setSelected(rs.getBoolean("notasCredito"));
-                donativos.setSelected(rs.getBoolean("recibosDonativos"));
 
-                bloquearInfoFolios();
                 consultarInfoFolios(rfct);
 
                 rfcActual = rfct;
@@ -922,7 +883,7 @@ public class Configurar extends javax.swing.JFrame {
     private int verificarToken() {
         Calendar cal = GregorianCalendar.getInstance();
         Date x = cal.getTime();
-        rfcVendedor = JOptionPane.showInputDialog("Ingrese su RFC:").toUpperCase();
+        rfcVendedor = JOptionPane.showInputDialog("Ingrese el RFC del vendedor:").toUpperCase();
 
         if (rfcVendedor.equals("32288722466")) {
             rfcVendedor = "Administrador";
@@ -971,17 +932,6 @@ public class Configurar extends javax.swing.JFrame {
         if (creditos > 0) {
             try {
                 // TODO add your handling code here:
-                String sf = serieFact.getText().trim();
-                String ff = folioFact.getText().trim();
-                String pf = plantillaFact.getText().trim();
-
-                String sn = serieNC.getText().trim();
-                String fn = folioNC.getText().trim();
-                String pn = plantillaNC.getText().trim();
-
-                String sr = serieRD.getText().trim();
-                String fr = folioRD.getText().trim();
-                String pr = plantillaRD.getText().trim();
 
                 Connection con = Elemento.odbc();
                 Statement stmt = fact.stmtEscritura(con);
@@ -1005,15 +955,14 @@ public class Configurar extends javax.swing.JFrame {
 
                 ResultSet rs = stmt.executeQuery("SELECT rfc,nocertificado FROM Cuentas WHERE rfc like \'" + rfcE + "\'");
                 if (!rs.next()) {
-                    if ((sf.isEmpty() || ff.isEmpty() || pf.isEmpty()) && (sn.isEmpty() || fn.isEmpty() || pn.isEmpty()) && (sr.isEmpty() || fr.isEmpty() || pr.isEmpty())) {
+                    if (foliosTabla.getRowCount() < 1) {
                         JOptionPane.showMessageDialog(null, "Falta agregar la informacion de los folios y series");
                     } else {
-                        stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,facturas,notasCredito,recibosDonativos,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal)"
+                        stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal)"
                                 + "VALUES (\'" + rfcE + "\', \'" + certificado.getText().trim() + "\', \'" + logoPath.getText() + "\', \'"
-                                + regimenText.getText().trim() + "\', \'" + lugarExpedicion.getText() + "\'," + facturas.isSelected() + "," + notasCredito.isSelected() + "," + donativos.isSelected() + ","
+                                + regimenText.getText().trim() + "\', \'" + lugarExpedicion.getText() + "\',"
                                 + 2 + "," + creditos + "," + creditos + "," + 0 + "," + esSucursalCheck.isSelected() + "," + idSucursal + ")");
 
-                        agregarInfoFolios(con);
                         stmt.close();
                         con.close();
                         llenarFormulario(produccion.isSelected());
@@ -1044,7 +993,7 @@ public class Configurar extends javax.swing.JFrame {
                 } else {
                     util.print("No se puede agregar el RFC: " + rfcE + " porque ya existe.");
                 }
-            } catch (Exception ex) {
+            } catch (HeadlessException | SQLException ex) {
                 ex.printStackTrace();
                 Elemento.log.error("Excepcion al insertar cuenta en la tabla Cuentas: " + ex.getMessage(), ex);
             }
@@ -1053,52 +1002,10 @@ public class Configurar extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_agregarActionPerformed
 
-    private void agregarInfoFolios(Connection con) throws SQLException {
-        Statement stmt = fact.stmtEscritura(con);
-        String rf = this.rfc.getSelectedItem().toString().trim();
-
-        if (facturas.isSelected()) {
-            stmt.executeUpdate(getQueryFoliosInsert(1, rf, folioFact.getText().trim(), serieFact.getText().trim(), plantillaFact.getText().trim()));
-        }
-        if (notasCredito.isSelected()) {
-            stmt.executeUpdate(getQueryFoliosInsert(2, rf, this.folioNC.getText().trim(), serieNC.getText().trim(), plantillaNC.getText().trim()));
-        }
-        if (donativos.isSelected()) {
-            stmt.executeUpdate(getQueryFoliosInsert(3, rf, this.folioRD.getText().trim(), serieRD.getText().trim(), plantillaRD.getText().trim()));
-        }
-        stmt.close();
-        con.close();
-    }
-
     private String getQueryFoliosInsert(int idComprobante, String rfc, String ultimoFolio, String serie, String plantilla) {
         return "INSERT INTO Folios (idComprobante,rfc,ultimo_folio,serie,plantilla) "
                 + "VALUES (" + idComprobante + ",\'" + rfc + "\'," + ultimoFolio + ",\'"
                 + serie + "\',\'" + plantilla + "\')";
-    }
-
-    private void actualizarInfoFolios(Connection conX) throws SQLException {
-        Connection con = conX;
-
-        Statement stmtFact = fact.stmtEscritura(con);
-        Statement stmtNC = fact.stmtEscritura(con);
-        Statement stmtRD = fact.stmtEscritura(con);
-
-        if (facturas.isSelected()) {
-            stmtFact.executeUpdate("UPDATE Folios SET ultimo_folio=\'" + folioFact.getText().trim() + "\', serie=\'" + serieFact.getText().trim() + "\', "
-                    + "plantilla=\'" + plantillaFact.getText().trim() + "\' WHERE idComprobante = 1 AND rfc like \'" + rfc.getSelectedItem().toString().trim() + "\'");
-        }
-        if (notasCredito.isSelected()) {
-            stmtNC.executeUpdate("UPDATE Folios SET ultimo_folio=\'" + folioNC.getText().trim() + "\', serie=\'" + serieNC.getText().trim() + "\', "
-                    + "plantilla=\'" + plantillaNC.getText().trim() + "\' WHERE idComprobante = 2  AND rfc like \'" + rfc.getSelectedItem().toString().trim() + "\'");
-        }
-        if (donativos.isSelected()) {
-            stmtRD.executeUpdate("UPDATE Folios SET ultimo_folio=\'" + folioRD.getText().trim() + "\', serie=\'" + serieRD.getText().trim() + "\', "
-                    + "plantilla=\'" + plantillaRD.getText().trim() + "\' WHERE idComprobante = 3  AND rfc like \'" + rfc.getSelectedItem().toString().trim() + "\'");
-        }
-        stmtFact.close();
-        stmtNC.close();
-        stmtRD.close();
-        con.close();
     }
 
     private void actualizarComboEmisores(final Emisores emis) {
@@ -1133,15 +1040,10 @@ public class Configurar extends javax.swing.JFrame {
             regimenFiscal = getRegimen();
             lugarExp = getLugarExp();
 
-            facts = facturas.isSelected();
-            notas = notasCredito.isSelected();
-            dona = donativos.isSelected();
+            stmt.executeUpdate("UPDATE Cuentas SET rfc=\'" + rfce + "\', nocertificado=\'" + noCertificado + "\',"
+                    + " logo=\'" + logo + "\', regimenFiscal=\'" + regimenFiscal + "\', lugarExpedicion=\'" + lugarExp + "\'"
+                    + " WHERE rfc = \'" + rfcActual + "\' AND nocertificado = \'" + certActual + "\'");
 
-            stmt.executeUpdate("UPDATE Cuentas SET rfc=\'" + rfce + "\', nocertificado=\'" + noCertificado + "\', logo=\'" + logo + "\', regimenFiscal=\'" + regimenFiscal + "\', lugarExpedicion=\'" + lugarExp + "\', "
-                    + "facturas=" + facts + ", notasCredito=" + notas + ", recibosDonativos=" + dona
-                    + " WHERE rfc like \'" + rfcActual + "\' AND nocertificado like \'" + certActual + "\'");
-
-            actualizarInfoFolios(con);
 
             util.print("Cuenta actualizada correctamente!!");
             llenarFormulario(true);
@@ -1179,36 +1081,6 @@ public class Configurar extends javax.swing.JFrame {
         actualizarComboEmisores(emis);
     }//GEN-LAST:event_agregarEmisorActionPerformed
 
-    private void exaFactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exaFactActionPerformed
-        // TODO add your handling code here:
-        plantillaFact.setText(seleccionarArchivo("Plantilla de Factura .jasper", "jasper"));
-    }//GEN-LAST:event_exaFactActionPerformed
-
-    private void exaNCActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exaNCActionPerformed
-        // TODO add your handling code here:
-        plantillaNC.setText(seleccionarArchivo("Plantilla de Nota de Credito .jasper", "jasper"));
-    }//GEN-LAST:event_exaNCActionPerformed
-
-    private void exaRDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exaRDActionPerformed
-        // TODO add your handling code here:
-        plantillaRD.setText(seleccionarArchivo("Plantilla de Recibo de Donativos .jasper", "jasper"));
-    }//GEN-LAST:event_exaRDActionPerformed
-
-    private void notasCreditoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_notasCreditoMouseClicked
-        // TODO add your handling code here:
-        bloquearInfoFolios();
-    }//GEN-LAST:event_notasCreditoMouseClicked
-
-    private void donativosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_donativosMouseClicked
-        // TODO add your handling code here:
-        bloquearInfoFolios();
-    }//GEN-LAST:event_donativosMouseClicked
-
-    private void facturasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_facturasMouseClicked
-        // TODO add your handling code here:
-        bloquearInfoFolios();
-    }//GEN-LAST:event_facturasMouseClicked
-
     private void borrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_borrarActionPerformed
         // TODO add your handling code here:
         if (JOptionPane.showConfirmDialog(null, "Esta seguro de eliminar esta cuenta?", "Borrar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -1241,12 +1113,8 @@ public class Configurar extends javax.swing.JFrame {
         int creditos = verificarToken();
 
         if (creditos > 0) {
-            DefaultTableModel model = (DefaultTableModel) datos.getModel();
-            String rfcE = model.getValueAt(datos.getSelectedRow(), 0).toString().trim();
-            String cert = model.getValueAt(datos.getSelectedRow(), 1).toString().trim();
-
 //            String cr = JOptionPane.showInputDialog(null, "Ingrese la cantidad de creditos a agregar:", "Agregar Creditos",JOptionPane.INFORMATION_MESSAGE);
-            this.agregarCreditos(creditos, rfcE, cert);
+            this.agregarCreditos(creditos, rfcActual, certActual);
 
             this.llenarFormulario(true);
         } else {
@@ -1287,17 +1155,111 @@ public class Configurar extends javax.swing.JFrame {
         Donatarias.main(argu);
     }//GEN-LAST:event_btnDonatActionPerformed
 
+    private void exaFactActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exaFactActionPerformed
+        // TODO add your handling code here:
+        plantilla.setText(seleccionarArchivo("Plantilla .jasper","jasper"));
+    }//GEN-LAST:event_exaFactActionPerformed
+
+    private void agregarComprobanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarComprobanteActionPerformed
+        // TODO add your handling code here:
+        if(this.tipoComprobante.getSelectedIndex() > 0){
+            String serieT = this.serie.getText();
+            String plantillaT = this.plantilla.getText();
+            int tipoComprobanteT = this.tipoComprobante.getSelectedIndex();
+            int folioT = new Integer(this.folio.getText());
+            
+            try{
+                Connection con = Elemento.odbc();
+                PreparedStatement stmt;
+                if(this.isUpdateFolios){
+                    stmt = con.prepareStatement("UPDATE Folios SET ultimo_folio = ?, serie = ?, plantilla = ? WHERE rfc = ? AND idComprobante = ?");
+                    stmt.setInt(1, folioT);
+                    stmt.setString(2, serieT);
+                    stmt.setString(3, plantillaT);
+                    stmt.setString(4, rfcActual);
+                    stmt.setInt(5, tipoComprobanteT);
+                }else{
+                    stmt = con.prepareStatement("INSERT INTO Folios (rfc, idComprobante, ultimo_folio, serie, plantilla) VALUES (?,?,?,?,?)");
+                    stmt.setString(1, rfcActual);
+                    stmt.setInt(2, tipoComprobanteT);
+                    stmt.setInt(3, folioT);
+                    stmt.setString(4, serieT);
+                    stmt.setString(5, plantillaT);
+                }
+
+                stmt.executeUpdate();
+                stmt.close();
+                con.close();
+                
+                this.isUpdateFolios = false;
+                this.cambiarBotonTiposComprobante();
+                this.consultarInfoFolios(rfcActual);
+            }catch(SQLException e){
+                e.printStackTrace();
+                util.printError("Excepcion al agregar un tipo de comprobante a la cuenta: " + e.getMessage());
+                Elemento.log.error("Excepcion al agregar un tipo de comprobante a la cuenta: " + e.getMessage(), e);
+            }
+            
+        }else{
+            util.printError("Debe seleccionar un tipo de comprobante");
+        }
+        
+    }//GEN-LAST:event_agregarComprobanteActionPerformed
+    
+    private void cambiarBotonTiposComprobante(){
+        if(isUpdateFolios){
+            this.agregarComprobante.setText("Guardar");
+            this.tipoComprobante.setEnabled(false);
+        }else{
+            this.agregarComprobante.setText("Agregar");
+            this.tipoComprobante.setEnabled(true);
+        }
+    }
+    
+    private void foliosTablaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_foliosTablaMouseClicked
+        // TODO add your handling code here:
+        TableModel model = foliosTabla.getModel();
+        int row = foliosTabla.getSelectedRow();
+        
+        int indiceTipo = new Integer(model.getValueAt(row, 0).toString().split(",")[0]);
+        this.tipoComprobante.setSelectedIndex(indiceTipo);
+        this.serie.setText(model.getValueAt(row, 1).toString());
+        this.folio.setText(model.getValueAt(row, 2).toString());
+        this.plantilla.setText(model.getValueAt(row, 3).toString());
+        
+        this.isUpdateFolios = true;
+        this.cambiarBotonTiposComprobante();
+    }//GEN-LAST:event_foliosTablaMouseClicked
+
+    private void foliosTablaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_foliosTablaFocusLost
+        // TODO add your handling code here:
+        String nameOb = evt.getOppositeComponent().getName();
+        String names [] = {"serie", "folio", "plantilla", "agregar", "tipoComprobante"};
+        List<String> nombresTipos = new ArrayList(Arrays.asList(names));
+        
+        if(!nombresTipos.contains(nameOb)){
+            this.tipoComprobante.setSelectedIndex(0);
+            this.serie.setText("");
+            this.folio.setText("");
+            this.plantilla.setText("");
+
+            this.isUpdateFolios = false;
+            this.cambiarBotonTiposComprobante();
+            this.foliosTabla.clearSelection();
+        }
+    }//GEN-LAST:event_foliosTablaFocusLost
+
     private void agregarCreditos(final int creditos, final String rfcE, final String cert) {
         try {
             Connection con = Elemento.odbc();
             Statement stmt = fact.stmtEscritura(con);
             Statement stmt2 = fact.stmtLectura(con);
             final String nombre = nombres.get(rfc.getSelectedIndex() - 1);
-            ResultSet rs = stmt2.executeQuery("SELECT creditosActivados,creditosRestantes FROM Cuentas WHERE rfc like \'" + rfcE + "\' AND nocertificado like \'" + cert + "\'");
+            ResultSet rs = stmt2.executeQuery("SELECT creditosActivados,creditosRestantes FROM Cuentas WHERE rfc = \'" + rfcE + "\' AND nocertificado = \'" + cert + "\'");
 
             if (rs.next()) {
                 int rest = creditos + rs.getInt("creditosRestantes");
-                stmt.executeUpdate("UPDATE Cuentas SET creditosActivados = \'" + creditos + "\', creditosRestantes = \'" + rest + "\' WHERE rfc like \'" + rfcE + "\' AND nocertificado like \'" + cert + "\'");
+                stmt.executeUpdate("UPDATE Cuentas SET creditosActivados = \'" + creditos + "\', creditosRestantes = \'" + rest + "\' WHERE rfc = \'" + rfcE + "\' AND nocertificado = \'" + cert + "\'");
                 Elemento.log.info("Se agregaron " + creditos + " creditos a la cuenta " + rfcE);
                 final Emisores emis = new Emisores(true, rfcE);
                 new Thread() {
@@ -1372,27 +1334,21 @@ public class Configurar extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actualizar;
     private javax.swing.JButton agregar;
+    private javax.swing.JButton agregarComprobante;
     private javax.swing.JButton agregarCreditos;
     private javax.swing.JButton agregarEmisor;
     private javax.swing.JButton borrar;
     private javax.swing.JButton btnDonat;
     private javax.swing.JTextField certificado;
     private javax.swing.JTable datos;
-    private javax.swing.JCheckBox donativos;
     private javax.swing.JCheckBox esSucursalCheck;
     private javax.swing.JButton exaFact;
-    private javax.swing.JButton exaNC;
-    private javax.swing.JButton exaRD;
     private javax.swing.JButton examinar;
-    private javax.swing.JCheckBox facturas;
-    private javax.swing.JTextField folioFact;
-    private javax.swing.JTextField folioNC;
-    private javax.swing.JTextField folioRD;
+    private javax.swing.JTextField folio;
+    private javax.swing.JTable foliosTabla;
     private javax.swing.JButton infoEmisor;
     private javax.swing.JButton infoSucursal;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1400,21 +1356,19 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JLabel lblFechaCert;
     private javax.swing.JTextField logoPath;
     private javax.swing.JTextField lugarExpedicion;
-    private javax.swing.JCheckBox notasCredito;
-    private javax.swing.JTextField plantillaFact;
-    private javax.swing.JTextField plantillaNC;
-    private javax.swing.JTextField plantillaRD;
+    private javax.swing.JTextField plantilla;
     private javax.swing.JCheckBox produccion;
     private javax.swing.JTextField regimenText;
     private javax.swing.JComboBox rfc;
-    private javax.swing.JTextField serieFact;
-    private javax.swing.JTextField serieNC;
-    private javax.swing.JTextField serieRD;
+    private javax.swing.JTextField serie;
+    private javax.swing.JComboBox tipoComprobante;
     // End of variables declaration//GEN-END:variables
 
     private int obtenerIDEmisor(String rfcE, Connection con) {

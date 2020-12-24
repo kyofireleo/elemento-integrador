@@ -210,7 +210,7 @@ public class Welcome extends javax.swing.JFrame {
 
     private void configurarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurarActionPerformed
         // TODO add your handling code here:
-        Login.main(new String[2]);
+        Configurar.main(new String[2]);
     }//GEN-LAST:event_configurarActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed

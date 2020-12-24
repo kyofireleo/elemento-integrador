@@ -16,13 +16,17 @@ import elemento.Elemento;
 import elemento.Exe;
 import elemento.Listener;
 import elemento.Stylezer;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,6 +36,8 @@ import javax.swing.table.DefaultTableModel;
 import nominas.configuracion.NominaCorreos;
 import utils.Utils;
 import pagos.Documento;
+import pagos.Pago;
+import pagos.RecibosPagos;
 import utils.cfdi.Comprobante;
 
 /**
@@ -51,20 +57,28 @@ public class Folios extends javax.swing.JFrame {
     List<String> rfcEmisor = new ArrayList(), uuid = new ArrayList();
     List<Long> transId = new ArrayList();
     boolean activar;
-    public static List<String> cfdisAsoc;
-    public static List<Documento> docsPagar;
-    public static Boolean finishWhile = true;
+    public List<String> cfdisAsoc;
+    public List<Documento> docsPagar;
     public static Boolean isCancelado;
+    //public static boolean finishWhile;
+    private Factura_View fv;
+    private int orderColumn = -1;
+    private String tipoOrder = "ASC"; //variable para el tipo de ordenamiento de los folios
+    
+    RecibosPagos rp;
+    Pago p;
 
     public Folios() {
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            String order = getOrdenamiento();
             con = conexion();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas ORDER BY serie ASC, folio DESC");
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -78,7 +92,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[1] = ((String) rfcE);
                     fila[2] = ((String) rs.getString("rfc"));
                     fila[3] = ((String) rs.getString("status"));
-                    fila[4] = ((String) rs.getString("fecha"));
+                    fila[4] = ((String) sdf.format(new Date(rs.getTimestamp("fecha").getTime())));
                     fila[5] = ((String) rs.getString("total"));
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
@@ -94,6 +108,7 @@ public class Folios extends javax.swing.JFrame {
                 stmt.close();
                 con.close();
             }
+            setTableHeaderListener();
         } catch (Exception e) {
             Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
             e.printStackTrace();
@@ -102,18 +117,27 @@ public class Folios extends javax.swing.JFrame {
 
     public Folios(String nada) {
         con = conexion();
+        setTableHeaderListener();
     }
     
-    public Folios(String rfcEmi, String rfcReceptor){
+    public Folios(String rfcEmi, String rfcReceptor, Factura_View fv, RecibosPagos rp){
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
-        finishWhile = true;
+        //finishWhile = true;
+        if(fv != null){
+            this.fv = fv;
+        }
+        if(rp != null){
+            this.rp = rp;
+        }
         try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            String order = getOrdenamiento();
             con = conexion();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND status = 'VIGENTE' and idComprobante <> 4 ORDER BY serie ASC, folio DESC");
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND idComprobante <> 4 AND timbrado = True" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -136,7 +160,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[1] = ((String) rfcE);
                     fila[2] = ((String) rs.getString("rfc"));
                     fila[3] = ((String) rs.getString("status"));
-                    fila[4] = ((String) rs.getString("fecha"));
+                    fila[4] = ((String) sdf.format(new Date(rs.getTimestamp("fecha").getTime())));
                     fila[5] = ((String) rs.getString("total"));
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
@@ -152,10 +176,126 @@ public class Folios extends javax.swing.JFrame {
                 stmt.close();
                 con.close();
             }
+            setTableHeaderListener();
         } catch (SQLException e) {
             Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
             e.printStackTrace();
         }
+    }
+    
+    public Folios(String rfcEmi, String rfcReceptor, RecibosPagos rp, Pago p){
+        this.rp = rp;
+        this.p = p;
+        initComponents();
+        setLocationRelativeTo(null);
+        model = (DefaultTableModel) folios.getModel();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            con = conexion();
+            String order = getOrdenamiento();
+            if (con != null) {
+                Statement stmt = factory.stmtLectura(con);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND idComprobante <> 4 AND timbrado = True" + order);
+                Object[] fila = new Object[7];
+                rfcEmisor.clear();
+                uuid.clear();
+                transId.clear();
+
+                //Deshabilitar los controles
+                activar = false;
+                consultar.setEnabled(false);
+                //verificar.setEnabled(false);
+                reporte.setEnabled(false);
+                folioTxt.setEnabled(false);
+                noTimbrados.setEnabled(false);
+                porEmisores.setEnabled(false);
+
+                verificar.setText("Asociar");
+
+                while (rs.next()) {
+                    String rfcE = rs.getString("rfcEmisor");
+                    fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
+                    fila[1] = ((String) rfcE);
+                    fila[2] = ((String) rs.getString("rfc"));
+                    fila[3] = ((String) rs.getString("status"));
+                    fila[4] = ((String) sdf.format(new Date(rs.getTimestamp("fecha").getTime())));
+                    fila[5] = ((String) rs.getString("total"));
+                    fila[6] = ((Boolean) rs.getBoolean("timbrado"));
+
+                    rfcEmisor.add(rs.getString("rfcEmisor"));
+                    transId.add(rs.getLong("transId"));
+                    uuid.add(rs.getString("UUID"));
+
+                    model.addRow(fila);
+                    fila = new Object[7];
+                }
+
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            setTableHeaderListener();
+            
+        } catch (SQLException e) {
+            Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
+            e.printStackTrace();
+        }
+    }
+    
+    private void setTableHeaderListener(){
+        if(folios != null){
+            folios.getTableHeader().addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if(orderColumn == folios.columnAtPoint(e.getPoint())){
+                        tipoOrder = tipoOrder.equals("ASC") ? "DESC" : "ASC";
+                    }else{
+                        tipoOrder = "ASC";
+                    }
+                    orderColumn = folios.columnAtPoint(e.getPoint());
+                    consultarFacturas();
+                }
+            });
+        }
+    }
+    
+    private String getOrdenamiento(){
+        String query;
+        switch(this.orderColumn){
+            case 0:
+                query = " ORDER BY serie " + this.tipoOrder + ", folio DESC, rfcEmisor ASC";
+            break;
+            
+            case 1:
+                query = " ORDER BY rfcEmisor " + this.tipoOrder + ", serie ASC, folio DESC";
+            break;
+            
+            case 2:
+                query = " ORDER BY rfc " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
+            break;
+            
+            case 3:
+                query = " ORDER BY status " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
+            break;
+            
+            case 4:
+                query = " ORDER BY fecha " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
+            break;
+            
+            case 5:
+                query = " ORDER BY total " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
+            break;
+            
+            case 6:
+                query = " ORDER BY timbrado " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
+            break;
+            
+            default:
+                query = " ORDER BY fecha DESC, rfcEmisor ASC, serie ASC, folio DESC";
+            break;
+        }
+        
+        return query;
     }
 
     /**
@@ -184,7 +324,6 @@ public class Folios extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Folios Registrados");
 
-        folios.setAutoCreateRowSorter(true);
         folios.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -342,6 +481,7 @@ public class Folios extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void consultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consultarActionPerformed
+        this.orderColumn = -1;
         consultarFacturas();
     }//GEN-LAST:event_consultarActionPerformed
 
@@ -400,14 +540,17 @@ public class Folios extends javax.swing.JFrame {
 //            }
 //        }
         Object[] fila = new Object[7];
-
+        String order = getOrdenamiento();
+        String query = "SELECT * FROM Facturas " + tim + order;
+        
         try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             con = conexion();
             Statement stmt;
             ResultSet rs;
             if (con != null) {
                 stmt = factory.stmtLectura(con);
-                rs = stmt.executeQuery("SELECT * FROM Facturas " + tim + " ORDER BY serie ASC, folio DESC");
+                rs = stmt.executeQuery(query);
                 rfcEmisor.clear();
                 uuid.clear();
                 transId.clear();
@@ -418,7 +561,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[1] = ((String) rfcE);
                     fila[2] = ((String) rs.getString("rfc"));
                     fila[3] = ((String) rs.getString("status"));
-                    fila[4] = ((String) rs.getString("fecha"));
+                    fila[4] = ((String) sdf.format(rs.getDate("fecha")));
                     fila[5] = ((String) rs.getString("total"));
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
@@ -522,7 +665,7 @@ public class Folios extends javax.swing.JFrame {
                     Elemento.log.error("Excepcion al tratar de visualizar un PDF ya existente: " + ex.getMessage(), ex);
                 }
             } else {
-                Factura_View.visualizar(pathXml, name);
+                Factura_View.visualizar(pathXml, name, null);
             }
         } catch (Exception ex) {
             Logger.getLogger(Folios.class.getName()).log(Level.SEVERE, null, ex);
@@ -808,7 +951,15 @@ public class Folios extends javax.swing.JFrame {
                         util.printError(msg + " - " + ex.getMessage());
                     }
                 }
-                finishWhile = false;
+                if(p != null){
+                    rp.addDocumentos(this, p);
+                }else{
+                    if(this.fv != null){
+                        this.fv.setUuids(this);
+                    }else if(this.rp != null){
+                        this.rp.setUuids(this);
+                    }
+                }
                 this.setVisible(false);
             }else{
                 JOptionPane.showMessageDialog(null,"Debe seleccionar almenos un documento", "Advertencia", JOptionPane.WARNING_MESSAGE);

@@ -10,6 +10,7 @@ import elemento.Elemento;
 import java.awt.HeadlessException;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -529,7 +530,7 @@ public class Empleados extends javax.swing.JFrame {
         emp.setDepartamento(departamento.getText());
         emp.setFechaInicialRelLaboral(fechaInicialRelLaboral.getDate());
         emp.setNss(nss.getText());
-        emp.setNumEmpleado(new Long(numEmpleado.getText()));
+        emp.setNumEmpleado(numEmpleado.getText());
         emp.setPeriodicidadPago(periodicidadPago.getSelectedItem().toString().split(",")[0]);
         emp.setPuesto(puesto.getText());
         emp.setRiesgoPuesto(""+(riesgoPuesto.getSelectedIndex()+1));
@@ -543,27 +544,39 @@ public class Empleados extends javax.swing.JFrame {
     
     private void agregarEmpleado(Empleado emp){
         Connection con = Elemento.odbc();
-        Statement stmt = factory.stmtEscritura(con);
-        String fecha;
-        java.sql.Date x;
-        String valorFecha;
+        PreparedStatement stmt;
+        java.sql.Date valorFecha;
         ResultSet rs;
         
         if(emp.getFechaInicialRelLaboral() != null){
-            x = new java.sql.Date(emp.getFechaInicialRelLaboral().getTime());
-            fecha = "fechaInicialRelLaboral,";
-            valorFecha = "'"+x+"',";
+            valorFecha = new java.sql.Date(emp.getFechaInicialRelLaboral().getTime());
         }else{
-            fecha = "";
-            valorFecha = "";
+            valorFecha = null;
         }
         
         try{
-            stmt.executeUpdate("INSERT INTO Empleados (idEmpleado,numEmpleado,curp,tipoRegimen,nss,departamento,clabe,banco,"+fecha+"puesto,tipoContrato,tipoJornada,periodicidadPago,riesgoPuesto,salarioDiarioInt,salarioBaseCotApor) "
-                    + "VALUES ("+emp.getIdEmpleado()+",'"+emp.getNumEmpleado()+"','"+emp.getCurp()+"','"+emp.getTipoRegimen()+"','"+emp.getNss()+"','"+emp.getDepartamento()+"',"
-                    + "'"+emp.getClabe()+"','"+emp.getBanco()+"',"+valorFecha+"'"+emp.getPuesto()+"','"+emp.getTipoContrato()+"','"+emp.getTipoJornada()+"',"
-                    + "'"+emp.getPeriodicidadPago()+"','"+emp.getRiesgoPuesto()+"',"+emp.getSalarioDiarioInt()+","+emp.getSalarioBaseCotApor()+")");
-                
+            stmt = con.prepareStatement("INSERT INTO Empleados (idEmpleado,numEmpleado,curp,tipoRegimen,nss,departamento,clabe,banco,fechaInicialRelLaboral,puesto,tipoContrato,tipoJornada,periodicidadPago,riesgoPuesto,salarioDiarioInt,salarioBaseCotApor) "
+                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            stmt.setInt(1, emp.getIdEmpleado());
+            stmt.setString(2, emp.getNumEmpleado());
+            stmt.setString(3, emp.getCurp());
+            stmt.setString(4, emp.getTipoRegimen());
+            stmt.setString(5, emp.getNss());
+            stmt.setString(6, emp.getDepartamento());
+            stmt.setString(7, emp.getClabe());
+            stmt.setString(8, emp.getBanco());
+            stmt.setDate(9, valorFecha);
+            stmt.setString(10, emp.getPuesto());
+            stmt.setString(11, emp.getTipoContrato());
+            stmt.setString(12, emp.getTipoJornada());
+            stmt.setString(13, emp.getPeriodicidadPago());
+            stmt.setString(14, emp.getRiesgoPuesto());
+            stmt.setBigDecimal(15, emp.getSalarioDiarioInt());
+            stmt.setBigDecimal(16, emp.getSalarioBaseCotApor());
+            
+            stmt.addBatch();
+            stmt.executeBatch();
+            
             stmt.close();
             con.close();
             JOptionPane.showMessageDialog(null, "Se ha guardado la informacion del empleado correctamente");
@@ -576,23 +589,41 @@ public class Empleados extends javax.swing.JFrame {
     
     private void actualizarEmpleado(Empleado emp){
         Connection con = Elemento.odbc();
-        Statement stmt = factory.stmtEscritura(con);
-        java.sql.Date x;
-        String valorFecha;
+        PreparedStatement stmt = null;
+        java.sql.Date valorFecha;
         
         if(emp.getFechaInicialRelLaboral() != null){
-            x = new java.sql.Date(emp.getFechaInicialRelLaboral().getTime());
-            valorFecha = "'"+x+"'";
+            valorFecha = new java.sql.Date(emp.getFechaInicialRelLaboral().getTime());
         }else{
             valorFecha = null;
         }
         
         try{
-            stmt.executeUpdate("UPDATE Empleados SET  "
-                    + "numEmpleado='"+emp.getNumEmpleado()+"',curp='"+emp.getCurp()+"',tipoRegimen='"+emp.getTipoRegimen()+"',nss='"+emp.getNss()+"',departamento='"+emp.getDepartamento()+"',"
-                    + "clabe='"+emp.getClabe()+"',banco='"+emp.getBanco()+"',fechaInicialRelLaboral="+valorFecha+",puesto='"+emp.getPuesto()+"',tipoContrato='"+emp.getTipoContrato()+"',tipoJornada='"+emp.getTipoJornada()+"',"
-                    + "periodicidadPago='"+emp.getPeriodicidadPago()+"',riesgoPuesto='"+emp.getRiesgoPuesto()+"',salarioDiarioInt="+emp.getSalarioDiarioInt()+",salarioBaseCotApor="+emp.getSalarioBaseCotApor()
-                    + " WHERE idEmpleado = " + emp.getIdEmpleado());
+            con.setAutoCommit(false);
+            stmt = con.prepareStatement("UPDATE Empleados SET  "
+                    + "numEmpleado=?,curp=?,tipoRegimen=?,nss=?,departamento=?,"
+                    + "clabe=?,banco=?,fechaInicialRelLaboral=?,puesto=?,tipoContrato=?,tipoJornada=?,"
+                    + "periodicidadPago=?,riesgoPuesto=?,salarioDiarioInt=?,salarioBaseCotApor=?"
+                    + " WHERE idEmpleado=?");
+            stmt.setString(1, emp.getNumEmpleado());
+            stmt.setString(2, emp.getCurp());
+            stmt.setString(3, emp.getTipoRegimen());
+            stmt.setString(4, emp.getNss());
+            stmt.setString(5, emp.getDepartamento());
+            stmt.setString(6, emp.getClabe());
+            stmt.setString(7, emp.getBanco());
+            stmt.setDate(8, valorFecha);
+            stmt.setString(9, emp.getPuesto());
+            stmt.setString(10, emp.getTipoContrato());
+            stmt.setString(11, emp.getTipoJornada());
+            stmt.setString(12, emp.getPeriodicidadPago());
+            stmt.setString(13, emp.getRiesgoPuesto());
+            stmt.setBigDecimal(14, emp.getSalarioDiarioInt());
+            stmt.setBigDecimal(15, emp.getSalarioBaseCotApor());
+            stmt.setInt(16, emp.getIdEmpleado());
+            
+            stmt.executeUpdate();
+            con.commit();
             stmt.close();
             con.close();
             JOptionPane.showMessageDialog(null, "Se ha actualizado la informacion del empleado correctamente");
@@ -601,6 +632,17 @@ public class Empleados extends javax.swing.JFrame {
         }catch(SQLException | HeadlessException ex){
             ex.printStackTrace();
             Elemento.log.error("Excepcion al guardar el Empleado con clave: " + emp.getNumEmpleado(),ex);
+            try{
+                if(stmt != null){
+                    stmt.close();
+                }
+                con.rollback();
+                con.close();
+            }catch(SQLException e){
+                e.printStackTrace();
+                Elemento.log.error("Excepcion al hacer rollback: ", ex);
+            }
+            
         }
     }
     

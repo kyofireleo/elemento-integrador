@@ -90,7 +90,7 @@ public class Listener implements JNotifyListener {
             String pathXml = Elemento.pathXml;
             if (con.timbrar(Elemento.pathXml)) {
                 try {
-                    Factura_View.visualizar(pathXml, name);
+                    Factura_View.visualizar(pathXml, name, null);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Elemento.log.error("Excepcion desde el Listener al generar el PDF", ex);
@@ -125,9 +125,17 @@ public class Listener implements JNotifyListener {
                 String datos = "";
                 String layout = cons.getLayoutCadena();
                 String leyenda = cons.getLeyenda().trim();
+                
+                String pathXml = Elemento.pathXml;
+                String destinoXml = Elemento.unidad + ":\\Facturas\\XmlModificados\\";
+                String pathXmlST = Elemento.pathXmlST;
 
                 if (lay.get(0).equalsIgnoreCase("PREFACTURA")) {
-                    Factura_View.visualizar(Elemento.pathXmlST, cons.getNameXml());
+                    if(!leyenda.isEmpty()){
+                        Elemento.interpretarXML(pathXmlST, cons.getNameXml(), leyenda, destinoXml);
+                        pathXmlST = destinoXml;
+                    }
+                    Factura_View.visualizar(pathXmlST, cons.getNameXml(), cons.jsonDomicilios);
                     String fechaT = "01/01/2000 00:00:00";
                     String uuid = "";
                     String xml = "";
@@ -174,12 +182,10 @@ public class Listener implements JNotifyListener {
                             if (con.timbrar(Elemento.pathXml)) {
                                 try {
                                     Folios fol = new Folios("");
-                                    String pathXml = Elemento.pathXml;
-                                    String nameXml = cons.getNameXmlTimbrado();
                                     String fechaT = cons.getFechaTim();
                                     String uuid = con.getUuid();
+                                    String nameXml = cons.getNameXmlTimbrado();
                                     String xml = con.getXmlTimbrado();
-                                    
                                     if(lay.contains("NOMBRE_ADDENDA: Klyns")){
                                         xml = xml.replace("</cfdi:Comprobante>", cons.getAddendaKlyns() + "</cfdi:Comprobante>");
                                         util.escribirArchivo(xml, pathXml, nameXml+".xml");
@@ -198,11 +204,10 @@ public class Listener implements JNotifyListener {
                                     Elemento.leerConfig(rfcEmi);
 
                                     if (leyenda.isEmpty()) {
-                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi));
+                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi),cons.jsonDomicilios);
                                     } else {
-                                        String destinoXml = Elemento.unidad + ":\\Facturas\\XmlModificados\\";
                                         Elemento.interpretarXML(pathXml, nameXml, leyenda, destinoXml);
-                                        Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi));
+                                        Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios);
                                     }
                                     
                                     this.crearQR(nameXml, "?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid);
@@ -349,23 +354,16 @@ public class Listener implements JNotifyListener {
 
     private void aumentarFolio(String rfcE, String tipocfd) {
         Connection con = Elemento.odbc();
-        Statement stmtLeer = factory.stmtLectura(con);
+        //Statement stmtLeer = factory.stmtLectura(con);
         Statement stmtEscri = factory.stmtEscritura(con);
-        ResultSet rs;
+        //ResultSet rs;
         String nom = tipocfd.trim();
         int idComprobante = getIdComprobante(nom);
         Elemento.log.info("Se aumentara el folio actual");
         try {
-            rs = stmtLeer.executeQuery("SELECT ultimo_folio FROM Folios WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
-            if(rs.next()){
-                int folioActual = rs.getInt("ultimo_folio");
-                rs.close();
-                stmtLeer.close();
-
-                folioActual++;
-                stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = " + folioActual + " WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
-                Elemento.log.info("Se ha actualizado al folio: " + folioActual);
-            }
+            stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = (ultimo_folio + 1) WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
+            Elemento.log.info("Se ha actualizado el folio");
+            
             stmtEscri.close();
             con.close();
         } catch (SQLException e) {
@@ -377,11 +375,11 @@ public class Listener implements JNotifyListener {
     private void restarCredito(String rfc) {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
-        ResultSet rs;
+        /*ResultSet rs;
         int creditosRestantes = 0;
-        int creditosUsados = 0;
+        int creditosUsados = 0;*/
         try {
-            rs = stmt.executeQuery("SELECT creditosRestantes,creditosUsados FROM Cuentas WHERE rfc like \'" + rfc + "\'");
+            /*rs = stmt.executeQuery("SELECT creditosRestantes,creditosUsados FROM Cuentas WHERE rfc = \'" + rfc + "\'");
             if (rs.next()) {
                 creditosRestantes = rs.getInt("creditosRestantes");
                 creditosUsados = rs.getInt("creditosUsados");
@@ -389,13 +387,15 @@ public class Listener implements JNotifyListener {
             rs.close();
 
             creditosRestantes--;
-            creditosUsados++;
+            creditosUsados++;*/
 
-            stmt.executeUpdate("UPDATE Cuentas SET creditosRestantes=" + creditosRestantes + ", creditosUsados=" + creditosUsados + " WHERE rfc like \'" + rfc + "\'");
+            stmt.executeUpdate("UPDATE Cuentas SET creditosRestantes = (creditosRestantes-1) , creditosUsados = (creditosUsados+1) WHERE rfc = \'" + rfc + "\'");
+            Elemento.log.info("Se resta credito");
             stmt.close();
             con.close();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             ex.printStackTrace();
+            Elemento.log.error("Excepcion al restar creditos: " + ex.getMessage(), ex);
         }
     }
 

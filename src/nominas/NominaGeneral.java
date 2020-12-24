@@ -38,7 +38,7 @@ public class NominaGeneral extends javax.swing.JFrame {
     utils.ConnectionFactory factory;
     int idEmisor;
     List<Integer> idEmpleados;
-    List<Integer> numEmpleados;
+    List<String> numEmpleados;
     String serie;
     String lugarExpedicion;
     private int totalRecibos = 0;
@@ -50,7 +50,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         factory = new utils.ConnectionFactory(Elemento.log);
     }
 
-    public NominaGeneral(List<Integer> numEmpleados, int idEmisor, List<Integer> idEmpleados) {
+    public NominaGeneral(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados) {
         initComponents();
         this.setLocationRelativeTo(null);
         this.idEmisor = idEmisor;
@@ -265,15 +265,16 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(generarNomina)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel4)
-                        .addComponent(totalDed)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(totalPer))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(totalOtros)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel1)
-                                .addComponent(totalPer)))))
+                            .addComponent(totalOtros))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(totalDed))))
                 .addContainerGap())
         );
 
@@ -554,7 +555,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
     }
 
-    private Empleado getEmpleado(int numEmpleado, int idEmpleado) {
+    private Empleado getEmpleado(String numEmpleado, int idEmpleado) {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs;
@@ -592,7 +593,7 @@ public class NominaGeneral extends javax.swing.JFrame {
             if (rs.next()) {
                 emp = new Empleado();
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
-                emp.setNumEmpleado(rs.getInt("numEmpleado"));
+                emp.setNumEmpleado(rs.getString("numEmpleado"));
                 emp.setCurp(rs.getString("curp"));
                 emp.setTipoRegimen(rs.getString("tipoRegimen"));
                 emp.setNss(rs.getString("nss"));

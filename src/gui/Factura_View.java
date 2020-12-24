@@ -76,6 +76,7 @@ public class Factura_View extends javax.swing.JFrame {
     RecibosPagos rp = null;
     boolean entroEvento = false;
     List<String> formasPagoLista;
+    List<String> arrayTipoRel;
 
     /**
      * Creates new form Factura_View
@@ -120,8 +121,8 @@ public class Factura_View extends javax.swing.JFrame {
         listaEmisores.setModel(comboE);
         model = (DefaultTableModel) conceptos.getModel();
         bancarizado = new ArrayList();
-        rp = new RecibosPagos();
         formasPagoLista = new ArrayList();
+        arrayTipoRel = new ArrayList();
         consultar("Combo", "SELECT * FROM Clientes");
         consultar("ComboM", "SELECT metodopago, descripcion FROM c_metodopago");
         consultar("ComboF", "SELECT formapago, descripcion, bancarizado FROM c_formapago");
@@ -993,7 +994,7 @@ public class Factura_View extends javax.swing.JFrame {
             empleado.setFechaInicialRelLaboral(rsE.getDate("fechaInicialRelLaboral"));
             empleado.setIdEmpleado(rsE.getInt("idEmpleado"));
             empleado.setNss(rsE.getString("nss"));
-            empleado.setNumEmpleado(rsE.getLong("numEmpleado"));
+            empleado.setNumEmpleado(rsE.getString("numEmpleado"));
             empleado.setPeriodicidadPago(rsE.getString("periodicidadPago").split(",")[0]);
             empleado.setPuesto(rsE.getString("puesto"));
             empleado.setRiesgoPuesto(rsE.getString("riesgoPuesto"));
@@ -1274,8 +1275,9 @@ public class Factura_View extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "El descuento no puede ser mayor a 100 ni menor a 0", "Advertencia", JOptionPane.WARNING_MESSAGE);
             } else {
                 desc = desc.divide(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP);
-                impDesc = prec.multiply(desc).setScale(2, RoundingMode.HALF_UP);
                 BigDecimal impor = cant.multiply(prec).setScale(2, RoundingMode.HALF_UP);
+                impDesc = impor.multiply(desc).setScale(2, RoundingMode.HALF_UP);
+
 
                 Boolean aplica = aplicaIva.isSelected();
                 Boolean aplIeps = aplicaIeps.isSelected();
@@ -1447,7 +1449,9 @@ public class Factura_View extends javax.swing.JFrame {
                             usocfdi.addItem(rs.getString("usocfdi") + "," + rs.getString("descripcion"));
                             break;
                         case "ComboT":
-                            tipoRelacion.addItem(rs.getInt("tiporelacion") > 9 ? rs.getString("tiporelacion") : ("0" + rs.getString("tiporelacion"))  + "," + rs.getString("descripcion"));
+                            String rel = rs.getInt("tiporelacion") > 9 ? rs.getString("tiporelacion") : ("0" + rs.getString("tiporelacion"))  + "," + rs.getString("descripcion");
+                            arrayTipoRel.add(rel);
+                            tipoRelacion.addItem(rel);
                             break;
                         case "Campos":
                             int idCliente = rs.getInt("id");
@@ -1811,34 +1815,29 @@ public class Factura_View extends javax.swing.JFrame {
 
     private void asociarCfdiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asociarCfdiActionPerformed
         if(rfc != null && !rfc.trim().isEmpty()){
-            final Folios fol = new Folios(emisor.getRfc(), rfc);
+            Folios fol = new Folios(emisor.getRfc(), rfc, this, null);
             fol.setVisible(true);
-            new Thread(new Runnable() {
-                public void run() {
-                   boolean continuar = true;
-                    while(continuar){
-                        continuar = fol.finishWhile;
-                    }
-
-                    cfdisAsoc = fol.cfdisAsoc;
-                    uuids = "";
-                    for (int i = 0; i < cfdisAsoc.size(); i++) {
-                        String x = cfdisAsoc.get(i);
-                        uuids += x;
-                        if(i < cfdisAsoc.size() - 1){
-                            uuids += ",";
-                        }
-                    }
-                    cfdisAsociados.setText(uuids);
-                    tipoRelacion.setEnabled(true);
-                    fol.dispose();
-                }
-            }).start();
         }else{
             JOptionPane.showMessageDialog(null,"Debe seleccionar a un cliente","Advertencia",JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_asociarCfdiActionPerformed
 
+    public void setUuids(Folios fol){
+        cfdisAsoc = fol.cfdisAsoc;
+        uuids = "";
+        
+        for (int i = 0; i < cfdisAsoc.size(); i++) {
+            String x = cfdisAsoc.get(i);
+            uuids += x;
+            if(i < cfdisAsoc.size() - 1){
+                uuids += ",";
+            }
+        }
+        cfdisAsociados.setText(uuids);
+        tipoRelacion.setEnabled(true);
+        fol.dispose();
+    }
+    
     private void tipoRelacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoRelacionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_tipoRelacionActionPerformed
@@ -1856,6 +1855,8 @@ public class Factura_View extends javax.swing.JFrame {
                         asociarCfdi.setEnabled(true);
                         break;
                     case "P":
+                        rp = new RecibosPagos();
+                        asociarCfdi.setEnabled(true);
                         if(!rp.isVisible()){
                             if(emisor == null){
                                 consultar("Emisores", "SELECT * FROM Emisores WHERE id = " + id);
@@ -1865,6 +1866,7 @@ public class Factura_View extends javax.swing.JFrame {
                             rp.setFormasPago(formasPagoCombo.getModel());
                             rp.setBancarizado(bancarizado);
                             rp.setFolio(this.folioText.getText());
+                            rp.setArrayTipoRel(arrayTipoRel);
                             rp.setVisible(true);
                             this.tipocfd.setSelectedIndex(0);
                         }
@@ -1872,8 +1874,9 @@ public class Factura_View extends javax.swing.JFrame {
                     case "I":
                         asociarCfdi.setEnabled(true);
                         break;
-                    default:
+                    case "N":
                         asociarCfdi.setEnabled(false);
+                        break;
                 }
                 /*if (tipocfd.getItemCount() > 0) {
                     listaClientes.removeAllItems();
@@ -1899,7 +1902,7 @@ public class Factura_View extends javax.swing.JFrame {
         }
     }
 
-    public static void visualizar(String ruta, String name) throws Exception {
+    public static void visualizar(String ruta, String name, String jsonDomicilios) throws Exception {
         String xml;
 //        if(name.contains("_PREFACTURA")){
 //            xml = ruta+name.replace("_PREFACTURA", " ").trim()+".xml";
@@ -1912,6 +1915,8 @@ public class Factura_View extends javax.swing.JFrame {
             plantilla = Elemento.pathPlantillas + "FacturaE_V33.jasper";
         }
         String logo = Elemento.logo;
+        if(jsonDomicilios != null)
+            util.setJsonDomicilios(jsonDomicilios);
         if (Folios.isCancelado != null) {
             if (Folios.isCancelado) {
                 util.crearPdfCancelado(xml, pdf, name, logo);
@@ -1922,8 +1927,10 @@ public class Factura_View extends javax.swing.JFrame {
             util.generarPdf(pdf, xml, name, logo, plantilla, true);
         }
     }
-
-    public static void visualizar(String ruta, String name, String email) {
+    
+    //Se agrega nuevo parametro para el envio de los domicilios
+    public static void visualizar(String ruta, String name, String email, String jsonDomicilios) {
+        util.setJsonDomicilios(jsonDomicilios);
         String xml = ruta + name + ".xml";
         String pdf = Elemento.pathPdf;
         if (plantilla == null || plantilla.equalsIgnoreCase("")) {
@@ -1939,7 +1946,9 @@ public class Factura_View extends javax.swing.JFrame {
         }
     }
 
-    public static void visualizarInterpretado(String ruta, String rutaModificado, String name, String email) {
+    //Se agrega nuevo parametro para el envio de los domicilios
+    public static void visualizarInterpretado(String ruta, String rutaModificado, String name, String email, String jsonDomicilios) {
+        util.setJsonDomicilios(jsonDomicilios);
         String xml = ruta + name + ".xml";
         String xmlModificado = rutaModificado + name + ".xml";
         String pdf = Elemento.pathPdf;
@@ -2148,11 +2157,12 @@ public class Factura_View extends javax.swing.JFrame {
             con = Elemento.odbc();
             stmt = factory.stmtEscritura(con);
             //Fecha Expedicion
-            Date date = new Date(format.parse(fecha).getTime());
-            java.sql.Date dateSql = new java.sql.Date(date.getTime());
+            //Date date = new Date(format.parse(fecha).getTime());
+            //java.sql.Date dateSql = new java.sql.Date(date.getTime());
+            
             //Fecha Timbrado
-            Date dateT = new Date(format.parse(fechaTimbrado).getTime());
-            java.sql.Date dateSqlTim = new java.sql.Date(dateT.getTime());
+            //Date dateT = new Date(format.parse(fechaTimbrado).getTime());
+            java.sql.Timestamp dateSqlTim = new java.sql.Timestamp(format.parse(fechaTimbrado).getTime());
             String status;
             if (timbre) {
                 status = "VIGENTE";

@@ -25,7 +25,7 @@ import utils.ConnectionFactory;
 public class ConfigNominas extends javax.swing.JFrame {
 
     List<String> nombres;
-    List<Long> numeros;
+    List<String> numeros;
     List<Integer> idEmpleados;
     int posEmpleado;
     int idEmisor;
@@ -75,7 +75,7 @@ public class ConfigNominas extends javax.swing.JFrame {
         ResultSet rs;
         ResultSet rs2;
         Object[] row;
-        Long num;
+        String num;
         String nom;
         int idEmpleado;
         model.setRowCount(0);
@@ -92,7 +92,7 @@ public class ConfigNominas extends javax.swing.JFrame {
                 rs2 = stmt2.executeQuery("SELECT numEmpleado FROM Empleados WHERE idEmpleado="+idEmpleado);
                 if(rs2.next()){
                     nom = rs.getString("nombre");
-                    num = rs2.getLong("numEmpleado");
+                    num = rs2.getString("numEmpleado");
                     numeros.add(num);
                     nombres.add(nom);
                     idEmpleados.add(idEmpleado);
@@ -205,7 +205,7 @@ public class ConfigNominas extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Long.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false
@@ -285,9 +285,6 @@ public class ConfigNominas extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 742, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(20, 20, 20)
@@ -330,6 +327,10 @@ public class ConfigNominas extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(all)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 742, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -418,7 +419,7 @@ public class ConfigNominas extends javax.swing.JFrame {
                     model.setRowCount(0);
                     for (int i = 0; i < numeros.size(); i++) {
                         row = new Object[2];
-                        if(numeros.get(i).equals(new Long(texto))){
+                        if(numeros.get(i).equals(texto)){
                             row[0] = numeros.get(i);
                             row[1] = nombres.get(i);
                             model.addRow(row);
@@ -444,7 +445,7 @@ public class ConfigNominas extends javax.swing.JFrame {
         // TODO add your handling code here:
         verEmpleado.setEnabled(true);
         int row = tablaEmpleados.getSelectedRow();
-        Long num = (Long)model.getValueAt(row, 0);
+        String num = model.getValueAt(row, 0).toString();
         posEmpleado = numeros.indexOf(num);
     }//GEN-LAST:event_tablaEmpleadosMouseClicked
 
@@ -489,13 +490,13 @@ public class ConfigNominas extends javax.swing.JFrame {
 
     private void generarNominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generarNominaActionPerformed
         // TODO add your handling code here:
-        List<Integer> numEmpleados = new ArrayList();
+        List<String> numEmpleados = new ArrayList();
         List<Integer> ids = new ArrayList();
         if(tablaEmpleados.getSelectedRowCount() < 1){
             JOptionPane.showMessageDialog(null, "Debe seleccionar al menos 1 empleado");
         }else{
             for(int row : tablaEmpleados.getSelectedRows()){
-                numEmpleados.add(new Integer(model.getValueAt(row, 0).toString()));
+                numEmpleados.add(model.getValueAt(row, 0).toString());
                 ids.add(idEmpleados.get(row));
             }
             new NominaGeneral(numEmpleados,idEmisor,ids).setVisible(true);
@@ -513,13 +514,13 @@ public class ConfigNominas extends javax.swing.JFrame {
     }//GEN-LAST:event_actualizarActionPerformed
 
     private void aguinaldoBotonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aguinaldoBotonActionPerformed
-        List<Integer> numEmpleados = new ArrayList();
+        List<String> numEmpleados = new ArrayList();
         List<Integer> ids = new ArrayList();
         if(tablaEmpleados.getSelectedRowCount() < 1){
-            JOptionPane.showMessageDialog(null, "Debe seleccionar al menos 1 empleado");
+            JOptionPane.showMessageDialog(null, "Debe seleccionar al menos un empleado");
         }else{
             for(int row : tablaEmpleados.getSelectedRows()){
-                numEmpleados.add(new Integer(model.getValueAt(row, 0).toString()));
+                numEmpleados.add(model.getValueAt(row, 0).toString());
                 ids.add(idEmpleados.get(row));
             }
             new Aguinaldo(numEmpleados,idEmisor,ids).setVisible(true);

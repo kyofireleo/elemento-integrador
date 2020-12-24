@@ -25,44 +25,41 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
+              <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="ejecutar" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="comboDesdeMes" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="comboDesdeAno" min="-2" pref="55" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="comboDesdeMes" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="comboDesdeAno" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="rfcEmisor" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace pref="25" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel3" min="-2" pref="34" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="rfcEmisor" min="-2" pref="140" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+              <EmptySpace pref="33" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel3" min="-2" pref="34" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="comboHastaMes" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="comboHastaAno" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="comboHastaAno" min="-2" pref="55" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="rfcReceptor" max="32767" attributes="0"/>
+                  <Component id="rfcReceptor" min="-2" pref="143" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="32767" attributes="0"/>
+              <Component id="ejecutar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="184" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -85,8 +82,9 @@
                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rfcReceptor" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="15" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="ejecutar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -125,7 +123,7 @@
     <Component class="javax.swing.JComboBox" name="comboDesdeAno">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="9">
+          <StringArray count="16">
             <StringItem index="0" value="2012"/>
             <StringItem index="1" value="2013"/>
             <StringItem index="2" value="2014"/>
@@ -135,8 +133,16 @@
             <StringItem index="6" value="2018"/>
             <StringItem index="7" value="2019"/>
             <StringItem index="8" value="2020"/>
+            <StringItem index="9" value="2021"/>
+            <StringItem index="10" value="2022"/>
+            <StringItem index="11" value="2023"/>
+            <StringItem index="12" value="2024"/>
+            <StringItem index="13" value="2025"/>
+            <StringItem index="14" value="2026"/>
+            <StringItem index="15" value="2027"/>
           </StringArray>
         </Property>
+        <Property name="selectedIndex" type="int" value="7"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="comboHastaMes">
@@ -162,7 +168,7 @@
     <Component class="javax.swing.JComboBox" name="comboHastaAno">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="9">
+          <StringArray count="16">
             <StringItem index="0" value="2012"/>
             <StringItem index="1" value="2013"/>
             <StringItem index="2" value="2014"/>
@@ -172,8 +178,16 @@
             <StringItem index="6" value="2018"/>
             <StringItem index="7" value="2019"/>
             <StringItem index="8" value="2020"/>
+            <StringItem index="9" value="2021"/>
+            <StringItem index="10" value="2022"/>
+            <StringItem index="11" value="2023"/>
+            <StringItem index="12" value="2024"/>
+            <StringItem index="13" value="2025"/>
+            <StringItem index="14" value="2026"/>
+            <StringItem index="15" value="2027"/>
           </StringArray>
         </Property>
+        <Property name="selectedIndex" type="int" value="7"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="ejecutar">

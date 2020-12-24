@@ -83,6 +83,8 @@ public class Elemento {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        verificarBd();
     }
 
     private static void fileCopy(String sourceFile, String destinationFile) {
@@ -108,8 +110,7 @@ public class Elemento {
 
     public static void main(String[] args) {
         String path;
-
-        String jVersion = "jre7";
+        String jVersion = "jre" + System.getProperty("java.version");
         String sistema = System.getProperty("os.name").trim();
         unidad = System.getenv("WINDIR").split(":")[0];
         System.out.println(sistema);
@@ -122,7 +123,7 @@ public class Elemento {
         pathPlantillas = unidad + ":\\Facturas\\config\\plantillas\\";
         pathQR = unidad + ":\\Facturas\\qrs\\";
 
-        if (sistema.contains("Windows Vista") || sistema.contains("Windows 7") || sistema.contains("Windows 8")) {
+        if (sistema.contains("Windows Vista") || sistema.contains("Windows 7") || sistema.contains("Windows 8") || sistema.contains("Windows 10")) {
             path = unidad + ":\\Program Files (x86)\\Java\\" + jVersion + "\\bin\\";
             if (!new File(path).exists()) {
                 path = unidad + ":\\Program Files\\Java\\" + jVersion + "\\bin\\";
@@ -130,11 +131,11 @@ public class Elemento {
         } else {
             path = unidad + ":\\Archivos de Programa\\Java\\" + jVersion + "\\bin\\";
         }
-
+        path = System.getProperty("java.home");
         File dll = new File(unidad + ":\\Facturas\\jnotify.dll");
         File libso = new File(unidad + ":\\Facturas\\libjnotify.so");
-        File programDll = new File(path + "jnotify.dll");
-        File programLibso = new File(path + "libjnotify.so");
+        File programDll = new File(path + "\\bin\\jnotify.dll");
+        File programLibso = new File(path + "\\bin\\libjnotify.so");
 
         File file1 = new File(unidad + ":\\Facturas");
         File file2 = new File(unidad + ":\\Facturas\\A_Archivos");
@@ -188,6 +189,8 @@ public class Elemento {
             try {
                 Properties props = new Properties();
                 props.put ("charSet", "iso-8859-1");
+                props.put ("user","");
+                props.put ("password", "administradorID");
                 
                 Class.forName("net.ucanaccess.jdbc.UcanaccessDriver").newInstance();
                 String dbURL;
@@ -435,5 +438,178 @@ public class Elemento {
 
     private void print(String msg) {
         JOptionPane.showMessageDialog(null, msg);
+    }
+    
+    private void verificarBd(){
+        Connection con = odbc();
+        Statement stmt = null;
+        ResultSet rs = null;
+        try{
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("select 1 from c_bancos");
+            
+            con.close();
+        }catch(SQLException e){
+            log.warn("No existe la tabla c_bancos, se creara.");
+            try{
+                con.setAutoCommit(false);
+                if(stmt != null)
+                    stmt.executeUpdate(
+                        "CREATE TABLE c_bancos (id_banco AUTOINCREMENT, nombre varchar(1000) not null, rfc varchar(13) not null, CONSTRAINT cboancos_PK PRIMARY KEY(id_banco))"
+                    );
+
+                log.info("Se creo la tabla, se procede a ingresar el catalogo");
+                
+                java.sql.PreparedStatement ps = con.prepareStatement("INSERT INTO c_bancos (nombre, rfc) values (?,?)");
+                ps.setString(1,"AFORE AFIRME BAJIO, SA DE CV"); ps.setString(2,"AAB050415BJ9"); ps.addBatch();
+                ps.setString(1,"AMERICAN EXPRESS BANK MEXICO, SA"); ps.setString(2,"AEB960223JP7"); ps.addBatch();
+                ps.setString(1,"BANCA AFIRME, SA"); ps.setString(2,"BAF950102JP5"); ps.addBatch();
+                ps.setString(1,"BANCA MIFEL SA INSTITUCION DE BANCA MULTIPLE GRUPO FINANCIERO MIFEL"); ps.setString(2,"BMI9312038R3"); ps.addBatch();
+                ps.setString(1,"BANCO ACTINVER, S.A., INSTITUCION DE BANCA MULTIPLE, GRUPO FINANCIERO ACTINVER"); ps.setString(2,"PBI061115SC6"); ps.addBatch();
+                ps.setString(1,"BANCO AHORRO FAMSA S.A. INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"BAF060524EV6"); ps.addBatch();
+                ps.setString(1,"BANCO AUTOFIN MEXICO, SA"); ps.setString(2,"BAM0511076B3"); ps.addBatch();
+                ps.setString(1,"BANCO AZTECA SA INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"BAI0205236Y8"); ps.addBatch();
+                ps.setString(1,"BANCO BANCREA"); ps.setString(2,"BBA130722BR7"); ps.addBatch();
+                ps.setString(1,"BANCO COMPARTAMOS SA INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"BCI001030ECA"); ps.addBatch();
+                ps.setString(1,"BANCO DEL AHORRO NACIONAL Y SERVICIOS FINANCIEROS, SOCIEDAD NACIONAL DE CREDITO INSTITUCION DE BANCA DE DESARROLLO"); ps.setString(2,"BAN500901167"); ps.addBatch();
+                ps.setString(1,"BANCO DEL BAJIO, SA"); ps.setString(2,"BBA940707IE1"); ps.addBatch();
+                ps.setString(1,"BANCO INBURSA SA INSTITUCION DE BANCA MULTIPLE GRUPO FINANCIERO INBUR, SA"); ps.setString(2,"BII931004P61"); ps.addBatch();
+                ps.setString(1,"BANCO INMOBILIARIO MEXICANO SA INSTITUCI"); ps.setString(2,"HCM010608EG1"); ps.addBatch();
+                ps.setString(1,"BANCO INTERACCIONES SA INSTITUCION DE BANCA MULTIPLE GPO FINANC INTERACCIONES"); ps.setString(2,"BIN931011519"); ps.addBatch();
+                ps.setString(1,"BANCO INVEX SA INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"BIN940223KE0"); ps.addBatch();
+                ps.setString(1,"BANCO J P MORGAN SA INSTITUCION DE BANCA MULTIPLE J P MORGAN GRUPO FINANCIERO"); ps.setString(2,"BJP950104LJ5"); ps.addBatch();
+                ps.setString(1,"BANCO MERCANTIL DEL NORTE SA INSTITUCION DE BANCA MULTIPLE GRUPO FINANCIERO BANORTE"); ps.setString(2,"BMN930209927"); ps.addBatch();
+                ps.setString(1,"BANCO MONEX S.A. INSTITUCION DE BANCA MULTIPLE, MONEX GRUPO FINANCIERO"); ps.setString(2,"BMI9704113PA"); ps.addBatch();
+                ps.setString(1,"BANCO MULTIVA SOCIEDAD ANONIMA INSTITUCION DE BANCA MULTIPLE GRUPO FINANCIERO MULTIVA"); ps.setString(2,"BMI061005NY5"); ps.addBatch();
+                ps.setString(1,"BANCO NACIONAL DE EJERCITO FUERZA AEREA Y ARMADA, SNC"); ps.setString(2,"BNE820901682"); ps.addBatch();
+                ps.setString(1,"BANCO NACIONAL DE MEXICO, SA"); ps.setString(2,"BNM840515VB1"); ps.addBatch();
+                ps.setString(1,"BANCO PAGATODO, S.A."); ps.setString(2,"BPS121217FS6"); ps.addBatch();
+                ps.setString(1,"BANCO REGIONAL DE MONTERREY SA INSTITUCION DE BANCA MULTIPLE BANREGIO GRUPO FINANCIERO"); ps.setString(2,"BRM940216EQ6"); ps.addBatch();
+                ps.setString(1,"BANCO SANTANDER (MEXICO) S.A., INSTITUCION DE BANCA MULTIPLE, GRUPO FINANCIERO SANTANDER"); ps.setString(2,"BSM970519DU8"); ps.addBatch();
+                ps.setString(1,"BANCO VE POR MAS, S.A., INSTITUCION DE BANCA MULTIPLE, GRUPO FINANCIERO VE POR MAS"); ps.setString(2,"BVM951002LX0"); ps.addBatch();
+                ps.setString(1,"BANCO WAL MART DE MEXICO ADELANTE S A INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"BWM0611132A9"); ps.addBatch();
+                ps.setString(1,"BANCOPPEL, S.A. INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"BSI061110963"); ps.addBatch();
+                ps.setString(1,"BANK OF TOKYO-MITSUBISHI UFJ (MEXICO) SOCIEDAD ANONIMA, INSTITUCION DE BANCA MULTIPLE FILIAL"); ps.setString(2,"BTM960401DV7"); ps.addBatch();
+                ps.setString(1,"BANORTE-IXE TARJETAS"); ps.setString(2,"ITA081127UZ1"); ps.addBatch();
+                ps.setString(1,"BANRENACES ABASOLO, SC DE AP DE RL DE CV"); ps.setString(2,"BAB1011126Y1"); ps.addBatch();
+                ps.setString(1,"BANRENACES ACAPULCO, SC DE AP DE RL DE CV"); ps.setString(2,"BAC091210GDA"); ps.addBatch();
+                ps.setString(1,"BANRENACES AGUASCALIENTES, SC DE AP DE RL DE CV"); ps.setString(2,"BAG110513DW4"); ps.addBatch();
+                ps.setString(1,"BANRENACES AHUACUOTZINGO, SC DE AP DE RL DE CV"); ps.setString(2,"BAH091210AA6"); ps.addBatch();
+                ps.setString(1,"BANRENACES AR NGU BOJA, SC DE AP DE RL DE CV"); ps.setString(2,"BAN100831N37"); ps.addBatch();
+                ps.setString(1,"BANRENACES ASCENSION SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BAA100902SS6"); ps.addBatch();
+                ps.setString(1,"BANRENACES ATOYAC SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BAA100904CT3"); ps.addBatch();
+                ps.setString(1,"BANRENACES BOCHIL CON VISION SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BBV100422DY7"); ps.addBatch();
+                ps.setString(1,"BANRENACES CACAHOATAN, SC DE AP DE RL DE CV"); ps.setString(2,"BCA100329EG9"); ps.addBatch();
+                ps.setString(1,"BANRENACES CALVILLO SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BCA101124KTA"); ps.addBatch();
+                ps.setString(1,"BANRENACES CAPULTITLAN\"\", SC DE AP DE RL DE CV"); ps.setString(2,"BCA100326A77"); ps.addBatch();
+                ps.setString(1,"BANRENACES CIENEGA GRANDE, SC DE AP DE RL DE CV"); ps.setString(2,"BCG101014DE3"); ps.addBatch();
+                ps.setString(1,"BANRENACES CIUDAD DE MEXICO, SC DE AP DE RL DE CV"); ps.setString(2,"BCM100428KZ5"); ps.addBatch();
+                ps.setString(1,"BANRENACES COLIMA, SC DE AP DE RL DE CV"); ps.setString(2,"BCO100214CL7"); ps.addBatch();
+                ps.setString(1,"BANRENACES CONSTANCIA MOCHICAHUI, SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BCM110204KS5"); ps.addBatch();
+                ps.setString(1,"BANRENACES CORITA DE ACAPONETA, SC DE AP DE RL DE CV"); ps.setString(2,"BCA1011166V1"); ps.addBatch();
+                ps.setString(1,"BANRENACES CORONEO, SC DE AP DE RL DE CV"); ps.setString(2,"BCO1010011T0"); ps.addBatch();
+                ps.setString(1,"BANRENACES CORTAZAR, SC DE AP DE RL DE CV"); ps.setString(2,"BCO1009088C6"); ps.addBatch();
+                ps.setString(1,"BANRENACES COSOLAPA, SC DE AP DE RL DE CV"); ps.setString(2,"BCO100513K51"); ps.addBatch();
+                ps.setString(1,"BANRENACES CUERNAVACA, SC DE AP DE RL DE CV"); ps.setString(2,"BCU110506SJ3"); ps.addBatch();
+                ps.setString(1,"BANRENACES CUICATLAN, SC DE AP DE RL DE CV"); ps.setString(2,"BCU110107GJ7"); ps.addBatch();
+                ps.setString(1,"BANRENACES CUNA DEL EQUIPAL SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BCE110903QM7"); ps.addBatch();
+                ps.setString(1,"BANRENACES DE DURANGO, SC DE AP DE RL DE CV"); ps.setString(2,"BDU100530UH7"); ps.addBatch();
+                ps.setString(1,"BANRENACES DE TOCOY DE SAN ANTONIO, SC DE AP DE RL DE CV"); ps.setString(2,"BTS110610ILA"); ps.addBatch();
+                ps.setString(1,"BANRENACES DEL NAYAR SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BNA101215K85"); ps.addBatch();
+                ps.setString(1,"BANRENACES DEL SUR, SC DE AP DE RL DE CV"); ps.setString(2,"BSU100524C34"); ps.addBatch();
+                ps.setString(1,"BANRENACES DOLORES HIDALGO CUNA DE LA INDEPENDENCIA GUANAJUATO, SC DE AP DE RL DE CV"); ps.setString(2,"BDH100114E91"); ps.addBatch();
+                ps.setString(1,"BANRENACES EJUTLA, SC DE AP DE RL DE CV"); ps.setString(2,"BEJ1009076H0"); ps.addBatch();
+                ps.setString(1,"BANRENACES GENERAL BRAVO, SC DE AP DE RL DE CV"); ps.setString(2,"BGB100417FJ8"); ps.addBatch();
+                ps.setString(1,"BANRENACES HEROICO PUERTO DE SAN BLAS, SC DE AP DE RL DE CV"); ps.setString(2,"BHP101108AS8"); ps.addBatch();
+                ps.setString(1,"BANRENACES HIDALGO, SC DE AP DE RL DE CV"); ps.setString(2,"BHI100202H31"); ps.addBatch();
+                ps.setString(1,"BANRENACES HORMIGUERO, SC DE AP DE RL DE CV"); ps.setString(2,"BHO1008164Z1"); ps.addBatch();
+                ps.setString(1,"BANRENACES HUIMILPAN, SC DE AP DE RL DE CV"); ps.setString(2,"BHU120504C55"); ps.addBatch();
+                ps.setString(1,"BANRENACES HUIXQUILUCAN, SC DE AP DE RL DE CV"); ps.setString(2,"BHU100915D49"); ps.addBatch();
+                ps.setString(1,"BANRENACES IGUALA, SC DE AP DE RL DE CV"); ps.setString(2,"BIG100910AR8"); ps.addBatch();
+                ps.setString(1,"BANRENACES JAHUARA SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BJA110204DF9"); ps.addBatch();
+                ps.setString(1,"BANRENACES JIREH EN ZAPOPAN, SC DE AP DE RL DE CV"); ps.setString(2,"BJE111006878"); ps.addBatch();
+                ps.setString(1,"BANRENACES JOCOTITLAN, SC DE AP DE RL DE CV"); ps.setString(2,"BJO1004274N9"); ps.addBatch();
+                ps.setString(1,"BANRENACES LA VILLA, SC DE AP DE RL DE CV"); ps.setString(2,"BVI100518BHA"); ps.addBatch();
+                ps.setString(1,"BANRENACES LEON, SC DE AP DE RL DE CV"); ps.setString(2,"BLE1012293T6"); ps.addBatch();
+                ps.setString(1,"BANRENACES MANZANILLO, SC DE AP DE RL DE CV"); ps.setString(2,"BMA1010089R3"); ps.addBatch();
+                ps.setString(1,"BANRENACES MARIPOSAS NUEVO LEON, SC DE AP DE RL DE CV"); ps.setString(2,"BMN101126GBA"); ps.addBatch();
+                ps.setString(1,"BANRENACES MONTESCLAROS SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BMA110310L68"); ps.addBatch();
+                ps.setString(1,"BANRENACES MORELIA, SC DE AP DE RL DE CV"); ps.setString(2,"BMO101208NT4"); ps.addBatch();
+                ps.setString(1,"BANRENACES MORELOS SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BMA100930TG0"); ps.addBatch();
+                ps.setString(1,"BANRENACES NAUCALPAN, SC DE AP DE RL DE CV"); ps.setString(2,"BNA100413EW9"); ps.addBatch();
+                ps.setString(1,"BANRENACES NOPALA, SC DE AP DE RL DE CV"); ps.setString(2,"BNO100210AL7"); ps.addBatch();
+                ps.setString(1,"BANRENACES OAXACA, SC DE AP DE RL DE CV"); ps.setString(2,"BOA1008014A8"); ps.addBatch();
+                ps.setString(1,"BANRENACES OCTOPAN, SC DE AP DE RL DE CV"); ps.setString(2,"BOC101027JI0"); ps.addBatch();
+                ps.setString(1,"BANRENACES PESQUERIA, SC DE AP DE RL DE CV"); ps.setString(2,"BPE110721ER0"); ps.addBatch();
+                ps.setString(1,"BANRENACES POR BOCA DEL RIO, SC DE AP DE RL DE CV"); ps.setString(2,"BBR100805RG3"); ps.addBatch();
+                ps.setString(1,"BANRENACES POR JALCOMULCO, SC DE AP DE RL DE CV"); ps.setString(2,"BJA111028JX9"); ps.addBatch();
+                ps.setString(1,"BANRENACES POR KUALI, SC DE AP DE RL DE CV"); ps.setString(2,"BKU100705S24"); ps.addBatch();
+                ps.setString(1,"BANRENACES POR MEDELLIN DE BRAVO, SC DE RL DE CV"); ps.setString(2,"BMD101026J91"); ps.addBatch();
+                ps.setString(1,"BANRENACES POR TANTOYUCA, SC DE AP DE RL DE CV"); ps.setString(2,"BTA1006262U9"); ps.addBatch();
+                ps.setString(1,"BANRENACES PUERTO ESCONDIDO, SC DE AP DE RL DE CV"); ps.setString(2,"BPE110919HQ9"); ps.addBatch();
+                ps.setString(1,"BANRENACES QUERETARO, SC DE AP DE RL DE CV"); ps.setString(2,"BQU110418IF4"); ps.addBatch();
+                ps.setString(1,"BANRENACES QUINTANA ROO, SC DE AP DE RL DE CV"); ps.setString(2,"BQR110511TKA"); ps.addBatch();
+                ps.setString(1,"BANRENACES RAMONES, SC DE AP DE RL DE CV"); ps.setString(2,"BRA091222MJ9"); ps.addBatch();
+                ps.setString(1,"BANRENACES RINCON DE MORELOS SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BRM100816FR3"); ps.addBatch();
+                ps.setString(1,"BANRENACES SAHUAYO, SC DE AP DE RL DE CV"); ps.setString(2,"BSA101123NK3"); ps.addBatch();
+                ps.setString(1,"BANRENACES SALAMANCA, SC DE AP DE RL DE CV"); ps.setString(2,"BSA1010213Y3"); ps.addBatch();
+                ps.setString(1,"BANRENACES SAN FRANCISCO TUTLA, SC DE AP DE RL DE CV"); ps.setString(2,"BSF1005172M6"); ps.addBatch();
+                ps.setString(1,"BANRENACES SAN LUIS POTOSI, SC DE AP DE RL DE CV"); ps.setString(2,"BSL100202UJ7"); ps.addBatch();
+                ps.setString(1,"BANRENACES SANTA MARIA DEL RIO, SC DE AP DE RL DE CV"); ps.setString(2,"BSM100423UP1"); ps.addBatch();
+                ps.setString(1,"BANRENACES SANTO NIÑO, SC DE AP DE RL DE CV"); ps.setString(2,"BSN1009101S7"); ps.addBatch();
+                ps.setString(1,"BANRENACES SOLEDAD SALINAS, SC DE AP DE RL DE CV"); ps.setString(2,"BSS1103013C4"); ps.addBatch();
+                ps.setString(1,"BANRENACES SONORA, SC DE AP DE RL DE CV"); ps.setString(2,"BSO100521KW3"); ps.addBatch();
+                ps.setString(1,"BANRENACES TEMASCALCINGO SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BTA100622781"); ps.addBatch();
+                ps.setString(1,"BANRENACES TEOTITLAN DEL VALLE, SC DE AP DE RL DE CV"); ps.setString(2,"BTV091227VC6"); ps.addBatch();
+                ps.setString(1,"BANRENACES TEPECOACUILCO, SC DE AP DE RL DE CV"); ps.setString(2,"BTE110118F78"); ps.addBatch();
+                ps.setString(1,"BANRENACES TEQUISISTLAN, SC DE AP DE RL DE CV"); ps.setString(2,"BTE100802SY4"); ps.addBatch();
+                ps.setString(1,"BANRENACES TIERRA COLORADA, SC DE AP DE RL DE CV"); ps.setString(2,"BTC100920377"); ps.addBatch();
+                ps.setString(1,"BANRENACES TLACOLULA, SC DE AP DE RL DE CV"); ps.setString(2,"BTL110919I60"); ps.addBatch();
+                ps.setString(1,"BANRENACES UNIDAD Y CONFIANZA SOCIEDAD COOPERATIVA DE AHORRO Y PRESTAMO, SC DE AP DE RL DE CV"); ps.setString(2,"BUC1009229W6"); ps.addBatch();
+                ps.setString(1,"BANRENACES UNIENDO ESFUERZOS Y REALIZANDO SUEÑOS, SC DE AP DE RL DE CV"); ps.setString(2,"BUE110823GDA"); ps.addBatch();
+                ps.setString(1,"BANRENACES VANEGAS, SC DE AP DE RL DE CV"); ps.setString(2,"BVA1103109CA"); ps.addBatch();
+                ps.setString(1,"BANRENACES VILLACORZO, SC DE AP DE RL DE CV"); ps.setString(2,"BVI100421RHA"); ps.addBatch();
+                ps.setString(1,"BANRENACES XALTIANGUIS, SC DE AP DE RL DE CV"); ps.setString(2,"BXA091210I49"); ps.addBatch();
+                ps.setString(1,"BANRENACES XOCOTEPEC, SC DE AP DE RL DE CV"); ps.setString(2,"BXO1003277F0"); ps.addBatch();
+                ps.setString(1,"BANRENACES ZARAGOZA, SC DE AP DE RL DE CV"); ps.setString(2,"BZA100423AN3"); ps.addBatch();
+                ps.setString(1,"BANSI, SA"); ps.setString(2,"BAN950525MD6"); ps.addBatch();
+                ps.setString(1,"BBVA BANCOMER SA INSTITUCION DE BANCA MULTIPLE, GRUPO FINANCIERO BBVA BANCOMER"); ps.setString(2,"BBA830831LJ2"); ps.addBatch();
+                ps.setString(1,"CAJA DE AHORRO DE LOS TRABAJADORES CUICACALLI, AC"); ps.setString(2,"CAT080804JG2"); ps.addBatch();
+                ps.setString(1,"CAJA DE PRESTAMOS PARA TRABAJADORES DEL SISTEMA VALLADOLID, AC"); ps.setString(2,"CPT090930CE3"); ps.addBatch();
+                ps.setString(1,"CAJA POPULAR CRISTOBAL COLON, SC DE AP DE RL DE CV"); ps.setString(2,"CPC780925B36"); ps.addBatch();
+                ps.setString(1,"CAJA POPULAR SANTIAGO TINGAMBATO, SC DE AP DE RL DE CV"); ps.setString(2,"CPS9607177X2"); ps.addBatch();
+                ps.setString(1,"CAJA SOLIDARIA TOMATLAN, SC DE AP DE RL DE CV"); ps.setString(2,"CST010410RBA"); ps.addBatch();
+                ps.setString(1,"CASA DE BOLSA VE POR MAS SA DE CV GRUPO FINANCIERO VE POR MAS"); ps.setString(2,"CBA8701315H8"); ps.addBatch();
+                ps.setString(1,"CIBANCO, SA"); ps.setString(2,"CIB850918BN8"); ps.addBatch();
+                ps.setString(1,"DEUTSCHE BANK MEXICO SA INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"DBM000228J35"); ps.addBatch();
+                ps.setString(1,"FONDO NACIONAL DE PENSIONES DE LOS TRABAJADORES AL SERVICIO DEL ESTADO"); ps.setString(2,"FNP070401RN9"); ps.addBatch();
+                ps.setString(1,"HSBC MEXICO SA INSTITUCION DE BANCA MULTIPLE GRUPO FINANCIERO HSBC"); ps.setString(2,"HMI950125KG8"); ps.addBatch();
+                ps.setString(1,"HSBC GLOBAL ASSET MANAGEMENT (MEXICO), SA DE CV, GRUPO FINANCIERO HSBC"); ps.setString(2,"HGA860129IW7"); ps.addBatch();
+                ps.setString(1,"ING BANK MEXICO SA INSTITUCION DE BANCA MULTIPLE ING GRUPO FINANCIERO"); ps.setString(2,"IBM951129P29"); ps.addBatch();
+                ps.setString(1,"INTER BANCO SA INSTITUCION DE BANCA MULTIPLE"); ps.setString(2,"IBI061030GD4"); ps.addBatch();
+                ps.setString(1,"IXE BANCO SA INSTITUCION DE BANCA MULTIPLE GRUPO FINANCIERO BANORTE"); ps.setString(2,"IBA950503GTA"); ps.addBatch();
+                ps.setString(1,"SCOTIABANK INVERLAT, SA"); ps.setString(2,"SIN9412025I4"); ps.addBatch();
+                ps.setString(1,"SOLIDEZ DE MONTEALBAN, SC DE AP DE RL DE CV"); ps.setString(2,"SDM100205U72"); ps.addBatch();
+                ps.setString(1,"TRABAJADORES ELECTRICISTAS RIO COLORADO, SC DE RL DE CV"); ps.setString(2,"TER0902249W7"); ps.addBatch();
+                ps.setString(1,"UNION DE CREDITO GANADERO DE TABASCO, SA DE CV"); ps.setString(2,"UCG470616988"); ps.addBatch();
+                ps.setString(1,"UNION DE CREDITO INDUSTRIAL Y AGROPECUARIA DE TABASCO, SA DE CV"); ps.setString(2,"UCI921211QH3"); ps.addBatch();
+                
+                ps.executeBatch();
+                
+                log.info("Catalogo insertado correctamente");
+                con.commit();
+                con.close();
+            }catch(SQLException ex){
+                ex.printStackTrace();
+                log.error("Error al crear la tabla de c_bancos", ex);
+                try{
+                    con.rollback();
+                    con.close();
+                }catch(SQLException exx){
+                    exx.printStackTrace();
+                    log.error("Excepcion al cerrar la conexion con la base de datos o al hacer rollback", exx);
+                }
+            }
+        }
     }
 }

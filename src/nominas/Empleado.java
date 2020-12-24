@@ -135,11 +135,11 @@ public class Empleado {
         emp.setRiesgoPuesto(riesgoPuesto);
     }
 
-    public long getNumEmpleado() {
+    public String getNumEmpleado() {
         return emp.getNumEmpleado();
     }
 
-    public void setNumEmpleado(long numEmpleado) {
+    public void setNumEmpleado(String numEmpleado) {
         emp.setNumEmpleado(numEmpleado);
     }
 

@@ -337,6 +337,10 @@ public class Layout {
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: P\r\n");
+        if(this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()){
+            re.append("RELACIONCFDI: ").append(this.fact.cfdisAsociados).append("\r\n");
+            re.append("TIPORELACION: ").append(this.fact.tipoRelacion).append("\r\n");
+        }
         re.append("FORMAPAGO: \r\n");
         re.append("METODOPAGO: \r\n");
         re.append("DESCUENTO: 0.00\r\n");
