@@ -441,13 +441,22 @@ public class Elemento {
     }
     
     private void verificarBd(){
+        /******catalogo de bancos******/
+        verificarCBancos();
+        
+        /******cambios en tabla Cuentas y Folios******/
+        verificarCuentasFolios();
+    }
+    
+    private void verificarCBancos(){
         Connection con = odbc();
         Statement stmt = null;
-        ResultSet rs = null;
+        ResultSet rs;
         try{
-            stmt = con.createStatement();
+            stmt = factory.stmtEscritura(con);
             rs = stmt.executeQuery("select 1 from c_bancos");
             
+            rs.close();
             con.close();
         }catch(SQLException e){
             log.warn("No existe la tabla c_bancos, se creara.");
@@ -597,6 +606,8 @@ public class Elemento {
                 ps.executeBatch();
                 
                 log.info("Catalogo insertado correctamente");
+                if(stmt != null)
+                    stmt.close();
                 con.commit();
                 con.close();
             }catch(SQLException ex){
@@ -609,6 +620,58 @@ public class Elemento {
                     exx.printStackTrace();
                     log.error("Excepcion al cerrar la conexion con la base de datos o al hacer rollback", exx);
                 }
+            }
+        }
+    }
+    
+    private void verificarCuentasFolios(){
+        Connection con = odbc();
+        Statement stmt = null;
+        ResultSet rs;
+        
+        try{
+            stmt = factory.stmtEscritura(con);
+            rs = stmt.executeQuery("Select top 1 cuenta_id from Cuentas");
+            rs.close();
+            
+            rs = stmt.executeQuery("Select top 1 cuenta_id from Folios");
+            rs.close();
+            
+            stmt.close();
+            con.close();
+        }catch(SQLException ex){
+            ex.printStackTrace();
+            log.warn("No existen los campos, se crearan...");
+            try{
+                con.setAutoCommit(false);
+                if(stmt != null){
+                    stmt.executeUpdate("ALTER TABLE Cuentas drop column facturas;");
+                    stmt.executeUpdate("ALTER TABLE Cuentas drop column notasCredito;");
+                    stmt.executeUpdate("ALTER TABLE Cuentas drop column recibosDonativos;");
+                    stmt.executeUpdate("ALTER TABLE Cuentas DROP CONSTRAINT PrimaryKey;");
+                    stmt.executeUpdate("ALTER TABLE Cuentas ADD COLUMN cuenta_id AUTOINCREMENT PRIMARY KEY;");
+                    stmt.executeUpdate("ALTER TABLE Folios ADD COLUMN cuenta_id INT;");
+                    stmt.executeUpdate("ALTER TABLE Folios ADD CONSTRAINT FK_folios_cuenta_id FOREIGN KEY (cuenta_id) REFERENCES Cuentas (cuenta_id);");
+                    stmt.executeUpdate("UPDATE Folios f INNER JOIN Cuentas c ON c.rfc = f.rfc set f.cuenta_id = c.cuenta_id;");
+                    
+                    stmt.close();
+                }
+                
+                con.commit();
+                con.close();
+            }catch(SQLException e){
+                e.printStackTrace();
+                log.error("Error al actualizar la estructura de la base de datos a las tablas Cuentas y/o Folios", e);
+                try{
+                    log.warn("Se hara rollback...");
+                    con.rollback();
+                    con.close();
+                    log.info("Rollback realizado correctamente");
+                }catch(SQLException sex){
+                    sex.printStackTrace();
+                    log.error("Error al hacer rollback");
+                }
+                JOptionPane.showMessageDialog(null, "Error al actualizar la estructura de la base de datos", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

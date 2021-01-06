@@ -3,11 +3,16 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/elemento/Layout.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/gui/Configurar.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/nominas/Percepciones.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/gui/Factura_View.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/nominas/Aguinaldo.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/nominas/OtrosPagos.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/nominas/Nominas.java</file>
             <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/pagos/RecibosPagos.java</file>
-            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/gui/CteUpdate.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/nominas/Deducciones.java</file>
+            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/nominas/NominaGeneral.java</file>
             <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/elemento/Elemento.java</file>
-            <file>file:/C:/Users/esque/Dropbox/proyectos/ElementoIntegrador/src/gui/Folios.java</file>
         </group>
     </open-files>
 </project-private>

@@ -110,7 +110,7 @@ public class Welcome extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("v3.3");
+        jLabel1.setText("v3.3.1");
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/elemento/empleadosIcon.png"))); // NOI18N
         jButton6.setText("Nomina");
@@ -210,7 +210,7 @@ public class Welcome extends javax.swing.JFrame {
 
     private void configurarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurarActionPerformed
         // TODO add your handling code here:
-        Configurar.main(new String[2]);
+        Login.main(new String[2]);
     }//GEN-LAST:event_configurarActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed

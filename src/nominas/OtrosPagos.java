@@ -26,6 +26,8 @@ public class OtrosPagos extends javax.swing.JFrame {
     private utils.Utils util = new utils.Utils(Elemento.log);
     Integer idEmpleado;
     boolean callNomina = false;
+    boolean nuevo;
+    private Integer tipoNomina = null;
     
     public OtrosPagos() {
         initComponents();
@@ -34,6 +36,7 @@ public class OtrosPagos extends javax.swing.JFrame {
     
     public OtrosPagos(int idEmpleado){
         this.idEmpleado = idEmpleado;
+        this.nuevo = true;
         initComponents();
         this.setLocationRelativeTo(null);
     }
@@ -41,6 +44,7 @@ public class OtrosPagos extends javax.swing.JFrame {
     public OtrosPagos(int idEmpleado, boolean callNomina){
         this.idEmpleado = idEmpleado;
         this.callNomina = callNomina;
+        this.nuevo = !callNomina;
         initComponents();
         this.setLocationRelativeTo(null);
         obtenerOtrosPagos(idEmpleado);
@@ -66,6 +70,8 @@ public class OtrosPagos extends javax.swing.JFrame {
         guardar = new javax.swing.JButton();
         importe = new javax.swing.JTextField();
         labelOtras = new javax.swing.JLabel();
+
+        setTitle("Detalle Otros Pagos");
 
         clave.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -286,6 +292,21 @@ public class OtrosPagos extends javax.swing.JFrame {
         labelOtras.setText("Total Otros Pagos: "+totalOtrosPagos);
     }
     
+    public void setTipoNomina(int tipoNomina){
+        this.tipoNomina = tipoNomina;
+        if(tipoNomina == 1){ //Nomina Extraordinaria
+            DefaultTableModel model = (DefaultTableModel) tabla.getModel();
+            model.setRowCount(0);
+        }else{
+            obtenerOtrosPagos(idEmpleado);
+        }
+        calcular();
+    }
+    
+    public Integer getTipoNomina(){
+        return this.tipoNomina;
+    }
+    
     private void limpiar(){
         tipoOtroPago.setSelectedIndex(0);
         clave.setText("");
@@ -339,8 +360,9 @@ public class OtrosPagos extends javax.swing.JFrame {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
-        if(idEmpleado != null)
+        if(nuevo){
             borrarOtrosPagos(idEmpleado);
+        }
         try {
             for (int i = 0; i < model.getRowCount(); i++) {
                 String query = "INSERT INTO ImportesOtrosPagos (clave,idEmpleado,importe) "
@@ -415,13 +437,14 @@ public class OtrosPagos extends javax.swing.JFrame {
         Statement stmt2 = factory.stmtLectura(con);
         ResultSet rs, rs2;
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
+        model.setRowCount(0);
         Object [] row = new Object[5];
         
         try {
             rs = stmt.executeQuery("SELECT * FROM ImportesOtrosPagos WHERE idEmpleado = "+idEmpleado);
             while(rs.next()){
                 String claveD = rs.getString("clave");
-                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosOtrosPagos WHERE clave like \'" + claveD + "\'");
+                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosOtrosPagos WHERE clave = \'" + claveD + "\'");
                 if(rs2.next()){
                     row[0] = rs2.getString("tipo");
                     row[1] = claveD;

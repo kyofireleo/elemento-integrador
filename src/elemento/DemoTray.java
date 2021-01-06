@@ -59,7 +59,7 @@ public class DemoTray {
             
             optConfigurar.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent arg0){
-                    Configurar.main(new String[2]);
+                    Login.main(new String[2]);
                 }
             });
             

@@ -1414,7 +1414,7 @@ public class Factura_View extends javax.swing.JFrame {
 
         try {
             ResultSet rs = stmt.executeQuery(query);
-            if (x == "ComboTC") {
+            if (x.equalsIgnoreCase("ComboTC")) {
                 tipocfd.addItem("Seleccione un Tipo de Comprobante");
             }
             if (rs.next()) {
@@ -1532,44 +1532,19 @@ public class Factura_View extends javax.swing.JFrame {
 
             rsC = stmtC.executeQuery("SELECT * FROM Cuentas WHERE rfc = \'" + rfcE + "\'");
             if (rsC.next()) {
-                Boolean facts = rsC.getBoolean("facturas");
-                Boolean notas = rsC.getBoolean("notasCredito");
-                Boolean dona = rsC.getBoolean("recibosDonativos");
                 restantes = rsC.getInt("creditosRestantes");
 
                 creditosRestantes = restantes;
-
-                if (facts) {
-                    tiposco += "1";
-                }
-                if (notas) {
-                    if (tiposco.length() > 0) {
-                        tiposco += ",2";
-                    } else {
-                        tiposco += "2";
-                    }
-                }
-                if (dona) {
-                    if (tiposco.length() > 0) {
-                        tiposco += ",6";
-                    } else {
-                        tiposco += "6";
-                    }
-                }
-                if (emisor.getEmitirNominas()) {
-                    if (tiposco.length() > 0) {
-                        tiposco += ",4";
-                    } else {
-                        tiposco += "4";
-                    }
-                }
                 
                 if(tiposco.length() > 0)
                     tiposco += ",5";
                 else
                     tiposco += "5";
-
-                consultar("ComboTC", "SELECT tiposcomprobante, descripcion FROM c_tiposcomprobante WHERE c_tiposcomprobante_id IN (" + tiposco + ") order by c_tiposcomprobante_id");
+                
+                consultar("ComboTC", "SELECT tc.tiposcomprobante, tc.descripcion "
+                    + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
+                    + "WHERE rfc = \'" + rfcE + "\' "
+                    + "ORDER BY tc.c_tiposcomprobante_id ASC");
 
             }
             rsC.close();
@@ -1843,12 +1818,18 @@ public class Factura_View extends javax.swing.JFrame {
     }//GEN-LAST:event_tipoRelacionActionPerformed
 
     private void tipocfdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipocfdActionPerformed
+        String tipo = tipocfd.getSelectedItem() != null ? tipocfd.getSelectedItem().toString().split(",")[0] : "";
         
         if(tipocfd.getSelectedIndex() > 0){
-            if(listaClientes.getSelectedIndex() > 0){
+            if(listaClientes.getSelectedIndex() > 0 || tipo.equalsIgnoreCase("N")){
                 prepararFolio(rfcE);
                 String id = listaEmisores.getSelectedItem().toString().split(",")[0];
-                String tipo = tipocfd.getSelectedItem() != null ? tipocfd.getSelectedItem().toString().split(",")[0] : "";
+                
+                if(listaClientes.getItemAt(0).toString().equals("Seleccione un empleado") && !tipo.equalsIgnoreCase("N")){
+                    listaClientes.removeAllItems();
+                    listaClientes.addItem("Seleccione un cliente");
+                    consultar("Combo", "SELECT * FROM Clientes");
+                }
 
                 switch (tipo) {
                     case "E":
@@ -1876,8 +1857,14 @@ public class Factura_View extends javax.swing.JFrame {
                         break;
                     case "N":
                         asociarCfdi.setEnabled(false);
+                        if(listaClientes.getItemAt(0).toString().equals("Seleccione un cliente")){
+                            listaClientes.removeAllItems();
+                            listaClientes.addItem("Seleccione un empleado");
+                            consultar("Combo", "SELECT * FROM EmpleadosRec WHERE idEmisor = " + id);
+                        }
                         break;
                 }
+                
                 /*if (tipocfd.getItemCount() > 0) {
                     listaClientes.removeAllItems();
                     if (tipocfd.getSelectedItem().toString().equals("Recibo de Nomina")) {

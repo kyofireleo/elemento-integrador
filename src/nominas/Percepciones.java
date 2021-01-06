@@ -28,6 +28,7 @@ public class Percepciones extends javax.swing.JFrame {
     private Integer idEmpleado;
     private boolean callNomina = false;
     public boolean nuevo;
+    private Integer tipoNomina = null;
 
     public Percepciones(int idEmpleado, boolean callNomina) {
         this.idEmpleado = idEmpleado;
@@ -92,7 +93,7 @@ public class Percepciones extends javax.swing.JFrame {
         guardar = new javax.swing.JButton();
         eliminar = new javax.swing.JButton();
 
-        setTitle("Percepciones");
+        setTitle("Detalle Percepciones");
 
         jLabel1.setText("Tipo Percepcion");
 
@@ -332,6 +333,21 @@ public class Percepciones extends javax.swing.JFrame {
         labelGravado.setText("Total Gravado: " + totalGravado);
         labelExento.setText("Total Exento: " + totalExento);
     }
+    
+    public void setTipoNomina(int tipoNomina){
+        this.tipoNomina = tipoNomina;
+        if(tipoNomina == 1){ //Nomina Extraordinaria
+            DefaultTableModel model = (DefaultTableModel) tabla.getModel();
+            model.setRowCount(0);
+        }else{
+            obtenerPercepciones(idEmpleado);
+        }
+        calcular();
+    }
+    
+    public Integer getTipoNomina(){
+        return this.tipoNomina;
+    }
 
     private void guardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarActionPerformed
         // TODO add your handling code here:
@@ -506,13 +522,14 @@ public class Percepciones extends javax.swing.JFrame {
         Statement stmt2 = factory.stmtLectura(con);
         ResultSet rs, rs2;
         DefaultTableModel model = (DefaultTableModel) tabla.getModel();
+        model.setRowCount(0);
         Object[] row = new Object[5];
 
         try {
             rs = stmt.executeQuery("SELECT * FROM ImportesPercepciones WHERE idEmpleado = " + idEmpleado);
             while (rs.next()) {
                 String claveD = rs.getString("clave");
-                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosPercepciones WHERE clave like \'" + claveD + "\'");
+                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosPercepciones WHERE clave = \'" + claveD + "\'");
                 if (rs2.next()) {
                     row[0] = rs2.getString("tipo");
                     row[1] = claveD;

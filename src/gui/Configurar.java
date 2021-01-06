@@ -73,6 +73,10 @@ public class Configurar extends javax.swing.JFrame {
         
         setHolders();
         setFoliosTablaColumnWidths();
+        
+        datos.getColumnModel().getColumn(6).setMinWidth(0);
+        datos.getColumnModel().getColumn(6).setMaxWidth(0);
+        datos.getColumnModel().getColumn(6).setWidth(0);
     }
 
     public Configurar() {
@@ -89,6 +93,10 @@ public class Configurar extends javax.swing.JFrame {
         
         setHolders();
         setFoliosTablaColumnWidths();
+        
+        datos.getColumnModel().getColumn(6).setMinWidth(0);
+        datos.getColumnModel().getColumn(6).setMaxWidth(0);
+        datos.getColumnModel().getColumn(6).setWidth(0);
     }
     
     private void setHolders(){
@@ -146,14 +154,14 @@ public class Configurar extends javax.swing.JFrame {
             stmt4 = fact.stmtLectura(con);
 
             rs = consultar(stmt);
-            rs2 = consultar(stmt2, "rfc", rfce);
+            
             rs3 = stmt3.executeQuery("SELECT Id,rfc,nombre FROM Emisores");
             rs4 = stmt4.executeQuery("SELECT c_tiposcomprobante_id, tiposcomprobante, descripcion FROM c_tiposcomprobante");
 
-            String rfct, cert, activados, regimen, restantes, usados;
+            String rfct, cert, activados, regimen, restantes, usados, cuenta_id;
             boolean esSucursal;
             int idSucursal;
-            Boolean facts, notas, dona;
+            
             sonSucursales = new ArrayList();
             idSucursales = new ArrayList();
 
@@ -165,6 +173,7 @@ public class Configurar extends javax.swing.JFrame {
                 restantes = rs.getString("creditosRestantes").trim();
                 usados = rs.getString("creditosUsados").trim();
                 esSucursal = rs.getBoolean("esSucursal");
+                cuenta_id = rs.getString("cuenta_id").trim();
 
                 if (esSucursal) {
                     idSucursal = rs.getInt("idSucursal");
@@ -186,20 +195,24 @@ public class Configurar extends javax.swing.JFrame {
                     }
                 }
 
-                String[] tmp = {rfct, cert, regimen, activados, restantes, usados};
+                String[] tmp = {rfct, cert, regimen, activados, restantes, usados, cuenta_id};
                 model.addRow(tmp);
                 sonSucursales.add(esSucursal);
                 idSucursales.add(idSucursal);
             }
+            
+            if(!rfce.trim().isEmpty()){
+                rs2 = consultar(stmt2, rfce);
+                if (rs2.next()) {
+                    rfc.setSelectedItem(rs2.getString("rfc").trim());
+                    certificado.setText(rs2.getString("nocertificado").trim());
+                    logoPath.setText(rs2.getString("logo").trim());
+                    regimenText.setText(rs2.getString("regimenFiscal").trim());
+                    lugarExpedicion.setText(rs2.getString("lugarExpedicion").trim());
+                    esSucursalCheck.setSelected(rs2.getBoolean("esSucursal"));
 
-            if (rs2.next()) {
-                rfc.setSelectedItem(rs2.getString("rfc").trim());
-                certificado.setText(rs2.getString("nocertificado").trim());
-                logoPath.setText(rs2.getString("logo").trim());
-                regimenText.setText(rs2.getString("regimenFiscal").trim());
-                lugarExpedicion.setText(rs2.getString("lugarExpedicion").trim());
-                esSucursalCheck.setSelected(rs2.getBoolean("esSucursal"));
-
+                }
+                rs2.close();
             }
             nombres = new ArrayList();
             while (rs3.next()) {
@@ -227,7 +240,6 @@ public class Configurar extends javax.swing.JFrame {
 
             //consultarInfoFolios();
             rs.close();
-            rs2.close();
             rs3.close();
             rs4.close();
             stmt.close();
@@ -254,6 +266,31 @@ public class Configurar extends javax.swing.JFrame {
         this.plantilla.setText("");
         
         try {
+            rs = stmt.executeQuery("SELECT emiteNominas FROM Emisores WHERE rfc = \'"+rfcE+"\'");
+            if(rs.next()){
+                DefaultComboBoxModel cmbTipo = (DefaultComboBoxModel)tipoComprobante.getModel();
+                if(!rs.getBoolean("emiteNominas")){
+                    for (int i = 0; i < cmbTipo.getSize(); i++) {
+                        String x = cmbTipo.getElementAt(i).toString();
+                        if(x.contains("N,")){
+                            cmbTipo.removeElementAt(i);
+                        }
+                    }
+                }else{
+                    boolean estaNomina = false;
+                    for (int i = 0; i < cmbTipo.getSize(); i++) {
+                        String x = cmbTipo.getElementAt(i).toString();
+                        if(x.contains("N,")){
+                            estaNomina = true;
+                            break;
+                        }
+                    }
+                    if(!estaNomina)
+                        cmbTipo.insertElementAt("N, Nómina", 3);
+                }
+            }
+            rs.close();
+            
             rs = stmt.executeQuery("SELECT f.serie, f.ultimo_folio, f.plantilla, tc.tiposcomprobante, tc.descripcion, tc.c_tiposcomprobante_id "
                     + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
                     + "WHERE rfc = \'" + rfcE + "\' "
@@ -282,6 +319,7 @@ public class Configurar extends javax.swing.JFrame {
                 model.addRow(row);
             }
             rs.close();
+            
             stmt.close();
             con.close();
         } catch (SQLException ex) {
@@ -290,9 +328,12 @@ public class Configurar extends javax.swing.JFrame {
         }
     }
 
-    private ResultSet consultar(Statement stmt, String dato, String valor) throws Exception {
+    private ResultSet consultar(Statement stmt, String valor) throws Exception {
         ResultSet rs;
-        rs = stmt.executeQuery("SELECT * FROM Cuentas WHERE " + dato + " = \'" + valor + "\'");
+        if(valor.trim().equalsIgnoreCase(rfce.trim()))
+            rs = stmt.executeQuery("SELECT TOP 1 * FROM Cuentas WHERE rfc = \'" + valor + "\'");
+        else
+            rs = stmt.executeQuery("SELECT * FROM Cuentas WHERE cuenta_id = " + valor);
         return rs;
     }
 
@@ -435,14 +476,14 @@ public class Configurar extends javax.swing.JFrame {
 
             },
             new String [] {
-                "RFC", "No. Certificado", "Regimen Fiscal", "Creditos Activados", "Creditos Restantes", "Creditos Usados"
+                "RFC", "No. Certificado", "Regimen Fiscal", "Creditos Activados", "Creditos Restantes", "Creditos Usados", "Cuenta ID"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -492,7 +533,7 @@ public class Configurar extends javax.swing.JFrame {
 
         jLabel6.setText("Certificados y Logo");
 
-        jLabel8.setText("Tipos de Comprobantes a Emitir:");
+        jLabel8.setText("Tipos de Comprobantes a Emitir");
 
         jLabel7.setText("Lugar Exp.");
 
@@ -623,10 +664,10 @@ public class Configurar extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(61, 61, 61)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 352, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(35, 35, 35)
                         .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
@@ -643,12 +684,15 @@ public class Configurar extends javax.swing.JFrame {
                                     .addComponent(jLabel1)
                                     .addComponent(jLabel7))
                                 .addGap(24, 24, 24)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(examinar, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(examinar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(agregar))))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel2)
                                 .addGap(26, 26, 26)
@@ -666,8 +710,7 @@ public class Configurar extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(esSucursalCheck)))
-                            .addComponent(agregar))
+                                    .addComponent(esSucursalCheck))))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
@@ -707,12 +750,14 @@ public class Configurar extends javax.swing.JFrame {
                     .addComponent(jLabel5)
                     .addComponent(produccion)
                     .addComponent(agregarEmisor))
-                .addGap(18, 18, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jLabel6)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -735,11 +780,11 @@ public class Configurar extends javax.swing.JFrame {
                             .addComponent(jLabel1)
                             .addComponent(examinar))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel7)
-                            .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addComponent(agregar))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel7)
+                                .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(agregar)))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -751,7 +796,7 @@ public class Configurar extends javax.swing.JFrame {
                             .addComponent(agregarComprobante))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(infoEmisor)
@@ -814,6 +859,7 @@ public class Configurar extends javax.swing.JFrame {
     private void datosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_datosMouseClicked
         TableModel model = datos.getModel();
         String rfct = model.getValueAt(datos.getSelectedRow(), 0).toString().trim();
+        String cuenta_id = model.getValueAt(datos.getSelectedRow(), 6).toString().trim();
         String cert, logot, regi, ser;
         boolean esSuc;
         habilitarBotones(true);
@@ -837,7 +883,7 @@ public class Configurar extends javax.swing.JFrame {
             Connection con = Elemento.odbc();
             Statement stmt = fact.stmtLectura(con);
 
-            ResultSet rs = this.consultar(stmt, "rfc", rfct);
+            ResultSet rs = this.consultar(stmt, cuenta_id);
 
             if (rs.next()) {
                 rfc.setSelectedItem(rfct);
@@ -952,11 +998,14 @@ public class Configurar extends javax.swing.JFrame {
                 } else {
                     idSucursal = 0;
                 }
-
-                ResultSet rs = stmt.executeQuery("SELECT rfc,nocertificado FROM Cuentas WHERE rfc like \'" + rfcE + "\'");
+                /******Se cambiara despues de analizarlo a mas detalle*******/
+                /*ResultSet rs = stmt.executeQuery("SELECT 1 FROM Cuentas WHERE rfc = \'" + rfcE + "\' AND nocertificado = \'"+cert+"\'");*/
+                /************************************************************/
+                
+                ResultSet rs = stmt.executeQuery("SELECT 1 FROM Cuentas WHERE rfc = \'" + rfcE + "\'");
                 if (!rs.next()) {
                     if (foliosTabla.getRowCount() < 1) {
-                        JOptionPane.showMessageDialog(null, "Falta agregar la informacion de los folios y series");
+                        util.printError("Falta agregar la informacion de series y folios");
                     } else {
                         stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal)"
                                 + "VALUES (\'" + rfcE + "\', \'" + certificado.getText().trim() + "\', \'" + logoPath.getText() + "\', \'"
@@ -991,14 +1040,19 @@ public class Configurar extends javax.swing.JFrame {
                         }.start();
                     }
                 } else {
-                    util.print("No se puede agregar el RFC: " + rfcE + " porque ya existe.");
+                    /******Se cambiara despues de analizarlo a mas detalle*******/
+                    /*util.printError("No se puede agregar la cuenta con RFC: " + rfcE + " y con certificado: " + cert + " porque ya existe.");*/
+                    /************************************************************/
+                    
+                    util.printError("No se puede agregar la cuenta con RFC: " + rfcE + " porque ya existe una.");
                 }
             } catch (HeadlessException | SQLException ex) {
                 ex.printStackTrace();
                 Elemento.log.error("Excepcion al insertar cuenta en la tabla Cuentas: " + ex.getMessage(), ex);
+                util.printError("Excepcion al insertar cuenta en la tabla Cuentas: " + ex.getMessage());
             }
         } else {
-            //JOptionPane.showMessageDialog(null, "El token no es valido, verificalo con el administrador");
+            util.printError("No se puede agregar la cuenta ya que no se han ingresado creditos");
         }
     }//GEN-LAST:event_agregarActionPerformed
 

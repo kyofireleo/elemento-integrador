@@ -40,6 +40,7 @@ public class Aguinaldo extends javax.swing.JFrame {
     String lugarExpedicion;
     double calculo;
     List<Double> importes;
+    DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 
     public Aguinaldo() {
         initComponents();
@@ -83,7 +84,6 @@ public class Aguinaldo extends javax.swing.JFrame {
             }
         }
         totalNeto = util.redondearBigDecimal(tn);
-        DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
         totalNetoLabel.setText(df.format(totalNeto.doubleValue()));
     }
 
@@ -92,28 +92,44 @@ public class Aguinaldo extends javax.swing.JFrame {
             importes.clear();
         }
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
-        int di = new Integer(model.getValueAt(0, 3).toString());
-        int diasA = new Integer(JOptionPane.showInputDialog(null, "Ingrese el numero de dias de Aguinaldo:", di).trim());
+        int diasTrabajados;
+        int diasA = 0; // = new Integer(JOptionPane.showInputDialog(null, "Ingrese el numero de dias de Aguinaldo:", di).trim());
+        int diasATabla;
         Empleado emp;
         BigDecimal totalA = BigDecimal.ZERO, totalI = BigDecimal.ZERO;
         BigDecimal total;
         for (int i = 0; i < model.getRowCount(); i++) {
-            model.setValueAt(diasA, i, 3);
             int num = new Integer(model.getValueAt(i, 0).toString());
             int idE = idEmpleados.get(i);
             emp = this.getEmpleadoCompleto(num, idE);
+            
+            if(fechaFinalPago.getDate() != null){
+                //Si el año inical de relacion laboral es igual a la fecha final de pago O el mes de la fecha final de pago es antes de Diciembre
+                if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear() || fechaFinalPago.getDate().getMonth() < 11){
+                    diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
+                    diasA = (int)util.redondear((15 / 365) * diasTrabajados);
+                }else{
+                    diasA = 15;
+                }
+            }
+            
+            diasATabla = new Integer(model.getValueAt(i, 3).toString());
+            if(diasA != diasATabla && diasATabla > 0)
+                diasA = diasATabla;
+            
             int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
             BigDecimal sd = emp.getSalarioDiarioInt();
             BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
             BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
             importes.add(agui.doubleValue());
             model.setValueAt(anti, i, 2);
+            model.setValueAt(diasA, i, 3);
             model.setValueAt(agui, i, 4);
             totalA = totalA.add(agui);
             totalI = totalI.add(isr);
         }
         total = util.redondear(totalA.subtract(totalI));
-        totalNetoLabel.setText(total.toString());
+        totalNetoLabel.setText(df.format(total));
     }
 
     private void recalcularAguinaldo() {
@@ -121,12 +137,30 @@ public class Aguinaldo extends javax.swing.JFrame {
         Empleado emp;
         BigDecimal totalA = BigDecimal.ZERO, totalI = BigDecimal.ZERO;
         BigDecimal total;
+        int diasTrabajados;
+        int diasA;
+        int diasATabla;
+        
         for (int i = 0; i < model.getRowCount(); i++) {
-            int diasA = new Integer(model.getValueAt(i, 3).toString());
+            diasA = new Integer(model.getValueAt(i, 3).toString());
             model.setValueAt(diasA, i, 3);
             int num = new Integer(model.getValueAt(i, 0).toString());
             int idE = idEmpleados.get(i);
             emp = this.getEmpleadoCompleto(num, idE);
+            
+            if(fechaFinalPago.getDate() != null){
+                if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear()){
+                    diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
+                    diasA = (int)util.redondear((15 / 365) * diasTrabajados);
+                }else{
+                    diasA = 15;
+                }
+            }
+            
+            diasATabla = new Integer(model.getValueAt(i, 3).toString());
+            if(diasA != diasATabla && diasATabla > 0)
+                diasA = diasATabla;
+            
             int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), this.fechaFinalPago.getDate());
             BigDecimal sd = emp.getSalarioDiarioInt();
             BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
@@ -138,7 +172,7 @@ public class Aguinaldo extends javax.swing.JFrame {
             
         }
         total = util.redondear(totalA.subtract(totalI));
-        totalNetoLabel.setText(total.toString());
+        totalNetoLabel.setText(df.format(total));
     }
 
     private BigDecimal obtenerAguinaldo(int dias, BigDecimal sueldoDiario) {
@@ -381,27 +415,27 @@ public class Aguinaldo extends javax.swing.JFrame {
         jLabel8.setText("Fecha Final de Pago");
 
         fechaFinalPago.setDateFormatString("yyyy-MM-dd");
-        fechaFinalPago.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                fechaFinalPagoMouseExited(evt);
-            }
-        });
         fechaFinalPago.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 fechaFinalPagoFocusLost(evt);
             }
         });
-        fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                fechaFinalPagoPropertyChange(evt);
+        fechaFinalPago.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                fechaFinalPagoMouseExited(evt);
             }
         });
         fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                fechaFinalPagoCaretPositionChanged(evt);
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaFinalPagoInputMethodTextChanged(evt);
             }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoCaretPositionChanged(evt);
+        });
+        fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                fechaFinalPagoPropertyChange(evt);
             }
         });
 
@@ -417,7 +451,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 java.lang.Integer.class, java.lang.String.class, java.lang.Long.class, java.lang.Integer.class, java.lang.Double.class, java.lang.Double.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, true, true, true
+                false, false, false, true, false, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -462,9 +496,9 @@ public class Aguinaldo extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(timbrarNomina)
-                        .addGap(257, 257, 257)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(recalcularBoton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(totalNetoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -480,7 +514,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                         .addComponent(jLabel8)
                         .addGap(10, 10, 10)
                         .addComponent(fechaFinalPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 109, Short.MAX_VALUE))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
         );
@@ -502,12 +536,11 @@ public class Aguinaldo extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(recalcularBoton)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel1)
-                        .addComponent(totalNetoLabel)
-                        .addComponent(timbrarNomina)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(totalNetoLabel)
+                    .addComponent(timbrarNomina)
+                    .addComponent(recalcularBoton))
                 .addContainerGap())
         );
 
@@ -527,7 +560,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         if (fechaFinalPago.getDate() != null) {
             fechaInicialPago.setDate(fechaFinalPago.getDate());
             fechaPago.setDate(fechaFinalPago.getDate());
-            this.recalcularAguinaldo();
+            this.calcularAguinaldo();
         }
         timbrarNomina.setEnabled(true);
     }//GEN-LAST:event_fechaFinalPagoPropertyChange
@@ -553,6 +586,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 complementos.nominas.Nominas nom;
                 complementos.nominas.Deducciones dedu = new complementos.nominas.Deducciones();
                 complementos.nominas.Percepciones perc = new complementos.nominas.Percepciones();
+                complementos.nominas.OtrosPagos otro = new complementos.nominas.OtrosPagos();
                 Factura fact;
                 Layout lay;
                 Emisor emi = this.getEmisor(idEmisor);
@@ -610,9 +644,12 @@ public class Aguinaldo extends javax.swing.JFrame {
                     nom.setPercepciones(perc);
                     nom.setTotalPercepciones(new BigDecimal(perc.getTotalSueldos()));
                     
-                    nom.setTotalOtrosPagos(BigDecimal.ZERO);
+                    otro.setOtrosPagos(getOtrosPagos(i));
+                    otro.setTotalOtrosPagos(otro.getOtrosPagos().get(0).getImporte());
+                    nom.setOtrosPagos(otro);
+                    nom.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
 
-                    fact.conceptos = getConceptos(perc, dedu);
+                    fact.conceptos = getConceptos(perc, dedu, otro);
                     fact = getTotales(perc, dedu, fact);
 
                     lay = new Layout(fact, emp, nom);
@@ -623,10 +660,10 @@ public class Aguinaldo extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_timbrarNominaActionPerformed
 
-    private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dec) {
+    private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dec, complementos.nominas.OtrosPagos otro) {
         List<String> conceptos = new ArrayList();
-        BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos());
-        BigDecimal deds = util.redondearBigDecimal(dec.getTotalRetenido());
+        BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos() + otro.getTotalOtrosPagos());
+        BigDecimal deds = util.redondearBigDecimal(dec != null ? dec.getTotalRetenido() + dec.getTotalOtras(): 0.0);
         String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@"+deds.toString()+"@" + pers.toString() + "\r\n";
         conceptos.add(con);
         return conceptos;
@@ -688,6 +725,24 @@ public class Aguinaldo extends javax.swing.JFrame {
         perc.setImporteExento(0.0);
         lista.add(perc);
 
+        return lista;
+    }
+    
+    private List<complementos.nominas.OtrosPagos.OtroPago> getOtrosPagos(int pos) {
+        Concepto cc = getConceptos("002", 'O');
+        DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
+        List<complementos.nominas.OtrosPagos.OtroPago> lista = new ArrayList();
+        complementos.nominas.OtrosPagos.OtroPago otr;
+        complementos.nominas.OtrosPagos otros = new complementos.nominas.OtrosPagos();
+        double importe = new Double(model.getValueAt(pos, 5).toString());
+        if(importe > 0){
+            otr = otros.getClase();
+            otr.setTipoOtroPago(cc.getTipoConcepto());
+            otr.setClave(cc.getCodigo());
+            otr.setConcepto(cc.getDescripcion());
+            otr.setImporte(importe);
+            lista.add(otr);
+        }
         return lista;
     }
 

@@ -25,6 +25,8 @@ public class Deducciones extends javax.swing.JFrame {
     private utils.Utils util = new utils.Utils(Elemento.log);
     Integer idEmpleado;
     boolean callNomina = false;
+    boolean nuevo;
+    private Integer tipoNomina = null;
     
     public Deducciones() {
         initComponents();
@@ -33,6 +35,7 @@ public class Deducciones extends javax.swing.JFrame {
     
     public Deducciones(int idEmpleado){
         this.idEmpleado = idEmpleado;
+        this.nuevo = true;
         initComponents();
         this.setLocationRelativeTo(null);
     }
@@ -40,6 +43,7 @@ public class Deducciones extends javax.swing.JFrame {
     public Deducciones(int idEmpleado, boolean callNomina){
         this.idEmpleado = idEmpleado;
         this.callNomina = callNomina;
+        this.nuevo = !callNomina;
         initComponents();
         this.setLocationRelativeTo(null);
         obtenerDeducciones(idEmpleado);
@@ -72,7 +76,7 @@ public class Deducciones extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         eliminar = new javax.swing.JButton();
 
-        setTitle("Deducciones");
+        setTitle("Detalle Deducciones");
 
         guardar.setText("Guardar");
         guardar.addActionListener(new java.awt.event.ActionListener() {
@@ -269,6 +273,21 @@ public class Deducciones extends javax.swing.JFrame {
         labelOtras.setText("Total Otras Deducciones: "+totalOtras);
     }
     
+    public void setTipoNomina(int tipoNomina){
+        this.tipoNomina = tipoNomina;
+        if(tipoNomina == 1){ //Nomina Extraordinaria
+            DefaultTableModel model = (DefaultTableModel) tabla.getModel();
+            model.setRowCount(0);
+        }else{
+            obtenerDeducciones(idEmpleado);
+        }
+        calcular();
+    }
+    
+    public Integer getTipoNomina(){
+        return this.tipoNomina;
+    }
+    
     private void limpiar(){
         tipoDeduccion.setSelectedIndex(0);
         clave.setText("");
@@ -361,8 +380,9 @@ public class Deducciones extends javax.swing.JFrame {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
-        if(idEmpleado != null)
+        if(nuevo){
             borrarDeducciones(idEmpleado);
+        }
         try {
             for (int i = 0; i < model.getRowCount(); i++) {
                 String query = "INSERT INTO ImportesDeducciones (clave,idEmpleado,importe) "
@@ -438,13 +458,14 @@ public class Deducciones extends javax.swing.JFrame {
         Statement stmt2 = factory.stmtLectura(con);
         ResultSet rs, rs2;
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
+        model.setRowCount(0);
         Object [] row = new Object[5];
         
         try {
             rs = stmt.executeQuery("SELECT * FROM ImportesDeducciones WHERE idEmpleado = "+idEmpleado);
             while(rs.next()){
                 String claveD = rs.getString("clave");
-                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosDeducciones WHERE clave like \'" + claveD + "\'");
+                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosDeducciones WHERE clave = \'" + claveD + "\'");
                 if(rs2.next()){
                     row[0] = rs2.getString("tipo");
                     row[1] = claveD;
