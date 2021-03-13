@@ -63,15 +63,17 @@ public class Elemento {
             } else {
                 log.info("El archivo de propiedades no existe, se crea uno nuevo con los valores por default");
                 out = new FileOutputStream(propFile);
-                tipoConexion = "archivo";
+                tipoConexion = "directo";
                 baseDatos = unidad + ":\\Facturas\\config\\ElementoBD3.mdb";
                 estructuraNombre = "serie_folio_rfce_rfcr_uuid";
                 prop.setProperty("tipo_conexion", tipoConexion);
                 prop.setProperty("base_datos", baseDatos);
                 prop.setProperty("estructura_nombre", estructuraNombre);
                 
-                prop.store(out, "En el tipo_conexion va \"archivo\" para cuando es un archivo directo,\r\n y \"odbc\" para cuando se configura un ODBC.\r\n"
-                        + "Cuando sea por archivo debemos poner la ruta completa que tiene la base de datos.\r\n"
+                prop.store(out, "En el tipo_conexion va \"archivo\" para cuando es un archivo .mdb o .accdb usando JDBC,\r\n"
+                        + "\"odbc\" para cuando se configura un ODBC {Microsoft Access Driver (*.mdb)} en el panel de control de Windows\r\n"
+                        + "y \"directo\" es igual que \"archivo\" pero con la diferencia que funciona con Java 8 utilizando UCanAccess.\r\n"
+                        + "Cuando sea por archivo o directo debemos poner la ruta completa que tiene la base de datos.\r\n"
                         + "Cuando es odbc ponemos el nombre del ODBC creado.\r\n"
                         + "Para la estructura del nombre, el punto sirve para indicar que van juntos o pegados,\r\n"
                         + "Cualquier otro caracter sera un separador.\r\n"
@@ -80,8 +82,9 @@ public class Elemento {
                 
                 out.close();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
+            log.error("Excepcion al verificar el archivo de propiedades", e);
         }
         
         verificarBd();
@@ -196,7 +199,7 @@ public class Elemento {
                 String dbURL;
                 if (tipoConexion.equalsIgnoreCase("directo")) {
                     String dataSource = baseDatos.trim();
-                    dbURL = "jdbc:ucanaccess://" + dataSource;
+                    dbURL = "jdbc:ucanaccess://" + dataSource + ";showSchema=true";
                 }else if(tipoConexion.equalsIgnoreCase("odbc")){
                     dbURL = "jdbc:odbc:"+baseDatos.trim();
                 }else if(tipoConexion.equalsIgnoreCase("archivo")){
@@ -630,7 +633,7 @@ public class Elemento {
         ResultSet rs;
         
         try{
-            stmt = factory.stmtEscritura(con);
+            stmt = con.createStatement();
             rs = stmt.executeQuery("Select top 1 cuenta_id from Cuentas");
             rs.close();
             
@@ -640,36 +643,61 @@ public class Elemento {
             stmt.close();
             con.close();
         }catch(SQLException ex){
-            ex.printStackTrace();
             log.warn("No existen los campos, se crearan...");
             try{
-                con.setAutoCommit(false);
-                if(stmt != null){
-                    stmt.executeUpdate("ALTER TABLE Cuentas drop column facturas;");
-                    stmt.executeUpdate("ALTER TABLE Cuentas drop column notasCredito;");
-                    stmt.executeUpdate("ALTER TABLE Cuentas drop column recibosDonativos;");
-                    stmt.executeUpdate("ALTER TABLE Cuentas DROP CONSTRAINT PrimaryKey;");
-                    stmt.executeUpdate("ALTER TABLE Cuentas ADD COLUMN cuenta_id AUTOINCREMENT PRIMARY KEY;");
-                    stmt.executeUpdate("ALTER TABLE Folios ADD COLUMN cuenta_id INT;");
-                    stmt.executeUpdate("ALTER TABLE Folios ADD CONSTRAINT FK_folios_cuenta_id FOREIGN KEY (cuenta_id) REFERENCES Cuentas (cuenta_id);");
-                    stmt.executeUpdate("UPDATE Folios f INNER JOIN Cuentas c ON c.rfc = f.rfc set f.cuenta_id = c.cuenta_id;");
+                if(ex.getMessage().toUpperCase().contains("CUENTA_ID")){
+                    String dbFileSpec = baseDatos.trim();
                     
+                    // write a temporary VBScript file ...
+                    File vbsFile = File.createTempFile("AlterTable", ".vbs");
+                    vbsFile.deleteOnExit();
+                    PrintWriter pw = new PrintWriter(vbsFile);
+                    pw.println("Set conn = CreateObject(\"ADODB.Connection\")");
+                    pw.println("conn.Open \"Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=" + dbFileSpec + "\"");
+                    pw.println("conn.Execute \"ALTER TABLE Cuentas drop column facturas\"");
+                    pw.println("conn.Execute \"ALTER TABLE Cuentas drop column notasCredito\"");
+                    pw.println("conn.Execute \"ALTER TABLE Cuentas drop column recibosDonativos\"");
+                    pw.println("conn.Execute \"ALTER TABLE Cuentas DROP CONSTRAINT PrimaryKey\"");
+                    pw.println("conn.Execute \"ALTER TABLE Cuentas ADD COLUMN cuenta_id AUTOINCREMENT PRIMARY KEY\"");
+                    pw.println("conn.Execute \"ALTER TABLE Folios ADD COLUMN cuenta_id INT\"");
+                    pw.println("conn.Execute \"ALTER TABLE Folios ADD CONSTRAINT FK_folios_cuenta_id FOREIGN KEY (cuenta_id) REFERENCES Cuentas (cuenta_id)\"");
+                    pw.println("conn.Execute \"UPDATE Folios f INNER JOIN Cuentas c ON c.rfc = f.rfc set f.cuenta_id = c.cuenta_id;\"");
+                    pw.println("conn.Close");
+                    pw.println("Set conn = Nothing");
+                    pw.close();
+                    
+                    // ... and execute it
+                    Process p = Runtime.getRuntime().exec("CSCRIPT.EXE \"" + vbsFile.getAbsolutePath() + "\"");
+                    p.waitFor();
+                    BufferedReader rdr = 
+                            new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                    int errorLines = 0;
+                    String line = rdr.readLine();
+                    while (line != null) {
+                        errorLines++;
+                        System.out.println(line);  // display error line(s), if any
+                        line = rdr.readLine();
+                    }
+                    if (errorLines == 0) {
+                        System.out.println("La estructura de la base de datos se cambio exitosamente");
+                        log.info("La estructura de la base de datos se cambio exitosamente");
+                    }else{
+                        System.out.println(line);
+                        log.error("Error al reestructurar la base de datos: \r\n" + line);
+                    }
+
                     stmt.close();
                 }
                 
-                con.commit();
                 con.close();
-            }catch(SQLException e){
+            }catch(Exception e){
                 e.printStackTrace();
                 log.error("Error al actualizar la estructura de la base de datos a las tablas Cuentas y/o Folios", e);
                 try{
-                    log.warn("Se hara rollback...");
-                    con.rollback();
                     con.close();
-                    log.info("Rollback realizado correctamente");
                 }catch(SQLException sex){
                     sex.printStackTrace();
-                    log.error("Error al hacer rollback");
+                    log.error("Error al cerrar la conexion");
                 }
                 JOptionPane.showMessageDialog(null, "Error al actualizar la estructura de la base de datos", "Error", JOptionPane.ERROR_MESSAGE);
             }

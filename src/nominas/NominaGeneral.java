@@ -429,6 +429,10 @@ public class NominaGeneral extends javax.swing.JFrame {
 
     private void fechaPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaPagoPropertyChange
         // TODO add your handling code here:
+        if(this.cmbTipoNomina.getSelectedIndex() == 1){
+            this.fechaInicialPago.setDate(this.fechaPago.getDate());
+            this.fechaFinalPago.setDate(this.fechaPago.getDate());
+        }
     }//GEN-LAST:event_fechaPagoPropertyChange
 
     private void fechaPagoInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaPagoInputMethodTextChanged
@@ -503,8 +507,13 @@ public class NominaGeneral extends javax.swing.JFrame {
     private void cmbTipoNominaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbTipoNominaItemStateChanged
         // TODO add your handling code here:
         if(cmbTipoNomina.getSelectedIndex() == 1 && evt.getItem().equals(cmbTipoNomina.getSelectedItem())){
+            if(fechaPago.getDate() == null){
+                fechaPago.setDate(new Date());
+            }
             fechaInicialPago.setDate(fechaPago.getDate());
             fechaFinalPago.setDate(fechaPago.getDate());
+            fechaInicialPago.setEnabled(false);
+            fechaFinalPago.setEnabled(false);
             util.print("Se cambio el valor de la fecha inicial y final al de la fecha de pago\r\nesto debido a que la nomina extraordinaria asi lo requiere.");
             DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -524,6 +533,8 @@ public class NominaGeneral extends javax.swing.JFrame {
         }else if(cmbTipoNomina.getSelectedIndex() == 0 && evt.getItem().equals(cmbTipoNomina.getSelectedItem())){
             fechaInicialPago.setDate(null);
             fechaFinalPago.setDate(null);
+            fechaInicialPago.setEnabled(true);
+            fechaFinalPago.setEnabled(true);
             util.print("Se reinicio el valor de la fecha inicial y final, debe de registrarlas de nuevo.");
             ventanasPer.forEach((k,v) -> v.setTipoNomina(0));
             ventanasDec.forEach((k,v) -> v.setTipoNomina(0));

@@ -41,6 +41,7 @@ public class Aguinaldo extends javax.swing.JFrame {
     double calculo;
     List<Double> importes;
     DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+    boolean recalcularDias = false;
 
     public Aguinaldo() {
         initComponents();
@@ -92,7 +93,7 @@ public class Aguinaldo extends javax.swing.JFrame {
             importes.clear();
         }
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
-        int diasTrabajados;
+        double diasTrabajados;
         int diasA = 0; // = new Integer(JOptionPane.showInputDialog(null, "Ingrese el numero de dias de Aguinaldo:", di).trim());
         int diasATabla;
         Empleado emp;
@@ -105,31 +106,36 @@ public class Aguinaldo extends javax.swing.JFrame {
             
             if(fechaFinalPago.getDate() != null){
                 //Si el año inical de relacion laboral es igual a la fecha final de pago O el mes de la fecha final de pago es antes de Diciembre
-                if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear() || fechaFinalPago.getDate().getMonth() < 11){
+                if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear()){
                     diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
-                    diasA = (int)util.redondear((15 / 365) * diasTrabajados);
+                }else if (fechaFinalPago.getDate().getMonth() < 11){
+                    Date fechaIni = new Date(fechaFinalPago.getDate().getYear(), 0, 1);
+                    diasTrabajados = calcularDiasPagados(fechaIni, fechaFinalPago.getDate());
                 }else{
-                    diasA = 15;
+                    diasTrabajados = 365;
                 }
+                //15 dias por la proporcion de diasTrabajados entre 365 dias del año
+                diasA = (int)util.redondearHaciaArriba(15 * (diasTrabajados / 365));
+                
+                diasATabla = new Integer(model.getValueAt(i, 3).toString());
+                if(!recalcularDias && diasATabla > 0)
+                    diasA = diasATabla;
+
+                int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
+                BigDecimal sd = emp.getSalarioDiarioInt();
+                BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
+                BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
+                importes.add(agui.doubleValue());
+                model.setValueAt(anti, i, 2);
+                model.setValueAt(diasA, i, 3);
+                model.setValueAt(agui, i, 4);
+                totalA = totalA.add(agui);
+                totalI = totalI.add(isr);
             }
-            
-            diasATabla = new Integer(model.getValueAt(i, 3).toString());
-            if(diasA != diasATabla && diasATabla > 0)
-                diasA = diasATabla;
-            
-            int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
-            BigDecimal sd = emp.getSalarioDiarioInt();
-            BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
-            BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
-            importes.add(agui.doubleValue());
-            model.setValueAt(anti, i, 2);
-            model.setValueAt(diasA, i, 3);
-            model.setValueAt(agui, i, 4);
-            totalA = totalA.add(agui);
-            totalI = totalI.add(isr);
         }
         total = util.redondear(totalA.subtract(totalI));
         totalNetoLabel.setText(df.format(total));
+        recalcularDias = false;
     }
 
     private void recalcularAguinaldo() {
@@ -137,7 +143,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         Empleado emp;
         BigDecimal totalA = BigDecimal.ZERO, totalI = BigDecimal.ZERO;
         BigDecimal total;
-        int diasTrabajados;
+        double diasTrabajados;
         int diasA;
         int diasATabla;
         
@@ -151,14 +157,18 @@ public class Aguinaldo extends javax.swing.JFrame {
             if(fechaFinalPago.getDate() != null){
                 if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear()){
                     diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
-                    diasA = (int)util.redondear((15 / 365) * diasTrabajados);
+                }else if (fechaFinalPago.getDate().getMonth() < 11){
+                    Date fechaIni = new Date(fechaFinalPago.getDate().getYear(), 0, 1);
+                    diasTrabajados = calcularDiasPagados(fechaIni, fechaFinalPago.getDate());
                 }else{
-                    diasA = 15;
+                    diasTrabajados = 365;
                 }
+                //15 dias por la proporcion de diasTrabajados entre 365 dias del año
+                diasA = (int)util.redondearHaciaArriba(15 * (diasTrabajados / 365));
             }
             
             diasATabla = new Integer(model.getValueAt(i, 3).toString());
-            if(diasA != diasATabla && diasATabla > 0)
+            if(!recalcularDias && diasATabla > 0)
                 diasA = diasATabla;
             
             int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), this.fechaFinalPago.getDate());
@@ -173,6 +183,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         }
         total = util.redondear(totalA.subtract(totalI));
         totalNetoLabel.setText(df.format(total));
+        recalcularDias = false;
     }
 
     private BigDecimal obtenerAguinaldo(int dias, BigDecimal sueldoDiario) {
@@ -415,24 +426,6 @@ public class Aguinaldo extends javax.swing.JFrame {
         jLabel8.setText("Fecha Final de Pago");
 
         fechaFinalPago.setDateFormatString("yyyy-MM-dd");
-        fechaFinalPago.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fechaFinalPagoFocusLost(evt);
-            }
-        });
-        fechaFinalPago.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                fechaFinalPagoMouseExited(evt);
-            }
-        });
-        fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoCaretPositionChanged(evt);
-            }
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoInputMethodTextChanged(evt);
-            }
-        });
         fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 fechaFinalPagoPropertyChange(evt);
@@ -547,31 +540,16 @@ public class Aguinaldo extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fechaFinalPagoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fechaFinalPagoMouseExited
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fechaFinalPagoMouseExited
-
-    private void fechaFinalPagoFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fechaFinalPagoFocusLost
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fechaFinalPagoFocusLost
-
     private void fechaFinalPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaFinalPagoPropertyChange
         // TODO add your handling code here:
         if (fechaFinalPago.getDate() != null) {
             fechaInicialPago.setDate(fechaFinalPago.getDate());
             fechaPago.setDate(fechaFinalPago.getDate());
+            recalcularDias = true;
             this.calcularAguinaldo();
         }
         timbrarNomina.setEnabled(true);
     }//GEN-LAST:event_fechaFinalPagoPropertyChange
-
-    private void fechaFinalPagoCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaFinalPagoCaretPositionChanged
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fechaFinalPagoCaretPositionChanged
-
-    private void fechaFinalPagoInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaFinalPagoInputMethodTextChanged
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fechaFinalPagoInputMethodTextChanged
 
     private void timbrarNominaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_timbrarNominaActionPerformed
         Date fp = fechaPago.getDate();
@@ -853,10 +831,14 @@ public class Aguinaldo extends javax.swing.JFrame {
 
     private void recalcularBotonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recalcularBotonActionPerformed
         // TODO add your handling code here:
-        if (isDiasTrabajadosIguales() && isImportesAguinaldosIguales()) {
-            this.calcularAguinaldo();
-        } else {
-            this.recalcularAguinaldo();
+        if(fechaFinalPago.getDate() != null){
+            if (isDiasTrabajadosIguales() && isImportesAguinaldosIguales()) {
+                this.calcularAguinaldo();
+            } else {
+                this.recalcularAguinaldo();
+            }
+        }else{
+            util.printError("Debe de ingresar las fechas de pago");
         }
 
     }//GEN-LAST:event_recalcularBotonActionPerformed
@@ -866,6 +848,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         if (fechaPago.getDate() != null) {
             fechaInicialPago.setDate(fechaPago.getDate());
             fechaFinalPago.setDate(fechaPago.getDate());
+            recalcularDias = true;
         }
     }//GEN-LAST:event_fechaPagoPropertyChange
 
@@ -874,6 +857,7 @@ public class Aguinaldo extends javax.swing.JFrame {
         if (fechaInicialPago.getDate() != null) {
             fechaPago.setDate(fechaInicialPago.getDate());
             fechaFinalPago.setDate(fechaInicialPago.getDate());
+            recalcularDias = true;
         }
     }//GEN-LAST:event_fechaInicialPagoPropertyChange
 
