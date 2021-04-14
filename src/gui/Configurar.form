@@ -95,21 +95,23 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                              <Component id="tipoComprobante" min="-2" pref="155" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="tipoComprobante" min="-2" pref="162" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="serie" min="-2" pref="63" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="folio" min="-2" pref="73" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="plantilla" max="32767" attributes="0"/>
+                              <Component id="plantilla" pref="208" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="exaFact" min="-2" pref="28" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="agregarComprobante" min="-2" max="-2" attributes="0"/>
+                              <Component id="agregarComprobante" min="-2" pref="34" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="borrarComprobante" min="-2" pref="34" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="653" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="660" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -140,7 +142,7 @@
                   <Component id="produccion" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="agregarEmisor" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="11" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jLabel8" alignment="0" min="-2" pref="14" max="-2" attributes="0"/>
                   <Component id="jSeparator2" alignment="0" min="-2" pref="10" max="-2" attributes="0"/>
@@ -186,19 +188,22 @@
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="tipoComprobante" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="serie" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="folio" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="plantilla" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="exaFact" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="agregarComprobante" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="tipoComprobante" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="serie" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="folio" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="plantilla" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="exaFact" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="agregarComprobante" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="borrarComprobante" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                       <Component id="jScrollPane2" min="-2" pref="127" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="29" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="infoEmisor" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -500,12 +505,17 @@
     </Container>
     <Component class="javax.swing.JButton" name="agregarComprobante">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Agregar"/>
-        <Property name="name" type="java.lang.String" value="agregar" noResource="true"/>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/gui/add.png"/>
+        </Property>
+        <Property name="name" type="java.lang.String" value="agregarComprobante" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="agregarComprobanteActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="Configurar_agregarComprobante"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="serie">
       <Properties>
@@ -518,6 +528,17 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator2">
+    </Component>
+    <Component class="javax.swing.JButton" name="borrarComprobante">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/gui/DeleteRed.png"/>
+        </Property>
+        <Property name="name" type="java.lang.String" value="borrarComprobante" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="borrarComprobanteActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

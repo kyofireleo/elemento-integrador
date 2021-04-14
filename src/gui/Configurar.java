@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -50,6 +51,7 @@ public class Configurar extends javax.swing.JFrame {
     private List<Boolean> sonSucursales;
     private List<Integer> idSucursales;
     private int idSucursal;
+    private Integer cuentaIdActual;
     private Sucursales suc;
     private Map<String,Integer> mapemi;
     private TextPrompt holder;
@@ -130,6 +132,8 @@ public class Configurar extends javax.swing.JFrame {
         ResultSet rs, rs2, rs3, rs4;
         DefaultTableModel model = (DefaultTableModel) datos.getModel();
         model.setRowCount(0);
+        DefaultTableModel modelFolios = (DefaultTableModel) foliosTabla.getModel();
+        modelFolios.setRowCount(0);
 
         DefaultComboBoxModel combo = (DefaultComboBoxModel) rfc.getModel();
         combo.removeAllElements();
@@ -293,7 +297,7 @@ public class Configurar extends javax.swing.JFrame {
             
             rs = stmt.executeQuery("SELECT f.serie, f.ultimo_folio, f.plantilla, tc.tiposcomprobante, tc.descripcion, tc.c_tiposcomprobante_id "
                     + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
-                    + "WHERE rfc = \'" + rfcE + "\' "
+                    + "WHERE f.cuenta_id = " + cuentaIdActual + " "
                     + "ORDER BY f.idComprobante ASC");
             while (rs.next()) {
                 String tipo = rs.getString("tiposcomprobante");
@@ -442,6 +446,7 @@ public class Configurar extends javax.swing.JFrame {
         serie = new javax.swing.JTextField();
         folio = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
+        borrarComprobante = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Configuracion");
@@ -642,8 +647,8 @@ public class Configurar extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(foliosTabla);
 
-        agregarComprobante.setText("Agregar");
-        agregarComprobante.setName("agregar"); // NOI18N
+        agregarComprobante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gui/add.png"))); // NOI18N
+        agregarComprobante.setName("agregarComprobante"); // NOI18N
         agregarComprobante.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 agregarComprobanteActionPerformed(evt);
@@ -653,6 +658,14 @@ public class Configurar extends javax.swing.JFrame {
         serie.setName("serie"); // NOI18N
 
         folio.setName("folio"); // NOI18N
+
+        borrarComprobante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gui/DeleteRed.png"))); // NOI18N
+        borrarComprobante.setName("borrarComprobante"); // NOI18N
+        borrarComprobante.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                borrarComprobanteActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -714,20 +727,22 @@ public class Configurar extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
-                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(plantilla)
+                                .addComponent(plantilla, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(exaFact, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(agregarComprobante))
+                                .addComponent(agregarComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(borrarComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 653, Short.MAX_VALUE))))
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(agregarCreditos)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -750,14 +765,13 @@ public class Configurar extends javax.swing.JFrame {
                     .addComponent(jLabel5)
                     .addComponent(produccion)
                     .addComponent(agregarEmisor))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(jLabel6)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -787,16 +801,18 @@ public class Configurar extends javax.swing.JFrame {
                             .addComponent(agregar)))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(exaFact)
-                            .addComponent(agregarComprobante))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(exaFact)
+                                .addComponent(agregarComprobante))
+                            .addComponent(borrarComprobante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(11, 11, 11)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(infoEmisor)
@@ -861,6 +877,7 @@ public class Configurar extends javax.swing.JFrame {
         String rfct = model.getValueAt(datos.getSelectedRow(), 0).toString().trim();
         String cuenta_id = model.getValueAt(datos.getSelectedRow(), 6).toString().trim();
         String cert, logot, regi, ser;
+        int cuent;
         boolean esSuc;
         habilitarBotones(true);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
@@ -892,6 +909,7 @@ public class Configurar extends javax.swing.JFrame {
                 regi = rs.getString("regimenFiscal");
                 ser = rs.getString("lugarExpedicion");
                 esSuc = rs.getBoolean("esSucursal");
+                cuent = rs.getInt("cuenta_id");
 
                 certificado.setText(cert);
                 logoPath.setText(logot);
@@ -899,13 +917,14 @@ public class Configurar extends javax.swing.JFrame {
                 lugarExpedicion.setText(ser);
                 esSucursalCheck.setSelected(esSuc);
 
-                consultarInfoFolios(rfct);
-
                 rfcActual = rfct;
                 certActual = cert;
                 logoActual = logot;
                 regimenActual = regi;
                 lugarActual = ser;
+                cuentaIdActual = cuent;
+                
+                consultarInfoFolios(rfct);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -980,18 +999,11 @@ public class Configurar extends javax.swing.JFrame {
                 // TODO add your handling code here:
 
                 Connection con = Elemento.odbc();
+                con.setAutoCommit(false);
                 Statement stmt = fact.stmtEscritura(con);
                 final String cert = certificado.getText().trim();
                 final String rfcE = rfc.getSelectedItem().toString().trim();
                 final String nombre = nombres.get(rfc.getSelectedIndex() - 1);
-
-                if (produccion.isSelected()) {
-                    user = "SIGI7408036N9_71";
-                    pass = "66514482243426681793344";
-                } else {
-                    user = "SIGI7408036N9_6";
-                    pass = "1505794126573071453720";
-                }
 
                 if (suc != null) {
                     idSucursal = suc.getIdSucursal();
@@ -1007,37 +1019,54 @@ public class Configurar extends javax.swing.JFrame {
                     if (foliosTabla.getRowCount() < 1) {
                         util.printError("Falta agregar la informacion de series y folios");
                     } else {
+                        Savepoint sp = con.setSavepoint("Cuentas");
                         stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal)"
                                 + "VALUES (\'" + rfcE + "\', \'" + certificado.getText().trim() + "\', \'" + logoPath.getText() + "\', \'"
                                 + regimenText.getText().trim() + "\', \'" + lugarExpedicion.getText() + "\',"
                                 + 2 + "," + creditos + "," + creditos + "," + 0 + "," + esSucursalCheck.isSelected() + "," + idSucursal + ")");
+                        
+                        rs = stmt.executeQuery("SELECT cuenta_id FROM Cuentas WHERE rfc = \'"+rfcE+"\'");
+                        rs.next();
+                        int cuenta_id = rs.getInt("cuenta_id");
+                        boolean resultado = guardarTiposComprobante(cuenta_id, rfcE, con);
 
                         stmt.close();
+                        
+                        if(resultado){
+                            con.commit();
+                            
+                            final Emisores emis = new Emisores(true, rfcE);
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    util.enviarEmail("esquerodriguez@gmail.com,activacion@feimpresoresdigitales.com,gorenajc2.3@gmail.com",
+                                            "SE AGREGO LA SIGUIENTE CUENTA\r\n"
+                                            + "*Vendedor: " + rfcVendedor.toUpperCase() + "\r\n"
+                                            + "*Certificado: " + cert + "\r\n\r\n"
+                                            + "***DATOS DEL EMISOR***\r\n\r\n"
+                                            + "NOMBRE2: " + nombre + "\r\n"
+                                            + "RFC2: " + rfcE + "\r\n"
+                                            + "CALLE2: " + emis.calle.getText().trim() + "\r\n"
+                                            + "NOEXTERIOR2: " + emis.noExterior.getText().trim() + "\r\n"
+                                            + "NOINTERIOR2: " + emis.noInterior.getText().trim() + "\r\n"
+                                            + "COLONIA2: " + emis.colonia.getText().trim() + "\r\n"
+                                            + "LOCALIDAD2: " + emis.localidad.getText().trim() + "\r\n"
+                                            + "MUNICIPIO2: " + emis.municipio.getText().trim() + "\r\n"
+                                            + "ESTADO2: " + emis.estado.getSelectedItem().toString() + "\r\n"
+                                            + "PAIS2: " + emis.pais.getSelectedItem().toString() + "\r\n"
+                                            + "CP2: " + emis.cp.getText().trim() + "\r\n\r\n"
+                                            + "*Folios Activados: " + creditos + "\r\n");
+                                }
+                            }.start();
+                            
+                            util.print("Cuenta agregada exitosamente");
+                        }else{
+                            con.rollback(sp);
+                            util.printError("Ocurrio un problema al guardar los tipos de comprobante");
+                        }
+                        
                         con.close();
                         llenarFormulario(produccion.isSelected());
-                        final Emisores emis = new Emisores(true, rfcE);
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                util.enviarEmail("esquerodriguez@gmail.com,activacion@feimpresoresdigitales.com,gorenajc2.3@gmail.com",
-                                        "SE AGREGO LA SIGUIENTE CUENTA\r\n"
-                                        + "*Vendedor: " + rfcVendedor.toUpperCase() + "\r\n"
-                                        + "*Certificado: " + cert + "\r\n\r\n"
-                                        + "***DATOS DEL EMISOR***\r\n\r\n"
-                                        + "NOMBRE2: " + nombre + "\r\n"
-                                        + "RFC2: " + rfcE + "\r\n"
-                                        + "CALLE2: " + emis.calle.getText().trim() + "\r\n"
-                                        + "NOEXTERIOR2: " + emis.noExterior.getText().trim() + "\r\n"
-                                        + "NOINTERIOR2: " + emis.noInterior.getText().trim() + "\r\n"
-                                        + "COLONIA2: " + emis.colonia.getText().trim() + "\r\n"
-                                        + "LOCALIDAD2: " + emis.localidad.getText().trim() + "\r\n"
-                                        + "MUNICIPIO2: " + emis.municipio.getText().trim() + "\r\n"
-                                        + "ESTADO2: " + emis.estado.getSelectedItem().toString() + "\r\n"
-                                        + "PAIS2: " + emis.pais.getSelectedItem().toString() + "\r\n"
-                                        + "CP2: " + emis.cp.getText().trim() + "\r\n\r\n"
-                                        + "*Folios Activados: " + creditos + "\r\n");
-                            }
-                        }.start();
                     }
                 } else {
                     /******Se cambiara despues de analizarlo a mas detalle*******/
@@ -1055,7 +1084,42 @@ public class Configurar extends javax.swing.JFrame {
             util.printError("No se puede agregar la cuenta ya que no se han ingresado creditos");
         }
     }//GEN-LAST:event_agregarActionPerformed
-
+    
+    private boolean guardarTiposComprobante(int cuenta_id, String rfcE, Connection con) throws SQLException{
+        DefaultTableModel model = (DefaultTableModel)foliosTabla.getModel();
+        PreparedStatement pstmt = con.prepareStatement("INSERT INTO Folios (idComprobante,rfc,ultimo_folio,serie,plantilla,cuenta_id) VALUES(?,?,?,?,?,?)");
+        
+        for(int i=0; i < foliosTabla.getRowCount(); i++){
+            int idComp = new Integer(model.getValueAt(i, 0).toString().split(",")[0]);
+            int ultimoFolio = new Integer(model.getValueAt(i, 2).toString());
+            String ser = model.getValueAt(i, 1).toString();
+            String plant = model.getValueAt(i, 3).toString();
+            
+            pstmt.setInt(1, idComp);
+            pstmt.setString(2, rfcE);
+            pstmt.setInt(3, ultimoFolio);
+            pstmt.setString(4, ser);
+            pstmt.setString(5, plant);
+            pstmt.setInt(6, cuenta_id);
+            
+            pstmt.addBatch();
+        }
+        
+        int[] res = pstmt.executeBatch();
+        pstmt.close();
+        
+        int posError = Arrays.binarySearch(res, PreparedStatement.EXECUTE_FAILED);
+        
+        boolean resultado = !(res.length != foliosTabla.getRowCount() || posError != -1);
+        if(resultado){
+            Elemento.log.info("Tipos de comprobante y folios agregados correctamente");
+        }else{
+            Elemento.log.error("Error al guardar los tipos de comprobante: {Length: " + res.length + ", PosicionError:" + posError + "}");
+        }
+        
+        return resultado;
+    }
+    
     private String getQueryFoliosInsert(int idComprobante, String rfc, String ultimoFolio, String serie, String plantilla) {
         return "INSERT INTO Folios (idComprobante,rfc,ultimo_folio,serie,plantilla) "
                 + "VALUES (" + idComprobante + ",\'" + rfc + "\'," + ultimoFolio + ",\'"
@@ -1121,6 +1185,14 @@ public class Configurar extends javax.swing.JFrame {
 
             stmt.close();
             con.close();
+            
+            if (produ) {
+                user = "SIGI7408036N9_71";
+                pass = "66514482243426681793344";
+            } else {
+                user = "SIGI7408036N9_6";
+                pass = "1505794126573071453720";
+            }
 
             llenarFormulario(produ);
         } catch (Exception e) {
@@ -1146,6 +1218,14 @@ public class Configurar extends javax.swing.JFrame {
                 stmt.executeUpdate("DELETE FROM Cuentas WHERE rfc like \'" + rfcx + "\'");
                 stmt.close();
                 con.close();
+                
+                this.cuentaIdActual = null;
+                this.rfcActual = null;
+                this.logoActual = null;
+                this.certActual = null;
+                this.regimenActual = null;
+                this.lugarActual = null;
+                
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 Elemento.log.error("Excepcion al eliminar una cuenta: " + ex.getMessage(), ex);
@@ -1221,37 +1301,46 @@ public class Configurar extends javax.swing.JFrame {
             String plantillaT = this.plantilla.getText();
             int tipoComprobanteT = this.tipoComprobante.getSelectedIndex();
             int folioT = new Integer(this.folio.getText());
-            
-            try{
-                Connection con = Elemento.odbc();
-                PreparedStatement stmt;
+            DefaultTableModel model = (DefaultTableModel)foliosTabla.getModel();
+            if(this.certActual == null || this.certActual.trim().isEmpty()){
+                Object[] row = {tipoComprobanteT, serieT, folioT, plantillaT};
                 if(this.isUpdateFolios){
-                    stmt = con.prepareStatement("UPDATE Folios SET ultimo_folio = ?, serie = ?, plantilla = ? WHERE rfc = ? AND idComprobante = ?");
-                    stmt.setInt(1, folioT);
-                    stmt.setString(2, serieT);
-                    stmt.setString(3, plantillaT);
-                    stmt.setString(4, rfcActual);
-                    stmt.setInt(5, tipoComprobanteT);
-                }else{
-                    stmt = con.prepareStatement("INSERT INTO Folios (rfc, idComprobante, ultimo_folio, serie, plantilla) VALUES (?,?,?,?,?)");
-                    stmt.setString(1, rfcActual);
-                    stmt.setInt(2, tipoComprobanteT);
-                    stmt.setInt(3, folioT);
-                    stmt.setString(4, serieT);
-                    stmt.setString(5, plantillaT);
+                    model.removeRow(this.foliosTabla.getSelectedRow());
                 }
+                model.addRow(row);
+            }else{
+                try{
+                    Connection con = Elemento.odbc();
+                    PreparedStatement stmt;
+                    if(this.isUpdateFolios){
+                        stmt = con.prepareStatement("UPDATE Folios SET ultimo_folio = ?, serie = ?, plantilla = ? WHERE cuenta_id = ? AND idComprobante = ?");
+                        stmt.setInt(1, folioT);
+                        stmt.setString(2, serieT);
+                        stmt.setString(3, plantillaT);
+                        stmt.setInt(4, this.cuentaIdActual);
+                        stmt.setInt(5, tipoComprobanteT);
+                    }else{
+                        stmt = con.prepareStatement("INSERT INTO Folios (rfc, idComprobante, ultimo_folio, serie, plantilla, cuenta_id) VALUES (?,?,?,?,?,?)");
+                        stmt.setString(1, rfcActual);
+                        stmt.setInt(2, tipoComprobanteT);
+                        stmt.setInt(3, folioT);
+                        stmt.setString(4, serieT);
+                        stmt.setString(5, plantillaT);
+                        stmt.setInt(6, this.cuentaIdActual);
+                    }
 
-                stmt.executeUpdate();
-                stmt.close();
-                con.close();
-                
-                this.isUpdateFolios = false;
-                this.cambiarBotonTiposComprobante();
-                this.consultarInfoFolios(rfcActual);
-            }catch(SQLException e){
-                e.printStackTrace();
-                util.printError("Excepcion al agregar un tipo de comprobante a la cuenta: " + e.getMessage());
-                Elemento.log.error("Excepcion al agregar un tipo de comprobante a la cuenta: " + e.getMessage(), e);
+                    stmt.executeUpdate();
+                    stmt.close();
+                    con.close();
+
+                    this.isUpdateFolios = false;
+                    this.cambiarBotonTiposComprobante();
+                    this.consultarInfoFolios(rfcActual);
+                }catch(SQLException e){
+                    e.printStackTrace();
+                    util.printError("Excepcion al agregar un tipo de comprobante a la cuenta: " + e.getMessage());
+                    Elemento.log.error("Excepcion al agregar un tipo de comprobante a la cuenta: " + e.getMessage(), e);
+                }
             }
             
         }else{
@@ -1262,10 +1351,10 @@ public class Configurar extends javax.swing.JFrame {
     
     private void cambiarBotonTiposComprobante(){
         if(isUpdateFolios){
-            this.agregarComprobante.setText("Guardar");
+            this.agregarComprobante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gui/save.png")));
             this.tipoComprobante.setEnabled(false);
         }else{
-            this.agregarComprobante.setText("Agregar");
+            this.agregarComprobante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/gui/add.png")));
             this.tipoComprobante.setEnabled(true);
         }
     }
@@ -1288,7 +1377,7 @@ public class Configurar extends javax.swing.JFrame {
     private void foliosTablaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_foliosTablaFocusLost
         // TODO add your handling code here:
         String nameOb = evt.getOppositeComponent().getName();
-        String names [] = {"serie", "folio", "plantilla", "agregar", "tipoComprobante"};
+        String names [] = {"serie", "folio", "plantilla", "agregarComprobante", "tipoComprobante", "exaFact", "borrarComprobante"};
         List<String> nombresTipos = new ArrayList(Arrays.asList(names));
         
         if(!nombresTipos.contains(nameOb)){
@@ -1302,6 +1391,16 @@ public class Configurar extends javax.swing.JFrame {
             this.foliosTabla.clearSelection();
         }
     }//GEN-LAST:event_foliosTablaFocusLost
+
+    private void borrarComprobanteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_borrarComprobanteActionPerformed
+        // TODO add your handling code here:
+        DefaultTableModel model = (DefaultTableModel)foliosTabla.getModel();
+        if(this.certActual == null || this.certActual.trim().isEmpty()){
+            model.removeRow(foliosTabla.getSelectedRow());
+        }else{
+            removerComprobante(foliosTabla.getSelectedRow());
+        }
+    }//GEN-LAST:event_borrarComprobanteActionPerformed
 
     private void agregarCreditos(final int creditos, final String rfcE, final String cert) {
         try {
@@ -1392,6 +1491,7 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JButton agregarCreditos;
     private javax.swing.JButton agregarEmisor;
     private javax.swing.JButton borrar;
+    private javax.swing.JButton borrarComprobante;
     private javax.swing.JButton btnDonat;
     private javax.swing.JTextField certificado;
     private javax.swing.JTable datos;
@@ -1439,5 +1539,24 @@ public class Configurar extends javax.swing.JFrame {
             e.printStackTrace();
         }
         return idEmisor;
+    }
+
+    private void removerComprobante(int selectedRow) {
+        Connection con = Elemento.odbc();
+        Statement stmt;
+        DefaultTableModel model = (DefaultTableModel)foliosTabla.getModel();
+        String tipoComp = model.getValueAt(selectedRow, 0).toString().split(",")[0];
+        
+        try{
+            stmt = this.fact.stmtEscritura(con);
+            stmt.executeUpdate("DELETE FROM Folios WHERE cuenta_id = " + this.cuentaIdActual + " and idComprobante = " + tipoComp);
+            stmt.close();
+            con.close();
+            
+            this.consultarInfoFolios(this.rfcActual);
+        }catch(SQLException ex){
+            ex.printStackTrace();
+            Elemento.log.error("Error al eliminar un comprobante en la cuenta con certificado: " + this.certActual, ex);
+        }
     }
 }
