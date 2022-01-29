@@ -7,41 +7,52 @@ package elemento;
 import java.math.BigDecimal;
 import java.util.List;
 
-
 public class Factura {
+
     public String nombre, rfc, calle, colonia, numExt, numInt, cp, localidad, municipio, estado, pais; //Datos cliente
-    
-    public String serie, folio, tipoCfd, formaPago, metodoPago, motivoDescuento, cuentaBancaria,lugarExpedicion;   //Datos CFDi
+
+    public String serie, folio, tipoCfd, formaPago, metodoPago, motivoDescuento, cuentaBancaria, lugarExpedicion;   //Datos CFDi
     public double subtotal, descuento, iva = 0, total, totalIeps = 0, totalRetenidos, totalTraslados, porIva, porRetenidos, porTraslados;
     public double ivaRetenido, isrRetenido, porIeps;
-    public String moneda,tipoCambio,leyenda,condicionPago;
+    public String moneda, tipoCambio, leyenda, condicionPago;
     public int idEmpleado;
     public String usoCfdi;
     public String cfdisAsociados;
     public String tipoRelacion;
-    
+
+    public String regimenFiscalReceptor;
+    public String numRegIdTrib;
+
     public List<String> descripcion, unidad;    //Datos conceptos
     public List<Double> cantidad, precio, importe;
     public List<String> conceptos;
     public List<ConceptoTraslado> traslados;
     public List<ConceptoRetencion> retenciones;
-    
+
     public String numEmpleado;
-    
+
     public String prefactura;
-    
+
     public Emisor emisor;
     private Donataria donat;
 
-    public Factura(){
-        
+    public Factura() {
+
     }
-    
-    public List<ConceptoTraslado> getTraslados(){
+
+    public String getRegimenFiscalReceptor() {
+        return regimenFiscalReceptor;
+    }
+
+    public String getNumRegIdTrib() {
+        return numRegIdTrib;
+    }
+
+    public List<ConceptoTraslado> getTraslados() {
         return traslados;
     }
-    
-    public List<ConceptoRetencion> getRetenciones(){
+
+    public List<ConceptoRetencion> getRetenciones() {
         return retenciones;
     }
 
@@ -80,12 +91,12 @@ public class Factura {
     public Emisor getEmisor() {
         return emisor;
     }
-    
-    public String getSerie(){
+
+    public String getSerie() {
         return serie;
     }
-    
-    public void setSerie(String serie){
+
+    public void setSerie(String serie) {
         this.serie = serie;
     }
 
@@ -96,7 +107,7 @@ public class Factura {
     public void setIvaRetenido(double ivaRetenido) {
         this.ivaRetenido = ivaRetenido;
     }
-    
+
     public List<String> getConceptos() {
         return conceptos;
     }
@@ -228,27 +239,27 @@ public class Factura {
     public List<String> getUnidad() {
         return unidad;
     }
-    
-    public void setDonataria(Donataria donat){
+
+    public void setDonataria(Donataria donat) {
         this.donat = donat;
     }
-    
-    public Donataria getDonataria(){
+
+    public Donataria getDonataria() {
         return donat;
     }
-    
-    public String getUsoCfdi(){
+
+    public String getUsoCfdi() {
         return usoCfdi;
     }
-    
-        
-    public class ConceptoTraslado{
+
+    public class ConceptoTraslado {
+
         private int numConcepto;
         private BigDecimal base, tasa, importe;
         private String impuesto, tipoFactor;
-        
-        public ConceptoTraslado(){
-            
+
+        public ConceptoTraslado() {
+
         }
 
         public int getNumConcepto() {
@@ -298,16 +309,17 @@ public class Factura {
         public void setTipoFactor(String tipoFactor) {
             this.tipoFactor = tipoFactor;
         }
-        
+
     }
-    
-    public class ConceptoRetencion{
+
+    public class ConceptoRetencion {
+
         private int numConcepto;
         private BigDecimal base, tasa, importe;
         private String impuesto, tipoFactor;
-        
-        public ConceptoRetencion(){
-            
+
+        public ConceptoRetencion() {
+
         }
 
         public int getNumConcepto() {
@@ -357,6 +369,6 @@ public class Factura {
         public void setTipoFactor(String tipoFactor) {
             this.tipoFactor = tipoFactor;
         }
-        
+
     }
 }

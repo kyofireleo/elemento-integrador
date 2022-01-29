@@ -6,6 +6,7 @@ package nominas.configuracion;
 
 import elemento.Elemento;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -138,6 +139,7 @@ public class ConfigNominas extends javax.swing.JFrame {
         aguinaldoBoton = new javax.swing.JButton();
         actualizar = new javax.swing.JButton();
         clavesOP = new javax.swing.JButton();
+        utilidadesBoton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Configuracion de Nomina");
@@ -280,6 +282,13 @@ public class ConfigNominas extends javax.swing.JFrame {
             }
         });
 
+        utilidadesBoton.setText("Utilidades");
+        utilidadesBoton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                utilidadesBotonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -322,9 +331,11 @@ public class ConfigNominas extends javax.swing.JFrame {
                         .addComponent(generarNomina)
                         .addGap(18, 18, 18)
                         .addComponent(aguinaldoBoton)
-                        .addGap(146, 146, 146)
-                        .addComponent(actualizar)
+                        .addGap(18, 18, 18)
+                        .addComponent(utilidadesBoton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(actualizar)
+                        .addGap(18, 18, 18)
                         .addComponent(all)))
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
@@ -360,10 +371,11 @@ public class ConfigNominas extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(generarNomina)
-                    .addComponent(all)
-                    .addComponent(aguinaldoBoton)
-                    .addComponent(actualizar))
+                    .addComponent(utilidadesBoton, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(aguinaldoBoton, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(generarNomina, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(actualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(all, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -532,6 +544,21 @@ public class ConfigNominas extends javax.swing.JFrame {
         cop.setVisible(true);
     }//GEN-LAST:event_clavesOPActionPerformed
 
+    private void utilidadesBotonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_utilidadesBotonActionPerformed
+        // TODO add your handling code here:
+        List<String> numEmpleados = new ArrayList();
+        List<Integer> ids = new ArrayList();
+        if(tablaEmpleados.getSelectedRowCount() < 1){
+            JOptionPane.showMessageDialog(null, "Debe seleccionar al menos 1 empleado");
+        }else{
+            for(int row : tablaEmpleados.getSelectedRows()){
+                numEmpleados.add(model.getValueAt(row, 0).toString());
+                ids.add(idEmpleados.get(row));
+            }
+            new NominaGeneral(numEmpleados,idEmisor,ids,true).setVisible(true);
+        }
+    }//GEN-LAST:event_utilidadesBotonActionPerformed
+
     private boolean isNumeric(String cadena){
 	try {
             Integer.parseInt(cadena);
@@ -595,6 +622,7 @@ public class ConfigNominas extends javax.swing.JFrame {
     private javax.swing.JTextField nombreBusqueda;
     private javax.swing.JTextField numeroBusqueda;
     private javax.swing.JTable tablaEmpleados;
+    private javax.swing.JButton utilidadesBoton;
     private javax.swing.JButton verEmpleado;
     // End of variables declaration//GEN-END:variables
 }

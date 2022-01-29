@@ -6,6 +6,7 @@ package nominas;
 
 import elemento.Elemento;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,10 +30,25 @@ public class Percepciones extends javax.swing.JFrame {
     private boolean callNomina = false;
     public boolean nuevo;
     private Integer tipoNomina = null;
+    private boolean isPtu = false;
+    private Double importePtu = 0.0;
+    
 
     public Percepciones(int idEmpleado, boolean callNomina) {
         this.idEmpleado = idEmpleado;
         this.callNomina = callNomina;
+        nuevo = !callNomina;
+        initComponents();
+        this.setLocationRelativeTo(null);
+        obtenerPercepciones(idEmpleado);
+        calcular();
+    }
+    
+    public Percepciones(int idEmpleado, boolean callNomina, boolean isPtu, Double importePtu) {
+        this.idEmpleado = idEmpleado;
+        this.callNomina = callNomina;
+        this.isPtu = isPtu;
+        this.importePtu = importePtu;
         nuevo = !callNomina;
         initComponents();
         this.setLocationRelativeTo(null);
@@ -336,7 +352,7 @@ public class Percepciones extends javax.swing.JFrame {
     
     public void setTipoNomina(int tipoNomina){
         this.tipoNomina = tipoNomina;
-        if(tipoNomina == 1){ //Nomina Extraordinaria
+        if(tipoNomina == 1 && !isPtu){ //Nomina Extraordinaria
             DefaultTableModel model = (DefaultTableModel) tabla.getModel();
             model.setRowCount(0);
         }else{
@@ -517,36 +533,47 @@ public class Percepciones extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void obtenerPercepciones(int idEmpleado) {
-        Connection con = Elemento.odbc();
-        Statement stmt = factory.stmtLectura(con);
-        Statement stmt2 = factory.stmtLectura(con);
-        ResultSet rs, rs2;
         DefaultTableModel model = (DefaultTableModel) tabla.getModel();
         model.setRowCount(0);
         Object[] row = new Object[5];
-
-        try {
-            rs = stmt.executeQuery("SELECT * FROM ImportesPercepciones WHERE idEmpleado = " + idEmpleado);
-            while (rs.next()) {
-                String claveD = rs.getString("clave");
-                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosPercepciones WHERE clave = \'" + claveD + "\'");
-                if (rs2.next()) {
-                    row[0] = rs2.getString("tipo");
-                    row[1] = claveD;
-                    row[2] = rs2.getString("concepto");
-                    row[3] = rs.getDouble("importeGravado");
-                    row[4] = rs.getDouble("importeExento");
-                    model.addRow(row);
+        
+        if(!isPtu){
+            Connection con = Elemento.odbc();
+            Statement stmt = factory.stmtLectura(con);
+            Statement stmt2 = factory.stmtLectura(con);
+            ResultSet rs, rs2;
+            
+            try {
+                rs = stmt.executeQuery("SELECT * FROM ImportesPercepciones WHERE idEmpleado = " + idEmpleado);
+                while (rs.next()) {
+                    String claveD = rs.getString("clave");
+                    rs2 = stmt2.executeQuery("SELECT * FROM ConceptosPercepciones WHERE clave = \'" + claveD + "\'");
+                    if (rs2.next()) {
+                        row[0] = rs2.getString("tipo");
+                        row[1] = claveD;
+                        row[2] = rs2.getString("concepto");
+                        row[3] = rs.getDouble("importeGravado");
+                        row[4] = rs.getDouble("importeExento");
+                        model.addRow(row);
+                    }
                 }
-            }
 
-            stmt.close();
-            stmt2.close();
-            con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Elemento.log.error("Excepcion al consultar las percepciones del empleado: " + idEmpleado, e);
+                stmt.close();
+                stmt2.close();
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Elemento.log.error("Excepcion al consultar las percepciones del empleado: " + idEmpleado, e);
+            }
+        }else{
+            row[0] = "003";
+            row[1] = "PTU";
+            row[2] = "Pago de utilidades";
+            row[3] = importePtu;
+            row[4] = 0.0;
+            model.addRow(row);
         }
+        
     }
 
     private void borrarPercepciones(int idEmpleado) {

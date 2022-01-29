@@ -38,6 +38,7 @@ public class Elemento {
     public static String user, pass;
     private static String tipoConexion, baseDatos;
     public static String estructuraNombre;
+    private static String tipoEnvioMail, pathOutlook;
 
     public Elemento() {
         new Thread() {
@@ -59,6 +60,11 @@ public class Elemento {
                 tipoConexion = prop.getProperty("tipo_conexion");
                 baseDatos = prop.getProperty("base_datos");
                 estructuraNombre = prop.getProperty("estructura_nombre");
+                String tipo = prop.getProperty("tipoEnvioMail");
+                tipoEnvioMail = tipo == null ? "1" : tipo;
+                if(tipo != null && tipo.equals("2")){
+                    pathOutlook = prop.getProperty("pathOutlook");
+                }
                 in.close();
             } else {
                 log.info("El archivo de propiedades no existe, se crea uno nuevo con los valores por default");
@@ -66,9 +72,13 @@ public class Elemento {
                 tipoConexion = "directo";
                 baseDatos = unidad + ":\\Facturas\\config\\ElementoBD3.mdb";
                 estructuraNombre = "serie_folio_rfce_rfcr_uuid";
+                tipoEnvioMail = "1";
+                
                 prop.setProperty("tipo_conexion", tipoConexion);
                 prop.setProperty("base_datos", baseDatos);
                 prop.setProperty("estructura_nombre", estructuraNombre);
+                prop.setProperty("tipoEnvioMail", tipoEnvioMail);
+                prop.setProperty("pathOutlook", "C:\\Program Files (x86)\\Microsoft Office\\Root\\Office16\\OUTLOOK.EXE");
                 
                 prop.store(out, "En el tipo_conexion va \"archivo\" para cuando es un archivo .mdb o .accdb usando JDBC,\r\n"
                         + "\"odbc\" para cuando se configura un ODBC {Microsoft Access Driver (*.mdb)} en el panel de control de Windows\r\n"
@@ -78,7 +88,12 @@ public class Elemento {
                         + "Para la estructura del nombre, el punto sirve para indicar que van juntos o pegados,\r\n"
                         + "Cualquier otro caracter sera un separador.\r\n"
                         + "Las palabras claves son:\r\n"
-                        + "serie\r\nfolio\r\nrfce (RFC Emisor)\r\nrfcr (RFC Receptor)\r\nuuid");
+                        + "serie\r\nfolio\r\nrfce (RFC Emisor)\r\nrfcr (RFC Receptor)\r\nuuid\r\n"
+                        + "Para el tipoEnvioMail serian 1 o 2, los cuales significan:\r\n"
+                        + "\t1: Envio desde el Elemento por medio de JavaMail.\r\n"
+                        + "\t2: Envio desde Outlook (previamente configurado).\r\n"
+                        + "Cuando el tipo es 2, entonces debemos poner en pathOutlook la ruta del archivo exe de outlook, utilizando dobles diagonales (\\\\)\r\n"
+                        + "en lugar de una diagonal (\\).");
                 
                 out.close();
             }
@@ -425,7 +440,7 @@ public class Elemento {
             rs = stmt.executeQuery("SELECT TOP 1 smtp_server, port, tls FROM ConfiguracionMail WHERE proveedor = '" + prov + "'");
             
             if(rs.next()){
-                resp += rs.getString(1) + "|" + rs.getString(2) + "|" + rs.getBoolean(3);
+                resp += rs.getString(1) + "|" + rs.getString(2) + "|" + rs.getBoolean(3) + "|" + tipoEnvioMail + "|" + pathOutlook;
                 
                 rs.close();
                 stmt.close();
@@ -653,7 +668,7 @@ public class Elemento {
                     vbsFile.deleteOnExit();
                     PrintWriter pw = new PrintWriter(vbsFile);
                     pw.println("Set conn = CreateObject(\"ADODB.Connection\")");
-                    pw.println("conn.Open \"Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=" + dbFileSpec + "\"");
+                    pw.println("conn.Open \"Driver={Microsoft Access Driver (*.mdb)};Dbq=" + dbFileSpec + "\"");
                     pw.println("conn.Execute \"ALTER TABLE Cuentas drop column facturas\"");
                     pw.println("conn.Execute \"ALTER TABLE Cuentas drop column notasCredito\"");
                     pw.println("conn.Execute \"ALTER TABLE Cuentas drop column recibosDonativos\"");

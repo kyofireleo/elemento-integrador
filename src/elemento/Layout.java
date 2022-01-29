@@ -16,16 +16,24 @@ import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import nominas.Empleado;
 import pagos.Documento;
 import pagos.Pago;
 
 public class Layout {
+
     public String folio;
     public String nombre;
     public String rfc;
+    public String pais;
+    public String codigoPostal;
+    public String regimenFiscalReceptor;
+    public String numRegIdTrib;
     public String rfcEmi;
     public String ruta;
     public String texto;
@@ -54,6 +62,10 @@ public class Layout {
         this.fact = fact;
         this.nombre = fact.getNombre();
         this.rfc = fact.getRfc();
+        this.codigoPostal = fact.getCp();
+        this.regimenFiscalReceptor = fact.getRegimenFiscalReceptor();
+        this.numRegIdTrib = fact.getNumRegIdTrib();
+        this.pais = fact.getPais();
         this.conceptos = fact.getConceptos();
         this.iva = BigDecimal.valueOf(fact.getIva());
         this.subtotal = BigDecimal.valueOf(fact.getSubtotal());
@@ -68,6 +80,10 @@ public class Layout {
         this.fact = fact;
         this.nombre = fact.getNombre();
         this.rfc = fact.getRfc();
+        this.codigoPostal = fact.getCp();
+        this.regimenFiscalReceptor = fact.getRegimenFiscalReceptor();
+        this.numRegIdTrib = fact.getNumRegIdTrib();
+        this.pais = fact.getPais();
         this.conceptos = fact.getConceptos();
         this.iva = BigDecimal.valueOf(fact.getIva());
         this.subtotal = BigDecimal.valueOf(fact.getSubtotal());
@@ -78,7 +94,7 @@ public class Layout {
         if (foli.equals("")) {
             int limite = 100000;
             int inicio = 1000;
-            this.folio = "" + (int)Math.floor(Math.random() * (double)(limite - inicio + 1) + (double)inicio) + "";
+            this.folio = "" + (int) Math.floor(Math.random() * (double) (limite - inicio + 1) + (double) inicio) + "";
         } else {
             this.folio = foli;
         }
@@ -89,6 +105,10 @@ public class Layout {
         this.fact = fact;
         this.nombre = fact.getNombre();
         this.rfc = fact.getRfc();
+        this.codigoPostal = fact.getCp();
+        this.regimenFiscalReceptor = fact.getRegimenFiscalReceptor();
+        this.numRegIdTrib = fact.getNumRegIdTrib();
+        this.pais = fact.getPais();
         this.conceptos = fact.getConceptos();
         this.iva = BigDecimal.valueOf(fact.getIva());
         this.subtotal = BigDecimal.valueOf(fact.getSubtotal());
@@ -99,7 +119,7 @@ public class Layout {
         if (foli.equals("")) {
             int limite = 100000;
             int inicio = 1000;
-            this.folio = "" + (int)Math.floor(Math.random() * (double)(limite - inicio + 1) + (double)inicio) + "";
+            this.folio = "" + (int) Math.floor(Math.random() * (double) (limite - inicio + 1) + (double) inicio) + "";
         } else {
             this.folio = foli;
         }
@@ -116,6 +136,10 @@ public class Layout {
         this.nomi = nomi;
         this.nombre = fact.nombre;
         this.rfc = fact.rfc;
+        this.codigoPostal = fact.getCp();
+        this.regimenFiscalReceptor = fact.getRegimenFiscalReceptor();
+        //this.numRegIdTrib = fact.getNumRegIdTrib();
+        //this.pais = fact.getPais();
         this.conceptos = fact.conceptos;
         this.iva = BigDecimal.valueOf(fact.iva);
         this.subtotal = BigDecimal.valueOf(fact.subtotal);
@@ -126,27 +150,30 @@ public class Layout {
         fol = this.folio;
         try {
             this.crearLayout(this.rellenarNominas(fact.prefactura));
-        }
-        catch (Error | Exception e) {
+        } catch (Error | Exception e) {
             e.printStackTrace();
-            Elemento.log.error((Object)"Error al procesar el layout: ", e);
+            Elemento.log.error((Object) "Error al procesar el layout: ", e);
         }
     }
-    
-    public Layout(Factura fact, List<Pago> pagos){
+
+    public Layout(Factura fact, List<Pago> pagos) {
         this.fact = fact;
         this.emisor = fact.emisor;
         this.nombre = fact.nombre;
         this.rfc = fact.rfc;
+        this.codigoPostal = fact.getCp();
+        this.regimenFiscalReceptor = fact.getRegimenFiscalReceptor();
+        //this.numRegIdTrib = fact.getNumRegIdTrib();
+        //this.pais = fact.getPais();
         this.rfcEmi = fact.emisor.getRfc();
         this.folio = fact.folio;
         this.serie = fact.serie;
         fol = this.folio;
-        try{
+        try {
             this.crearLayout(this.rellenarPagos(pagos));
-        }catch(Error | Exception e){
+        } catch (Error | Exception e) {
             e.printStackTrace();
-            Elemento.log.error("Error al procesar el layout para pagos: ",e);
+            Elemento.log.error("Error al procesar el layout para pagos: ", e);
         }
     }
 
@@ -157,13 +184,13 @@ public class Layout {
     private BigDecimal redondear(double num) {
         return new BigDecimal(num).setScale(2, RoundingMode.HALF_UP);
     }
-    
-    private BigDecimal redondear(BigDecimal num){
+
+    private BigDecimal redondear(BigDecimal num) {
         return num.setScale(2, RoundingMode.HALF_UP);
     }
 
     private String rellenarNominas(String preFactura) throws Error, Exception {
-        Elemento.log.info((Object)"Se comienza a llenar el Layout...");
+        Elemento.log.info((Object) "Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
         this.fecha = this.getFecha();
         /*BigDecimal porIeps = this.redondear(this.fact.porIeps);
@@ -186,10 +213,11 @@ public class Layout {
         re.append("PAIS1: ").append(this.emisor.getPais()).append("\r\n");
         re.append("CP1: ").append(this.emisor.getCp()).append("\r\n");*/
         re.append("REGISTROPATRONAL: ").append(this.emisor.getRegistroPatronal()).append("\r\n");
-        
-        if(this.emisor.getRfc().trim().length() == 13)
+
+        if (this.emisor.getRfc().trim().length() == 13) {
             re.append("CURPE: ").append(this.emisor.getCurp()).append("\r\n");
-        
+        }
+
         re.append("[/DATOS_EMISOR]\r\n\r\n");
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
@@ -205,7 +233,7 @@ public class Layout {
         re.append("CP2: ").append(this.fact.getCp()).append("\r\n");*/
         re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
-        
+
         String tipoComprobante = this.fact.getTipoCfd();
         re.append("[DATOS_CFD]\r\n");
         re.append("FOLIO: ").append(this.folio).append("\r\n");
@@ -238,8 +266,9 @@ public class Layout {
         
         re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");*/
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        if(this.fact.getIsrRetenido() > 0)
+        if (this.fact.getIsrRetenido() > 0) {
             re.append("IR2: 001@").append(this.fact.getIsrRetenido()).append("\r\n");
+        }
         re.append("[/IMPUESTOS_RETENIDOS]\r\n\r\n");
         re.append("[EMPLEADO]\r\n");
         re.append("NUMEMPLEADO: ").append(this.emp.getNumEmpleado()).append("\r\n");
@@ -269,20 +298,20 @@ public class Layout {
         re.append("NUM_DIAS_PAGADOS: ").append(this.nomi.getNumDiasPagados()).append("\r\n");
         re.append("ANTIGUEDAD: ").append("P").append(this.nomi.getAntiguedad()).append("W").append("\r\n");
         re.append("[/NOMINA]\r\n\r\n");
-        
+
         if (otr != null && !otr.getOtrosPagos().isEmpty()) {
             re.append("[OTROS_PAGOS]\r\n");
             for (int i = 0; i < otr.getOtrosPagos().size(); ++i) {
-                OtrosPagos.OtroPago p = (OtrosPagos.OtroPago)otr.getOtrosPagos().get(i);
+                OtrosPagos.OtroPago p = (OtrosPagos.OtroPago) otr.getOtrosPagos().get(i);
                 re.append("OTR").append(i + 1).append(": ").append(p.getTipoOtroPago()).append("@").append(p.getClave()).append("@").append(p.getConcepto()).append("@").append(p.getImporte()).append("\r\n");
             }
             re.append("[/OTROS_PAGOS]\r\n\r\n");
         }
-        
+
         if (per != null && !per.getPercepciones().isEmpty()) {
             re.append("[PERCEPCIONES]\r\n");
             for (int i = 0; i < per.getPercepciones().size(); ++i) {
-                Percepciones.Percepcion p = (Percepciones.Percepcion)per.getPercepciones().get(i);
+                Percepciones.Percepcion p = (Percepciones.Percepcion) per.getPercepciones().get(i);
                 re.append("PER").append(i + 1).append(": ").append(p.getTipoPercepcion()).append("@").append(p.getClave()).append("@").append(p.getConcepto()).append("@").append(p.getImporteGravado()).append("@").append(p.getImporteExento()).append("\r\n");
             }
             re.append("[/PERCEPCIONES]\r\n\r\n");
@@ -290,7 +319,7 @@ public class Layout {
         if (dec != null && !dec.getDeducciones().isEmpty()) {
             re.append("[DEDUCCIONES]\r\n");
             for (int i = 0; i < dec.getDeducciones().size(); ++i) {
-                Deducciones.Deduccion d = (Deducciones.Deduccion)dec.getDeducciones().get(i);
+                Deducciones.Deduccion d = (Deducciones.Deduccion) dec.getDeducciones().get(i);
                 re.append("DEC").append(i + 1).append(": ").append(d.getTipoDeduccion()).append("@").append(d.getClave()).append("@").append(d.getConcepto()).append("@").append(d.getImporte()).append("\r\n");
             }
             re.append("[/DEDUCCIONES]\r\n\r\n");
@@ -314,30 +343,30 @@ public class Layout {
         }
         return re.toString();
     }
-    
-    private String rellenarPagos(List<Pago> pagos)throws Error, Exception{
-        Elemento.log.info((Object)"Se comienza a llenar el Layout...");
+
+    private String rellenarPagos(List<Pago> pagos) throws Error, Exception {
+        Elemento.log.info((Object) "Se comienza a llenar el Layout...");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         StringBuilder re = new StringBuilder();
-        
+
         re.append("[DATOS_EMISOR]\r\n");
         re.append("NOMBRE1: ").append(this.emisor.getNombre()).append("\r\n");
         re.append("REGIMENFISCAL: ").append(this.emisor.getRegimenFiscal()).append("\r\n");
         re.append("RFC1: ").append(this.emisor.getRfc()).append("\r\n");
-        
+
         re.append("[/DATOS_EMISOR]\r\n\r\n");
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
         re.append("RFC2: ").append(this.rfc).append("\r\n");
         re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
-        
+
         re.append("[DATOS_CFD]\r\n");
         re.append("FOLIO: ").append(this.folio).append("\r\n");
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: P\r\n");
-        if(this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()){
+        if (this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()) {
             re.append("RELACIONCFDI: ").append(this.fact.cfdisAsociados).append("\r\n");
             re.append("TIPORELACION: ").append(this.fact.tipoRelacion).append("\r\n");
         }
@@ -353,15 +382,15 @@ public class Layout {
         re.append("TOTALNETO: 0\r\n");
         re.append("LEYENDA: ").append(this.fact.getLeyenda()).append("\r\n");
         re.append("[/DATOS_CFD]\r\n\r\n");
-        
+
         re.append("[CONCEPTOS]\r\n");
         re.append("C1: 84111506@ACT@.@.@1@Pago@0@0@0\r\n");
         re.append("[/CONCEPTOS]\r\n\r\n");
-        
+
         re.append("[PAGOS]\r\n");
         for (int i = 0; i < pagos.size(); i++) {
             Pago p = pagos.get(i);
-            re.append("P").append((i+1)).append(": ").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getCuentaBeneficiario());
+            re.append("P").append((i + 1)).append(": ").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getCuentaBeneficiario());
             re.append("@").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getRfcCtaBen());
             re.append("@").append(p.getCuentaOrdenante().isEmpty() ? "." : p.getCuentaOrdenante());
             re.append("@").append(p.getCuentaOrdenante().isEmpty() ? "." : p.getRfcCtaOrd());
@@ -372,13 +401,13 @@ public class Layout {
             re.append("@").append(sdf.format(p.getFechaPago())).append("\r\n");
         }
         re.append("[/PAGOS]\r\n\r\n");
-        
+
         re.append("[DOCTOS_PAGOS]\r\n");
-        for(int h = 0; h < pagos.size(); h++){
+        for (int h = 0; h < pagos.size(); h++) {
             Pago p = pagos.get(h);
             for (int i = 0; i < p.getDocumentos().size(); i++) {
                 Documento d = p.getDocumentos().get(i);
-                re.append("DP").append((i+1)).append(": P").append((h+1));
+                re.append("DP").append((i + 1)).append(": P").append((h + 1));
                 re.append("@").append(d.getFolio());
                 re.append("@").append(d.getSerie());
                 re.append("@").append(d.getImpSaldoInsoluto().toString());
@@ -392,18 +421,18 @@ public class Layout {
             }
         }
         re.append("[/DOCTOS_PAGOS]\r\n");
-        
+
         return re.toString();
     }
 
     private String rellenar(String preFactura) {
         double porcentaje = 0.0;
-        Elemento.log.info((Object)"Se comienza a llenar el Layout...");
+        Elemento.log.info((Object) "Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
         this.fecha = this.getFecha();
         BigDecimal porIeps = new BigDecimal(this.fact.porIeps / 100).setScale(2, RoundingMode.HALF_UP);
         BigDecimal totalIeps = new BigDecimal(this.fact.totalIeps).setScale(2, RoundingMode.HALF_UP);
-        
+
         re.append(preFactura).append("\r\n");
         re.append("[DATOS_EMISOR]\r\n");
         re.append("NOMBRE1: ").append(this.emisor.getNombre()).append("\r\n");
@@ -436,6 +465,10 @@ public class Layout {
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
         re.append("RFC2: ").append(this.rfc).append("\r\n");
+        re.append("DOMICILIOFISCAL: ").append(this.codigoPostal).append("\r\n");
+        re.append("REGIMENFISCAL2: ").append(this.regimenFiscalReceptor).append("\r\n");
+        re.append("NUMREGIDTRIB: ").append(this.numRegIdTrib).append("\r\n");
+        re.append("RESIDENCIAFISCAL: ").append(this.pais).append("\r\n");
         re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
         /*re.append("CALLE2: ").append(this.fact.getCalle()).append("\r\n");
         re.append("NOEXTERIOR2: ").append(this.fact.getNumExt()).append("\r\n");
@@ -447,13 +480,13 @@ public class Layout {
         re.append("PAIS2: ").append(this.fact.getPais()).append("\r\n");
         re.append("CP2: ").append(this.fact.getCp()).append("\r\n");*/
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
-        
+
         re.append("[DATOS_CFD]\r\n");
         re.append("FOLIO: ").append(this.folio).append("\r\n");
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: ").append(this.fact.getTipoCfd()).append("\r\n");
-        if(this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()){
+        if (this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()) {
             re.append("RELACIONCFDI: ").append(this.fact.cfdisAsociados).append("\r\n");
             re.append("TIPORELACION: ").append(this.fact.tipoRelacion).append("\r\n");
         }
@@ -470,42 +503,62 @@ public class Layout {
         re.append("TOTALNETO: ").append(new BigDecimal(this.total.toString()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
         re.append("LEYENDA: ").append(this.fact.getLeyenda()).append("\r\n");
         re.append("[/DATOS_CFD]\r\n\r\n");
-        
+
         re.append("[CONCEPTOS]\r\n");
         for (String concepto : this.conceptos) {
             re.append(concepto).append("\r\n");
         }
         re.append("[/CONCEPTOS]\r\n\r\n");
+
         boolean writeIva = false;
-        if(fact.traslados.size() > 0){
+        Map<String, Map<BigDecimal, ImpuestoTraslado>> trasladosBase = new HashMap();
+
+        if (!fact.traslados.isEmpty()) {
             re.append("[TRASLADADOS_CONCEPTOS]\r\n");
             for (int i = 0; i < fact.traslados.size(); i++) {
                 Factura.ConceptoTraslado tr = fact.traslados.get(i);
-                if(tr.getTasa().compareTo(BigDecimal.ZERO) >= 0){
-                    writeIva = true;
-                    if(tr.getTasa().compareTo(BigDecimal.ZERO) > 0 && porcentaje == 0.0){
-                        porcentaje = tr.getTasa().doubleValue();
+                if (tr.getTasa().compareTo(BigDecimal.ZERO) >= 0) {
+
+                    if (!trasladosBase.containsKey(tr.getImpuesto())) {
+                        Map<BigDecimal, ImpuestoTraslado> mit = new HashMap();
+                        mit.put(tr.getTasa(), new ImpuestoTraslado(tr.getBase(), tr.getTasa()));
+                        trasladosBase.put(tr.getImpuesto(), mit);
+                    } else {
+                        Map<BigDecimal, ImpuestoTraslado> mit = trasladosBase.get(tr.getImpuesto());
+                        if (mit.containsKey(tr.getTasa())) {
+                            ImpuestoTraslado it = mit.get(tr.getTasa());
+                            BigDecimal suma = it.getBase().add(tr.getBase());
+                            it.setBase(suma);
+                            mit.replace(tr.getTasa(), it);
+                        } else {
+                            mit.put(tr.getTasa(), new ImpuestoTraslado(tr.getBase(), tr.getTasa()));
+                        }
+
+                        trasladosBase.replace(tr.getImpuesto(), mit);
                     }
-                    re.append("TC"+(i+1)+": ").append("C"+tr.getNumConcepto()).append("@").append(tr.getBase().toString())
-                        .append("@").append(tr.getImpuesto()).append("@").append(tr.getTipoFactor()).append("@").append(tr.getTasa().toString())
-                        .append("@").append(tr.getImporte().toString()).append("\r\n");
+
+                    writeIva = true;
+
+                    re.append("TC" + (i + 1) + ": ").append("C" + tr.getNumConcepto()).append("@").append(tr.getBase().toString())
+                            .append("@").append(tr.getImpuesto()).append("@").append(tr.getTipoFactor()).append("@").append(tr.getTasa().toString())
+                            .append("@").append(tr.getImporte().toString()).append("\r\n");
                 }
             }
             re.append("[/TRASLADADOS_CONCEPTOS]\r\n\r\n");
         }
-        
-        if(fact.retenciones.size() > 0 && !fact.tipoCfd.equals('N')){
+
+        if (fact.retenciones.size() > 0 && !fact.tipoCfd.equals('N')) {
             re.append("[RETENCIONES_CONCEPTOS]\r\n");
             for (int i = 0; i < fact.retenciones.size(); i++) {
                 Factura.ConceptoRetencion rr = fact.retenciones.get(i);
-                re.append("RC"+(i+1)+": ").append("C"+rr.getNumConcepto()).append("@").append(rr.getBase().toString())
+                re.append("RC" + (i + 1) + ": ").append("C" + rr.getNumConcepto()).append("@").append(rr.getBase().toString())
                         .append("@").append(rr.getImpuesto()).append("@").append(rr.getTipoFactor()).append("@").append(rr.getTasa().toString())
                         .append("@").append(rr.getImporte().toString()).append("\r\n");
             }
             re.append("[/RETENCIONES_CONCEPTOS]\r\n\r\n");
         }
-        
-        if(fact.getDonataria() != null){
+
+        if (fact.getDonataria() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String fechaAuto = sdf.format(fact.getDonataria().getFechaAutorizacion());
             re.append("[DONATARIA]\r\n");
@@ -513,36 +566,58 @@ public class Layout {
             re.append("NOAUTO: ").append(fact.getDonataria().getNoAutorizacion()).append("\r\n");
             re.append("[/DONATARIA]\r\n");
         }
-        
+
         re.append("[IMPUESTOS_TRASLADADOS]\r\n");
 //        if (this.iva.doubleValue() == 0.0) {
 //            porcentaje = 0.0;
 //        } else {
 //            porcentaje = 0.16;
 //        }
-        
+
         int contTras = 1;
-        if(writeIva){
-            re.append("IT").append(contTras).append(": 002@Tasa@").append(new BigDecimal(porcentaje).setScale(2, RoundingMode.HALF_UP)).append("@").append(this.iva.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-            contTras++;
+
+        if (writeIva) {
+            if (trasladosBase.containsKey("002")) {
+                Map<BigDecimal, ImpuestoTraslado> mip = trasladosBase.get("002");
+                if (mip.containsKey(new BigDecimal("0.160000"))) {
+                    ImpuestoTraslado it = mip.get(new BigDecimal("0.160000"));
+                    re.append("IT").append(contTras).append(": 002@Tasa@")
+                            .append(it.getTasa().setScale(6, RoundingMode.HALF_UP))
+                            .append("@").append(this.iva.setScale(2, RoundingMode.HALF_UP).toString())
+                            .append("@").append(it.getBase().setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+                    contTras++;
+                }
+            }
         }
-        if(porIeps.compareTo(BigDecimal.ZERO) == 1){
-            re.append("IT").append(contTras).append(": 003@Tasa@").append(porIeps.toString()).append("@").append(totalIeps.setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+
+        if (trasladosBase.containsKey("003")) {
+            Map<BigDecimal, ImpuestoTraslado> mip = trasladosBase.get("003");
+            ImpuestoTraslado its[] = (ImpuestoTraslado[]) mip.values().toArray();
+            for (ImpuestoTraslado it : its) {
+                if (it.getTasa().compareTo(BigDecimal.ZERO) == 1) {
+                    re.append("IT").append(contTras).append(": 003@Tasa@")
+                            .append(it.getTasa().toString())
+                            .append("@").append(totalIeps.setScale(2, RoundingMode.HALF_UP).toString())
+                            .append("@").append(it.getBase().setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
+                }
+            }
         }
         re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");
-        
+
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        if(this.fact.getIvaRetenido() > 0)
+        if (this.fact.getIvaRetenido() > 0) {
             re.append("IR1: 002@").append(new BigDecimal(this.fact.getIvaRetenido()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
-        if(this.fact.getIsrRetenido() > 0)
+        }
+        if (this.fact.getIsrRetenido() > 0) {
             re.append("IR2: 001@").append(new BigDecimal(this.fact.getIsrRetenido()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
+        }
         re.append("[/IMPUESTOS_RETENIDOS]\r\n");
         this.texto = re.toString();
         return this.texto;
     }
 
     private void crearLayout(String texto) {
-        Elemento.log.info((Object)"Se procede a crear el archivo Layout");
+        Elemento.log.info("Se procede a crear el archivo Layout");
         this.ruta = Elemento.pathLayout + this.serie + "_" + this.folio + "_" + this.emisor.getRfc() + "_" + this.rfc;
         if (!this.fact.prefactura.equals("")) {
             this.ruta = this.ruta + "_" + this.fact.prefactura;
@@ -554,17 +629,16 @@ public class Layout {
                 lay.delete();
             }
             FileOutputStream file = new FileOutputStream(this.ruta);
-            OutputStreamWriter fw = new OutputStreamWriter((OutputStream)file, "UTF8");
+            OutputStreamWriter fw = new OutputStreamWriter((OutputStream) file, "UTF8");
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(texto);
             bw.close();
             fw.close();
             file.close();
-            Elemento.log.info((Object)"Archivo layout creado correctamente...");
-        }
-        catch (IOException e) {
+            Elemento.log.info((Object) "Archivo layout creado correctamente...");
+        } catch (IOException e) {
             e.printStackTrace();
-            Elemento.log.error((Object)("Ocurrio la siguiente excepcion: " + e.getMessage()), (Throwable)e);
+            Elemento.log.error((Object) ("Ocurrio la siguiente excepcion: " + e.getMessage()), (Throwable) e);
         }
     }
 
@@ -590,4 +664,32 @@ public class Layout {
         double porcentaje = Math.rint(iv * 100.0 / sb * 100.0) / 100.0;
         return "" + porcentaje;
     }
+}
+
+class ImpuestoTraslado {
+
+    private BigDecimal base;
+    private BigDecimal tasa;
+
+    public ImpuestoTraslado(BigDecimal base, BigDecimal tasa) {
+        this.base = base;
+        this.tasa = tasa;
+    }
+
+    public BigDecimal getBase() {
+        return base;
+    }
+
+    public void setBase(BigDecimal base) {
+        this.base = base;
+    }
+
+    public BigDecimal getTasa() {
+        return tasa;
+    }
+
+    public void setTasa(BigDecimal tasa) {
+        this.tasa = tasa;
+    }
+
 }

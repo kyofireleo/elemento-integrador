@@ -612,6 +612,11 @@ public class Aguinaldo extends javax.swing.JFrame {
                         dedu.setTotalOtras(0.0);
                         nom.setDeducciones(dedu);
                         nom.setTotalDeducciones(util.redondearBigDecimal(dedu.getTotalRetenido()));
+                    }else{
+                        dedu.setDeducciones(null);
+                        dedu.setTotalRetenido(0.0);
+                        dedu.setTotalOtras(0.0);
+                        nom.setTotalDeducciones(util.redondearBigDecimal(0.0));
                     }
 
                     //Seteamos percepciones
@@ -622,10 +627,13 @@ public class Aguinaldo extends javax.swing.JFrame {
                     nom.setPercepciones(perc);
                     nom.setTotalPercepciones(new BigDecimal(perc.getTotalSueldos()));
                     
-                    otro.setOtrosPagos(getOtrosPagos(i));
-                    otro.setTotalOtrosPagos(otro.getOtrosPagos().get(0).getImporte());
-                    nom.setOtrosPagos(otro);
-                    nom.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
+                    List<complementos.nominas.OtrosPagos.OtroPago> otrosPagos = getOtrosPagos(i);
+                    if(otrosPagos.size() > 0){
+                        otro.setOtrosPagos(otrosPagos);
+                        otro.setTotalOtrosPagos(otro.getOtrosPagos().get(0).getImporte());
+                        nom.setOtrosPagos(otro);
+                        nom.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
+                    }
 
                     fact.conceptos = getConceptos(perc, dedu, otro);
                     fact = getTotales(perc, dedu, fact);
@@ -634,7 +642,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Algunas o todas las fechas estan sin asignar, verificalo", "Error en fechas", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Algunas o todas las fechas estan sin asignar, verifiquelo porfavor", "Error en fechas", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_timbrarNominaActionPerformed
 
@@ -713,14 +721,22 @@ public class Aguinaldo extends javax.swing.JFrame {
         complementos.nominas.OtrosPagos.OtroPago otr;
         complementos.nominas.OtrosPagos otros = new complementos.nominas.OtrosPagos();
         double importe = new Double(model.getValueAt(pos, 5).toString());
+        otr = otros.getClase();
+        
         if(importe > 0){
-            otr = otros.getClase();
             otr.setTipoOtroPago(cc.getTipoConcepto());
             otr.setClave(cc.getCodigo());
             otr.setConcepto(cc.getDescripcion());
             otr.setImporte(importe);
-            lista.add(otr);
+        }else{
+            otr.setTipoOtroPago("002");
+            otr.setClave("SUB");
+            otr.setConcepto("Subsidio para el empleo");
+            otr.setImporte(0.0);
         }
+        
+        lista.add(otr);
+        
         return lista;
     }
 

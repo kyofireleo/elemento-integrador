@@ -39,7 +39,7 @@ public class ConnectionFactory {
         try {
             return con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         }catch (SQLException ex) {
-            Elemento.log.error("Excepcion: No se pudo crear el Statement de solo lectura: " + ex.getLocalizedMessage(),ex);
+            Elemento.log.error("Excepcion: No se pudo crear el Statement de escritura: " + ex.getLocalizedMessage(),ex);
             ex.printStackTrace();
             return null;
         }

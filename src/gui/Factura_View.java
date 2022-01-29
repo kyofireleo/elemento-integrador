@@ -25,6 +25,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -60,7 +61,7 @@ public class Factura_View extends javax.swing.JFrame {
     ConnectionFactory factory = new ConnectionFactory();
     Emisor emisor;
     Receptor receptor;
-    String rfcE, rfc, nombre, calle, numExt, numInt, colonia, municipio, localidad, estado, pais, cp;
+    String rfcE, rfc, nombre, calle, numExt, numInt, colonia, municipio, localidad, estado, pais, cp, regimenFiscalReceptor;
     int contadorComprobantes = 0;
     int creditosRestantes = 0;
     int idEmpleado;
@@ -77,6 +78,7 @@ public class Factura_View extends javax.swing.JFrame {
     boolean entroEvento = false;
     List<String> formasPagoLista;
     List<String> arrayTipoRel;
+    public boolean fromFolios = false;
 
     /**
      * Creates new form Factura_View
@@ -112,6 +114,61 @@ public class Factura_View extends javax.swing.JFrame {
             }
         }
 
+    }
+
+    //Constructor para crear Nota de Credito
+    public Factura_View(int idEmisor, int idReceptor, String fact_uuid, double descuento, boolean tieneIva) {
+        initComponents();
+        setLocationRelativeTo(null);
+        iniciar();
+
+        this.fromFolios = true;
+        //Seteamos Emisor
+        for (int i = 1; i < listaEmisores.getItemCount(); i++) {
+            int id = Integer.parseInt(listaEmisores.getItemAt(i).toString().split(",")[0].trim());
+
+            if (idEmisor == id) {
+                listaEmisores.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        //Seteamos Receptor
+        for (int i = 1; i < listaClientes.getItemCount(); i++) {
+            int id = Integer.parseInt(listaClientes.getItemAt(i).toString().split(",")[0].trim());
+
+            if (idReceptor == id) {
+                listaClientes.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        //Setamos datos de CFD
+        metodoCombo.setSelectedItem("PUE,Pago en una sola exhibición");
+        tipocfd.setSelectedItem("E,Egreso");
+        usocfdi.setSelectedItem("G02,Devoluciones, descuentos o bonificaciones");
+        formasPagoCombo.setSelectedItem("99,Por definir");
+        tipoRelacion.setSelectedItem("01,Nota de crédito de los documentos relacionados");
+
+        //Seteamos concepto
+        if (tieneIva) {
+            descuento = util.redondear(descuento / 1.16);
+        }
+        noIdentificacion.setText("00001");
+        claveProdSat.setText("84111506");
+        cantidad.setText("1");
+        claveUnidad.setText("E48");
+        unidad.setText("SERVICIO");
+        descripcion.setText("Servicios de Facturación");
+        precio.setText("" + descuento);
+        aplicaIva.setSelected(tieneIva);
+
+        agregarConceptoActionPerformed(null);
+
+        //Seteamos factura asociada
+        cfdisAsoc = new ArrayList();
+        cfdisAsoc.add(fact_uuid);
+        setUuids(null);
     }
 
     private void iniciar() {
@@ -970,9 +1027,9 @@ public class Factura_View extends javax.swing.JFrame {
             mensaje = "El Emisor con RFC: " + rfcE + " no cuenta con\ncreditos. Llame al (667)2-80-29-66 \no al 2-80-44-44 para aquirir mas";
             return false;
         }
-        
-        if(uuids != null && !uuids.trim().isEmpty()){
-            if(tipoRelacion.getSelectedIndex() == 0){
+
+        if (uuids != null && !uuids.trim().isEmpty()) {
+            if (tipoRelacion.getSelectedIndex() == 0) {
                 mensaje = "Debe seleccionar un tipo de relación para los CFDIs";
                 return false;
             }
@@ -1201,6 +1258,9 @@ public class Factura_View extends javax.swing.JFrame {
             fact.serie = serie;
             fact.nombre = nombre;
             fact.rfc = rfce;
+            fact.cp = cp;
+            fact.regimenFiscalReceptor = regimenFiscalReceptor;
+            fact.numRegIdTrib = "";
             /*fact.calle = calle;
             fact.colonia = colonia;
             fact.numExt = numExt;
@@ -1208,8 +1268,8 @@ public class Factura_View extends javax.swing.JFrame {
             fact.localidad = localidad;
             fact.cp = cp;
             fact.municipio = municipio;
-            fact.estado = estado;
-            fact.pais = pais;*/
+            fact.estado = estado;*/
+            fact.pais = "";
             fact.conceptos = conc;
             fact.subtotal = Double.parseDouble(sub);
             fact.descuento = desTot;
@@ -1278,7 +1338,6 @@ public class Factura_View extends javax.swing.JFrame {
                 BigDecimal impor = cant.multiply(prec).setScale(2, RoundingMode.HALF_UP);
                 impDesc = impor.multiply(desc).setScale(2, RoundingMode.HALF_UP);
 
-
                 Boolean aplica = aplicaIva.isSelected();
                 Boolean aplIeps = aplicaIeps.isSelected();
                 Boolean aplIsr = aplicaIsr.isSelected();
@@ -1299,20 +1358,26 @@ public class Factura_View extends javax.swing.JFrame {
                 concept[12] = aplIvaRet;
 
                 model.addRow(concept);
-                
-                if(!aplica){
-                    int resp = JOptionPane.showConfirmDialog(null, "El producto está exento de IVA?", "IVA exento o IVA 0%", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                    if(resp == JOptionPane.YES_OPTION){
+
+                if (!aplica) {
+                    int resp;
+                    if (this.fromFolios) {
+                        resp = JOptionPane.YES_OPTION;
+                    } else {
+                        resp = JOptionPane.showConfirmDialog(null, "El producto está exento de IVA?", "IVA exento o IVA 0%", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    }
+
+                    if (resp == JOptionPane.YES_OPTION) {
                         porcentaje = -1;
-                    }else{
+                    } else {
                         porcentaje = 0.0;
                     }
                     tasaIva.add(porcentaje);
-                }else{
+                } else {
                     porcentaje = 0.16;
                     tasaIva.add(porcentaje);
                 }
-                
+
                 if (aplicaIeps.isSelected()) {
                     porcentajeIeps = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IEPS a aplicar:", 8.0));
 
@@ -1388,6 +1453,10 @@ public class Factura_View extends javax.swing.JFrame {
 
     private void quitarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitarActionPerformed
         int row = conceptos.getSelectedRow();
+        if ((Boolean) model.getValueAt(row, 9)) {
+            tasaIva.remove(row);
+        }
+
         if ((Boolean) model.getValueAt(row, 10)) {
             tasaIeps.remove(row);
         }
@@ -1449,7 +1518,7 @@ public class Factura_View extends javax.swing.JFrame {
                             usocfdi.addItem(rs.getString("usocfdi") + "," + rs.getString("descripcion"));
                             break;
                         case "ComboT":
-                            String rel = rs.getInt("tiporelacion") > 9 ? rs.getString("tiporelacion") : ("0" + rs.getString("tiporelacion"))  + "," + rs.getString("descripcion");
+                            String rel = rs.getInt("tiporelacion") > 9 ? rs.getString("tiporelacion") : ("0" + rs.getString("tiporelacion")) + "," + rs.getString("descripcion");
                             arrayTipoRel.add(rel);
                             tipoRelacion.addItem(rel);
                             break;
@@ -1487,10 +1556,14 @@ public class Factura_View extends javax.swing.JFrame {
                             estado = rs.getString("estado");
                             pais = rs.getString("pais");
                             cp = rs.getString("cp");
-                            
+                            regimenFiscalReceptor = "606";//rs.getString("regimenFiscal");
+
                             receptor = new Receptor();
                             receptor.setNombre(nombre);
                             receptor.setRfc(rfc);
+                            receptor.setPais(pais);
+                            receptor.setCp(cp);
+                            receptor.setRegimenFiscal(regimenFiscalReceptor);
 
                             break;
                         case "ComboE":
@@ -1535,16 +1608,17 @@ public class Factura_View extends javax.swing.JFrame {
                 restantes = rsC.getInt("creditosRestantes");
 
                 creditosRestantes = restantes;
-                
-                if(tiposco.length() > 0)
+
+                if (tiposco.length() > 0) {
                     tiposco += ",5";
-                else
+                } else {
                     tiposco += "5";
-                
+                }
+
                 consultar("ComboTC", "SELECT tc.tiposcomprobante, tc.descripcion "
-                    + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
-                    + "WHERE rfc = \'" + rfcE + "\' "
-                    + "ORDER BY tc.c_tiposcomprobante_id ASC");
+                        + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
+                        + "WHERE rfc = \'" + rfcE + "\' "
+                        + "ORDER BY tc.c_tiposcomprobante_id ASC");
 
             }
             rsC.close();
@@ -1789,43 +1863,46 @@ public class Factura_View extends javax.swing.JFrame {
     }//GEN-LAST:event_descuentoFocusLost
 
     private void asociarCfdiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asociarCfdiActionPerformed
-        if(rfc != null && !rfc.trim().isEmpty()){
+        if (rfc != null && !rfc.trim().isEmpty()) {
             Folios fol = new Folios(emisor.getRfc(), rfc, this, null);
             fol.setVisible(true);
-        }else{
-            JOptionPane.showMessageDialog(null,"Debe seleccionar a un cliente","Advertencia",JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Debe seleccionar a un cliente", "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_asociarCfdiActionPerformed
 
-    public void setUuids(Folios fol){
-        cfdisAsoc = fol.cfdisAsoc;
+    public void setUuids(Folios fol) {
+        if (!this.fromFolios) {
+            cfdisAsoc = fol.cfdisAsoc;
+            fol.dispose();
+        }
+
         uuids = "";
-        
+
         for (int i = 0; i < cfdisAsoc.size(); i++) {
             String x = cfdisAsoc.get(i);
             uuids += x;
-            if(i < cfdisAsoc.size() - 1){
+            if (i < cfdisAsoc.size() - 1) {
                 uuids += ",";
             }
         }
         cfdisAsociados.setText(uuids);
         tipoRelacion.setEnabled(true);
-        fol.dispose();
     }
-    
+
     private void tipoRelacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoRelacionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_tipoRelacionActionPerformed
 
     private void tipocfdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipocfdActionPerformed
         String tipo = tipocfd.getSelectedItem() != null ? tipocfd.getSelectedItem().toString().split(",")[0] : "";
-        
-        if(tipocfd.getSelectedIndex() > 0){
-            if(listaClientes.getSelectedIndex() > 0 || tipo.equalsIgnoreCase("N")){
+
+        if (tipocfd.getSelectedIndex() > 0) {
+            if (listaClientes.getSelectedIndex() > 0 || tipo.equalsIgnoreCase("N")) {
                 prepararFolio(rfcE);
                 String id = listaEmisores.getSelectedItem().toString().split(",")[0];
-                
-                if(listaClientes.getItemAt(0).toString().equals("Seleccione un empleado") && !tipo.equalsIgnoreCase("N")){
+
+                if (listaClientes.getItemAt(0).toString().equals("Seleccione un empleado") && !tipo.equalsIgnoreCase("N")) {
                     listaClientes.removeAllItems();
                     listaClientes.addItem("Seleccione un cliente");
                     consultar("Combo", "SELECT * FROM Clientes");
@@ -1838,8 +1915,8 @@ public class Factura_View extends javax.swing.JFrame {
                     case "P":
                         rp = new RecibosPagos();
                         asociarCfdi.setEnabled(true);
-                        if(!rp.isVisible()){
-                            if(emisor == null){
+                        if (!rp.isVisible()) {
+                            if (emisor == null) {
                                 consultar("Emisores", "SELECT * FROM Emisores WHERE id = " + id);
                             }
                             rp.setEmisor(emisor);
@@ -1857,14 +1934,14 @@ public class Factura_View extends javax.swing.JFrame {
                         break;
                     case "N":
                         asociarCfdi.setEnabled(false);
-                        if(listaClientes.getItemAt(0).toString().equals("Seleccione un cliente")){
+                        if (listaClientes.getItemAt(0).toString().equals("Seleccione un cliente")) {
                             listaClientes.removeAllItems();
                             listaClientes.addItem("Seleccione un empleado");
                             consultar("Combo", "SELECT * FROM EmpleadosRec WHERE idEmisor = " + id);
                         }
                         break;
                 }
-                
+
                 /*if (tipocfd.getItemCount() > 0) {
                     listaClientes.removeAllItems();
                     if (tipocfd.getSelectedItem().toString().equals("Recibo de Nomina")) {
@@ -1875,7 +1952,7 @@ public class Factura_View extends javax.swing.JFrame {
                         consultar("Combo", "SELECT * FROM Clientes");
                     }
                 }*/
-            }else{
+            } else {
                 util.print("Debe seleccionar un cliente");
                 tipocfd.setSelectedIndex(0);
             }
@@ -1902,8 +1979,9 @@ public class Factura_View extends javax.swing.JFrame {
             plantilla = Elemento.pathPlantillas + "FacturaE_V33.jasper";
         }
         String logo = Elemento.logo;
-        if(jsonDomicilios != null)
+        if (jsonDomicilios != null) {
             util.setJsonDomicilios(jsonDomicilios);
+        }
         if (Folios.isCancelado != null) {
             if (Folios.isCancelado) {
                 util.crearPdfCancelado(xml, pdf, name, logo);
@@ -1914,7 +1992,7 @@ public class Factura_View extends javax.swing.JFrame {
             util.generarPdf(pdf, xml, name, logo, plantilla, true);
         }
     }
-    
+
     //Se agrega nuevo parametro para el envio de los domicilios
     public static void visualizar(String ruta, String name, String email, String jsonDomicilios) {
         util.setJsonDomicilios(jsonDomicilios);
@@ -1926,7 +2004,7 @@ public class Factura_View extends javax.swing.JFrame {
         String logo = Elemento.logo;
         try {
             util.generarPdf(pdf, xml, name, logo, plantilla, false);
-            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf","");
+            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "");
             Exe.exeSinTiempo(pdf + name + ".pdf");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1945,7 +2023,7 @@ public class Factura_View extends javax.swing.JFrame {
         String logo = Elemento.logo;
         try {
             util.generarPdf(pdf, xmlModificado, name, logo, plantilla, false);
-            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf","");
+            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "");
             Exe.exeSinTiempo(pdf + name + ".pdf");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1980,8 +2058,10 @@ public class Factura_View extends javax.swing.JFrame {
             aux = new Double(model.getValueAt(i, 8).toString());
             auxB = aux - new Double(model.getValueAt(i, 7).toString());
 
-            if (aplica || porcentaje == 0.0) {
+            if (aplica || tasaIva.get(i) == 0.0) {
                 importesIva.add(auxB);
+            } else {
+                importesIva.add(null);
             }
 
             if (aplIeps) {
@@ -2000,7 +2080,7 @@ public class Factura_View extends javax.swing.JFrame {
         }
 
         for (int i = 0; i < importesIva.size(); i++) {
-            iv += redondear(importesIva.get(i) * porcentaje);
+            iv += redondear(importesIva.get(i) != null ? importesIva.get(i) * tasaIva.get(i) : 0);
         }
 
         for (int i = 0; i < importesIeps.size(); i++) {
@@ -2026,6 +2106,7 @@ public class Factura_View extends javax.swing.JFrame {
         iva.setText(ivaT.toString());
         total.setText(tota.toString());
     }
+
     /**
      * @param args the command line arguments
      */
@@ -2138,17 +2219,15 @@ public class Factura_View extends javax.swing.JFrame {
 
     public void agregarFactura(String serie, String folio, String rfcEmi, String rfc, String nombre, String fecha, BigDecimal total, String datos, String layout, String xml, Boolean timbre, String fechaTimbrado, String uuid, Long transId, String tipoCfd) {
         Connection con;
-        Statement stmt;
+        PreparedStatement stmt;
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
         try {
             con = Elemento.odbc();
-            stmt = factory.stmtEscritura(con);
             //Fecha Expedicion
-            //Date date = new Date(format.parse(fecha).getTime());
-            //java.sql.Date dateSql = new java.sql.Date(date.getTime());
-            
+            Date date = new Date(format.parse(fecha).getTime());
+            java.sql.Timestamp dateSql = new java.sql.Timestamp(date.getTime());
+
             //Fecha Timbrado
-            //Date dateT = new Date(format.parse(fechaTimbrado).getTime());
             java.sql.Timestamp dateSqlTim = new java.sql.Timestamp(format.parse(fechaTimbrado).getTime());
             String status;
             if (timbre) {
@@ -2161,12 +2240,44 @@ public class Factura_View extends javax.swing.JFrame {
             }
 
             if (!modificar) {
-                stmt.executeUpdate("INSERT INTO Facturas VALUES (\'" + serie.trim() + "\'," + folio.trim() + ",\'" + rfcEmi.trim() + "\',\'" + rfc.trim() + "\',\'" + nombre.trim() + "\',date(),\'" + total.toString() + "\',\'" + layout.trim() + "\',\'" + xml.trim() + "\'," + timbre + ",\'" + dateSqlTim + "\',\'" + uuid.trim() + "\',\'" + transId + "\',\'" + status + "\',\'" + getIdComprobante(tipoCfd) + "\')");
-                //stmt.executeQuery("INSERT INTO Folios VALUES (\'Factura Siguiente\')");
+                stmt = con.prepareStatement("INSERT INTO Facturas "
+                        + "(serie, folio, rfcEmisor, rfc, nombre, fecha, total, layout, xml, timbrado, fecha_timbrado, uuid, transId, status, idComprobante) "
+                        + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                stmt.setString(1, serie.trim());
+                stmt.setString(2, folio.trim());
+                stmt.setString(3, rfcEmi.trim());
+                stmt.setString(4, rfc.trim());
+                stmt.setString(5, nombre.trim());
+                stmt.setTimestamp(6, dateSql);
+                stmt.setBigDecimal(7, total);
+                stmt.setString(8, layout.trim());
+                stmt.setString(9, xml.trim());
+                stmt.setBoolean(10, timbre);
+                stmt.setTimestamp(11, dateSqlTim);
+                stmt.setString(12, uuid.trim());
+                stmt.setLong(13, transId);
+                stmt.setString(14, status);
+                stmt.setInt(15, getIdComprobante(tipoCfd));
             } else {
-                stmt.executeUpdate("UPDATE Facturas SET rfc=\'" + rfc.trim() + "\', nombre=\'" + nombre.trim() + "\', fecha=date(),total=\'" + total.toString() + "\', layout= \'" + layout.trim() + "\' , xml= \'" + xml.trim() + "\' , timbrado=" + timbre + ", status=\'" + status + "\', fecha_timbrado=\'" + dateSqlTim + "\', uuid=\'" + uuid.trim() + "\', transId=\'" + transId + "\'"
-                        + "WHERE folio = " + folio.trim() + " AND serie like \'" + serie.trim() + "\' AND rfcEmisor like \'" + rfcEmi.trim() + "\'");
+                stmt = con.prepareStatement("UPDATE Facturas SET "
+                        + "rfc=?, nombre=?, fecha=?, total=?, layout=? , xml=? , timbrado=?, status=?, fecha_timbrado=?, uuid=?, transId=? "
+                        + "WHERE folio = ? AND serie = ? AND rfcEmisor = ?");
+                stmt.setString(1, rfc.trim());
+                stmt.setString(2, nombre.trim());
+                stmt.setTimestamp(3, dateSql);
+                stmt.setBigDecimal(4, total);
+                stmt.setString(5, layout.trim());
+                stmt.setString(6, xml.trim());
+                stmt.setBoolean(7, timbre);
+                stmt.setString(8, status);
+                stmt.setTimestamp(9, dateSqlTim);
+                stmt.setString(10, uuid.trim());
+                stmt.setLong(11, transId);
+                stmt.setString(12, folio.trim());
+                stmt.setString(13, serie.trim());
+                stmt.setString(14, rfcEmi.trim());
             }
+            stmt.execute();
             stmt.close();
             con.close();
         } catch (ParseException | SQLException e) {

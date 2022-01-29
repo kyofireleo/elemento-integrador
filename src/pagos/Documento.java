@@ -16,9 +16,26 @@ public class Documento {
     private String folio, serie, metodoPago, moneda, uuid;
     private BigDecimal impSaldoInsoluto, impPagado, impSaldoAnterior, tipoCambio;
     private int numParcialidad;
+    private String rfcEmisor, rfcReceptor;
 
     public Documento() {
 
+    }
+
+    public String getRfcEmisor() {
+        return rfcEmisor;
+    }
+
+    public void setRfcEmisor(String rfcEmisor) {
+        this.rfcEmisor = rfcEmisor;
+    }
+
+    public String getRfcReceptor() {
+        return rfcReceptor;
+    }
+
+    public void setRfcReceptor(String rfcReceptor) {
+        this.rfcReceptor = rfcReceptor;
     }
 
     public String getFolio() {

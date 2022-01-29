@@ -125,13 +125,13 @@ public class Listener implements JNotifyListener {
                 String datos = "";
                 String layout = cons.getLayoutCadena();
                 String leyenda = cons.getLeyenda().trim();
-                
+
                 String pathXml = Elemento.pathXml;
                 String destinoXml = Elemento.unidad + ":\\Facturas\\XmlModificados\\";
                 String pathXmlST = Elemento.pathXmlST;
 
                 if (lay.get(0).equalsIgnoreCase("PREFACTURA")) {
-                    if(!leyenda.isEmpty()){
+                    if (!leyenda.isEmpty()) {
                         Elemento.interpretarXML(pathXmlST, cons.getNameXml(), leyenda, destinoXml);
                         pathXmlST = destinoXml;
                     }
@@ -186,15 +186,17 @@ public class Listener implements JNotifyListener {
                                     String uuid = con.getUuid();
                                     String nameXml = cons.getNameXmlTimbrado();
                                     String xml = con.getXmlTimbrado();
-                                    if(lay.contains("NOMBRE_ADDENDA: Klyns")){
+                                    String sello = cons.getSello();
+
+                                    if (lay.contains("NOMBRE_ADDENDA: Klyns")) {
                                         xml = xml.replace("</cfdi:Comprobante>", cons.getAddendaKlyns() + "</cfdi:Comprobante>");
-                                        util.escribirArchivo(xml, pathXml, nameXml+".xml");
+                                        util.escribirArchivo(xml, pathXml, nameXml + ".xml");
                                     }
-                                    
+
                                     Long transId = 0l;
                                     Boolean tim = Boolean.TRUE;
                                     fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
-                                    
+
                                     this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
                                     this.restarCredito(rfcEmi);
 
@@ -204,20 +206,20 @@ public class Listener implements JNotifyListener {
                                     Elemento.leerConfig(rfcEmi);
 
                                     if (leyenda.isEmpty()) {
-                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi),cons.jsonDomicilios);
+                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios);
                                     } else {
                                         Elemento.interpretarXML(pathXml, nameXml, leyenda, destinoXml);
                                         Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios);
                                     }
-                                    
-                                    this.crearQR(nameXml, "?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid);
-                                    if(!(cons.getTipoComprobanteLayout().equalsIgnoreCase("recibo de nomina") || cons.getTipoComprobanteLayout().equalsIgnoreCase("N"))){
+
+                                    this.crearQR(nameXml, "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid + "&fe=" + sello.substring(sello.length() - 8 , sello.length()));
+                                    if (!(cons.getTipoComprobanteLayout().equalsIgnoreCase("recibo de nomina") || cons.getTipoComprobanteLayout().equalsIgnoreCase("N"))) {
                                         int selec = JOptionPane.showConfirmDialog(null, "Desea enviar la factura por e-mail?", "Enviar", JOptionPane.YES_NO_OPTION);
-                                        
+
                                         String emailO = fol.getEmail("Emisores", rfcEmi);
-                                        
+
                                         String conf = Elemento.getMailConfiguration(emailO);
-                                        
+
                                         switch (selec) {
                                             case JOptionPane.NO_OPTION:
                                                 break;
@@ -234,7 +236,7 @@ public class Listener implements JNotifyListener {
                                                 SendMail.main(args);
                                                 break;
                                         }
-                                    }else{
+                                    } else {
                                         /*NominaGeneral.contRecibos++;
                                         if(NominaGeneral.contRecibos == NominaGeneral.totalRecibos){
                                             NominaGeneral.contRecibos = 0;
@@ -363,7 +365,7 @@ public class Listener implements JNotifyListener {
         try {
             stmtEscri.executeUpdate("UPDATE Folios SET ultimo_folio = (ultimo_folio + 1) WHERE rfc = \'" + rfcE + "\' AND idComprobante = " + idComprobante);
             Elemento.log.info("Se ha actualizado el folio");
-            
+
             stmtEscri.close();
             con.close();
         } catch (SQLException e) {

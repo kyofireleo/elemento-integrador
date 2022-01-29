@@ -9,7 +9,15 @@ package reportes;
  * @author Abe
  */
 public class Receptor {
-    private String nombre,rfc,calle,numExt,numInt,colonia,localidad,municipio,estado,pais,cp;
+    private String nombre,rfc,calle,numExt,numInt,colonia,localidad,municipio,estado,pais,cp,regimenFiscal;
+
+    public String getRegimenFiscal() {
+        return regimenFiscal;
+    }
+
+    public void setRegimenFiscal(String regimenFiscal) {
+        this.regimenFiscal = regimenFiscal;
+    }
 
     public String getCalle() {
         return calle;

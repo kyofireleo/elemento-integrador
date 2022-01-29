@@ -10,6 +10,7 @@ import elemento.Emisor;
 import elemento.Factura;
 import elemento.Layout;
 import java.awt.Component;
+import java.awt.HeadlessException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,6 +51,11 @@ public class NominaGeneral extends javax.swing.JFrame {
     String serie;
     String lugarExpedicion;
     private int totalRecibos = 0;
+    private boolean isPtu = false;
+    private Double importeTotalPtu = 0.0;
+    private Double importePtu = 0.0;
+    private Double importeIsr = 0.0;
+    DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 
     public NominaGeneral() {
         initComponents();
@@ -58,6 +65,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         ventanasPer = new HashMap();
         ventanasDec = new HashMap();
         ventanasOtr = new HashMap();
+        df.setParseBigDecimal(true);
     }
 
     public NominaGeneral(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados) {
@@ -71,7 +79,57 @@ public class NominaGeneral extends javax.swing.JFrame {
         ventanasPer = new HashMap();
         ventanasDec = new HashMap();
         ventanasOtr = new HashMap();
+        df.setParseBigDecimal(true);
         llenarTabla();
+    }
+    
+    public NominaGeneral(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados, boolean isPtu) {
+        initComponents();
+        this.setLocationRelativeTo(null);
+        this.idEmisor = idEmisor;
+        this.idEmpleados = idEmpleados;
+        this.numEmpleados = numEmpleados;
+        this.isPtu = true;
+        
+        util = new utils.Utils(Elemento.log);
+        factory = new utils.ConnectionFactory(Elemento.log);
+        ventanasPer = new HashMap();
+        ventanasDec = new HashMap();
+        ventanasOtr = new HashMap();
+        df.setParseBigDecimal(true);
+        
+        String cantidadTotalPtu = "";
+        String cantidadIsr = "";
+        int cont = 0;
+        
+        try{
+            do{
+                cantidadTotalPtu = JOptionPane.showInputDialog(null, cont > 0 
+                        ? "La cantidad de PTU \"" + cantidadTotalPtu + "\" ingresada no es correcta, favor de introducirla nuevamente:" 
+                        : "Ingrese la cantidad de PTU a repartir", "Cantidad de PTU", JOptionPane.QUESTION_MESSAGE
+                );
+                cont++;
+            }while(cantidadTotalPtu.trim().isEmpty() && !util.isNumeric(util.quitarComas(cantidadTotalPtu)));
+            
+            this.importeTotalPtu = df.parse(cantidadTotalPtu).doubleValue();
+            this.importePtu = util.redondear(importeTotalPtu / idEmpleados.size());
+
+            cont = 0;
+            do{
+                cantidadIsr = JOptionPane.showInputDialog(null, cont > 0 
+                        ? "La cantidad de ISR \"" + cantidadIsr + "\" ingresada no es correcta, favor de introducirla nuevamente:" 
+                        : "Ingresa el importe ISR segun el PTU individual de: " + df.format(importePtu), "Importe de ISR", JOptionPane.QUESTION_MESSAGE
+                );
+                cont++;
+            }while(cantidadIsr.trim().isEmpty() && util.isNumeric(util.quitarComas(cantidadIsr)));
+            
+            this.importeIsr = df.parse(cantidadIsr).doubleValue();
+            
+        }catch(HeadlessException | ParseException e){
+            e.printStackTrace();
+            Elemento.log.error("Error al calcular el importe individual de PTU", e);
+        }
+        this.cmbTipoNomina.setSelectedIndex(1);
     }
 
     /**
@@ -106,16 +164,16 @@ public class NominaGeneral extends javax.swing.JFrame {
         setTitle("Nomina General");
 
         fechaPago.setDateFormatString("yyyy-MM-dd");
-        fechaPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                fechaPagoPropertyChange(evt);
-            }
-        });
         fechaPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
             public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaPagoInputMethodTextChanged(evt);
+            }
+        });
+        fechaPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                fechaPagoPropertyChange(evt);
             }
         });
 
@@ -230,25 +288,6 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(generarNomina)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel1)
-                                .addGap(2, 2, 2)
-                                .addComponent(totalPer, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel2)
-                                .addGap(2, 2, 2)
-                                .addComponent(totalOtros, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(totalDed, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(4, 4, 4))
-                            .addComponent(jScrollPane1))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addGap(10, 10, 10)
                         .addComponent(fechaPago, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -265,7 +304,25 @@ public class NominaGeneral extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cmbTipoNomina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lblNumRecibos, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(lblNumRecibos, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(generarNomina)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel1)
+                                .addGap(2, 2, 2)
+                                .addComponent(totalPer, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel2)
+                                .addGap(2, 2, 2)
+                                .addComponent(totalOtros, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(totalDed, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -286,20 +343,16 @@ public class NominaGeneral extends javax.swing.JFrame {
                         .addComponent(cmbTipoNomina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblNumRecibos)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(generarNomina)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(totalPer))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(totalOtros))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4)
-                            .addComponent(totalDed))))
+                    .addComponent(generarNomina, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(totalPer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(totalOtros, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(totalDed, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -514,17 +567,19 @@ public class NominaGeneral extends javax.swing.JFrame {
             fechaFinalPago.setDate(fechaPago.getDate());
             fechaInicialPago.setEnabled(false);
             fechaFinalPago.setEnabled(false);
-            util.print("Se cambio el valor de la fecha inicial y final al de la fecha de pago\r\nesto debido a que la nomina extraordinaria asi lo requiere.");
-            DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
-            for (int i = 0; i < model.getRowCount(); i++) {
-                model.setValueAt(0, i, 3);
-                model.setValueAt(0.00, i, 4);
-                model.setValueAt(0.00, i, 5);
-                model.setValueAt(0.00, i, 6);
-                
-                totalPer.setText("0.0");
-                totalDed.setText("0.0");
-                totalOtros.setText("0.0");
+            if(!isPtu){
+                util.print("Se cambio el valor de la fecha inicial y final al de la fecha de pago\r\nesto debido a que la nomina extraordinaria asi lo requiere.");
+                DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    model.setValueAt(0, i, 3);
+                    model.setValueAt(0.00, i, 4);
+                    model.setValueAt(0.00, i, 5);
+                    model.setValueAt(0.00, i, 6);
+
+                    totalPer.setText("0.0");
+                    totalDed.setText("0.0");
+                    totalOtros.setText("0.0");
+                }
             }
             
             ventanasPer.forEach((k,v) -> v.setTipoNomina(1));
@@ -644,7 +699,6 @@ public class NominaGeneral extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void llenarTabla() {
-        DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
@@ -672,7 +726,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                     Deducciones dec;
                     
                     if(!ventanasPer.containsKey(emp.getIdEmpleado())){
-                        per = new Percepciones(emp.getIdEmpleado(), true);
+                        per = new Percepciones(emp.getIdEmpleado(), true, isPtu, importePtu);
                         per.addComponentListener(new ComponentAdapter(){
                             public void componentHidden(ComponentEvent e){
                                 llenarTabla();
@@ -696,7 +750,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                     }
                     
                     if(!ventanasDec.containsKey(emp.getIdEmpleado())){
-                        dec = new Deducciones(emp.getIdEmpleado(), true);
+                        dec = new Deducciones(emp.getIdEmpleado(), true, isPtu, importeIsr);
                         dec.addComponentListener(new ComponentAdapter(){
                             public void componentHidden(ComponentEvent e){
                                 llenarTabla();

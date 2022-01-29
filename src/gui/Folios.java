@@ -67,13 +67,14 @@ public class Folios extends javax.swing.JFrame {
     
     RecibosPagos rp;
     Pago p;
+    private CancelarView cv;
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     public Folios() {
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             String order = getOrdenamiento();
             con = conexion();
             if (con != null) {
@@ -132,7 +133,6 @@ public class Folios extends javax.swing.JFrame {
             this.rp = rp;
         }
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             String order = getOrdenamiento();
             con = conexion();
             if (con != null) {
@@ -153,6 +153,7 @@ public class Folios extends javax.swing.JFrame {
                 porEmisores.setEnabled(false);
 
                 verificar.setText("Asociar");
+                verificar.setEnabled(true);
 
                 while (rs.next()) {
                     String rfcE = rs.getString("rfcEmisor");
@@ -190,7 +191,6 @@ public class Folios extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             con = conexion();
             String order = getOrdenamiento();
             if (con != null) {
@@ -236,6 +236,66 @@ public class Folios extends javax.swing.JFrame {
             }
             setTableHeaderListener();
             
+        } catch (SQLException e) {
+            Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
+            e.printStackTrace();
+        }
+    }
+
+    public Folios(String rfcEmi, String rfcReceptor, CancelarView cv){
+        initComponents();
+        setLocationRelativeTo(null);
+        model = (DefaultTableModel) folios.getModel();
+        //finishWhile = true;
+        if(cv != null){
+            this.cv = cv;
+        }
+        try {
+            String order = getOrdenamiento();
+            con = conexion();
+            if (con != null) {
+                Statement stmt = factory.stmtLectura(con);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND timbrado = True" + order);
+                Object[] fila = new Object[7];
+                rfcEmisor.clear();
+                uuid.clear();
+                transId.clear();
+
+                //Deshabilitar los controles
+                activar = false;
+                consultar.setEnabled(false);
+                //verificar.setEnabled(false);
+                reporte.setEnabled(false);
+                folioTxt.setEnabled(false);
+                noTimbrados.setEnabled(false);
+                porEmisores.setEnabled(false);
+
+                verificar.setText("Asociar");
+                verificar.setEnabled(true);
+
+                while (rs.next()) {
+                    String rfcE = rs.getString("rfcEmisor");
+                    fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
+                    fila[1] = ((String) rfcE);
+                    fila[2] = ((String) rs.getString("rfc"));
+                    fila[3] = ((String) rs.getString("status"));
+                    fila[4] = ((String) sdf.format(new Date(rs.getTimestamp("fecha").getTime())));
+                    fila[5] = ((String) rs.getString("total"));
+                    fila[6] = ((Boolean) rs.getBoolean("timbrado"));
+
+                    rfcEmisor.add(rs.getString("rfcEmisor"));
+                    transId.add(rs.getLong("transId"));
+                    uuid.add(rs.getString("UUID"));
+
+                    model.addRow(fila);
+                    fila = new Object[7];
+                }
+
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+            setTableHeaderListener();
         } catch (SQLException e) {
             Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
             e.printStackTrace();
@@ -320,6 +380,7 @@ public class Folios extends javax.swing.JFrame {
         timbrar = new javax.swing.JButton();
         verificar = new javax.swing.JButton();
         porEmisores = new javax.swing.JCheckBox();
+        crearNotaCre = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Folios Registrados");
@@ -359,6 +420,7 @@ public class Folios extends javax.swing.JFrame {
         jScrollPane1.setViewportView(folios);
         folios.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
+        consultar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/elemento/search.png"))); // NOI18N
         consultar.setText("Consultar");
         consultar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -416,7 +478,8 @@ public class Folios extends javax.swing.JFrame {
             }
         });
 
-        verificar.setText("Verificar");
+        verificar.setText("Verificar con SAT");
+        verificar.setEnabled(false);
         verificar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 verificarActionPerformed(evt);
@@ -424,6 +487,14 @@ public class Folios extends javax.swing.JFrame {
         });
 
         porEmisores.setText("Por Emisores");
+
+        crearNotaCre.setText("Crear Nota de Credito");
+        crearNotaCre.setEnabled(false);
+        crearNotaCre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                crearNotaCreActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -434,46 +505,61 @@ public class Folios extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(noTimbrados)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(porEmisores)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(consultar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
-                        .addComponent(verificar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(reporte)
-                        .addGap(18, 18, 18)
-                        .addComponent(timbrar)
-                        .addGap(18, 18, 18)
-                        .addComponent(enviar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(verPdf)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cancelar)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(porEmisores)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(noTimbrados))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(reporte)
+                                .addGap(4, 4, 4)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(30, 30, 30)
+                                .addComponent(verificar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(crearNotaCre)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(timbrar)
+                                .addGap(12, 12, 12)
+                                .addComponent(enviar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(verPdf)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(cancelar))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(consultar)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(consultar)
-                    .addComponent(noTimbrados)
-                    .addComponent(verPdf)
-                    .addComponent(enviar)
-                    .addComponent(cancelar)
-                    .addComponent(jLabel2)
-                    .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reporte)
-                    .addComponent(timbrar)
-                    .addComponent(porEmisores)
-                    .addComponent(verificar))
-                .addGap(11, 11, 11)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(consultar)
+                            .addComponent(jLabel2)
+                            .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(porEmisores)
+                            .addComponent(noTimbrados))
+                        .addGap(40, 40, 40))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(verPdf)
+                            .addComponent(enviar)
+                            .addComponent(cancelar)
+                            .addComponent(reporte)
+                            .addComponent(timbrar)
+                            .addComponent(verificar)
+                            .addComponent(crearNotaCre))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
         );
 
@@ -544,7 +630,7 @@ public class Folios extends javax.swing.JFrame {
         String query = "SELECT * FROM Facturas " + tim + order;
         
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            
             con = conexion();
             Statement stmt;
             ResultSet rs;
@@ -592,16 +678,32 @@ public class Folios extends javax.swing.JFrame {
                 verPdf.setEnabled(false);
                 cancelar.setEnabled(false);
                 timbrar.setEnabled(true);
+                verificar.setEnabled(false);
+                crearNotaCre.setEnabled(false);
             } else if (model.getValueAt(row, 3).toString().equalsIgnoreCase("PREFACTURA")) {
                 enviar.setEnabled(false);
                 verPdf.setEnabled(true);
                 cancelar.setEnabled(false);
                 timbrar.setEnabled(true);
+                verificar.setEnabled(false);
+                crearNotaCre.setEnabled(false);
             } else {
                 enviar.setEnabled(true);
                 verPdf.setEnabled(true);
                 cancelar.setEnabled(true);
                 timbrar.setEnabled(false);
+                verificar.setEnabled(true);
+                crearNotaCre.setEnabled(true);
+            }
+        }else if(this.rp != null){
+            verificar.setEnabled(true);
+        }else if(this.cv != null){
+            int [] rowsSelected = folios.getSelectedRows();
+
+            if(rowsSelected.length != 1){
+                verificar.setEnabled(false);
+            }else{
+                verificar.setEnabled(true);
             }
         }
         System.out.println("RFC: " + rfcEmisor.get(row) + " Row: " + row + " y UUID: " + uuid.get(row));
@@ -743,7 +845,7 @@ public class Folios extends javax.swing.JFrame {
                 
                 if(continuar){
                     boolean enviarNomi = true;
-                    String nant = series.get(0);
+                    String nant = "N";
                     
                     for(String x: series){
                         if(!x.equals(nant)){
@@ -932,7 +1034,8 @@ public class Folios extends javax.swing.JFrame {
                         }
                         
                         comp = util.analizarXml(Elemento.pathXml+nameXml);
-                        
+                        doc.setRfcEmisor(comp.getEmisor().getRfc());
+                        doc.setRfcReceptor(comp.getReceptor().getRfc());
                         doc.setFolio(comp.getFolio());
                         doc.setSerie(comp.getSerie());
                         doc.setImpPagado(new BigDecimal(comp.getTotal()));
@@ -944,6 +1047,7 @@ public class Folios extends javax.swing.JFrame {
                         doc.setMetodoPago(comp.getMetodoPago());
                         doc.setUuid(uuid.get(pos));
                         docsPagar.add(doc);
+                        
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         String msg = "Error al obtener los datos de las documentos";
@@ -958,6 +1062,8 @@ public class Folios extends javax.swing.JFrame {
                         this.fv.setUuids(this);
                     }else if(this.rp != null){
                         this.rp.setUuids(this);
+                    }else if(this.cv != null){
+                        this.cv.setUuidRelacionado(docsPagar.get(0));
                     }
                 }
                 this.setVisible(false);
@@ -966,6 +1072,44 @@ public class Folios extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_verificarActionPerformed
+
+    private void crearNotaCreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_crearNotaCreActionPerformed
+        int row = folios.getSelectedRow();
+        String rfcEmi = model.getValueAt(row, 1).toString().trim();
+        String rfcRec = model.getValueAt(row, 2).toString().trim();
+        String fact_uuid = uuid.get(row);
+        int idEmisor, idReceptor;
+        int respuesta[];
+        double descuento = 0.0;
+        boolean tieneIva = true;
+        
+        if(verificarTipoComprobanteEgreso(rfcEmi)){
+            while(descuento <= 0.0){
+                try{
+                    descuento = new Double(JOptionPane.showInputDialog(null, "Ingrese el total de descuento para la nota de crédito", "0.00"));
+                    if(descuento <= 0) throw new NumberFormatException(); 
+                }catch(NumberFormatException e){
+                    util.printError("La cantidad que ingreso no es válida");
+                    descuento = 0.0;
+                }
+            }
+            
+            int confirma = JOptionPane.showConfirmDialog(null, "El descuento lleva IVA?", "Lleva IVA?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            tieneIva = (confirma == JOptionPane.YES_OPTION);
+            
+            respuesta = obtenerEmiRecIDs(rfcEmi, rfcRec);
+            if(respuesta != null){
+                idEmisor = respuesta[0];
+                idReceptor = respuesta[1];
+
+                Factura_View fv = new Factura_View(idEmisor, idReceptor, fact_uuid, descuento, tieneIva);
+                fv.setVisible(true);
+            }
+            
+        }else{
+            util.print("El Emisor " + rfcEmi + " no cuenta con un tipo de comprobante de Egreso"); 
+        }
+    }//GEN-LAST:event_crearNotaCreActionPerformed
     
     private String obtenerCadenaOriginal(File xml) throws Exception {
         File stylesheet = new File("/Facturas/config/cadenaoriginal_3_3.xslt");
@@ -1060,6 +1204,7 @@ public class Folios extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelar;
     private javax.swing.JButton consultar;
+    private javax.swing.JButton crearNotaCre;
     private javax.swing.JButton enviar;
     private javax.swing.JTextField folioTxt;
     private javax.swing.JTable folios;
@@ -1114,5 +1259,77 @@ public class Folios extends javax.swing.JFrame {
             Elemento.log.error("Excepcion al obtener el xml de la base de datos: ", e);
             return null;
         }
+    }
+
+    private boolean verificarTipoComprobanteEgreso(String rfcEmi) {
+        Connection conn = Elemento.odbc();
+        Statement stmt = factory.stmtLectura(conn);
+        ResultSet rs;
+        boolean hasEgreso = false;
+        try{
+            rs = stmt.executeQuery("SELECT TOP 1 1 FROM Folios WHERE rfc = '" + rfcEmi + "' AND idComprobante = 2");
+            if(rs.next()){
+                hasEgreso = true;
+            }
+            
+            rs.close();
+            stmt.close();
+            conn.close();
+        }catch(SQLException ex){
+            ex.printStackTrace();
+            String msg = "Error al verificar tipo de comprobante egreso";
+            util.printError(msg);
+            Elemento.log.error(msg, ex);
+        }
+        
+        return hasEgreso;
+    }
+    
+    private int[] obtenerEmiRecIDs(String rfcEmi, String rfcRec){
+        int respuesta[] = new int[2];
+        Connection conn = Elemento.odbc();
+        Statement stmt = factory.stmtLectura(conn);
+        ResultSet rs;
+        
+        try {
+            //Obtener ID de Emisor
+            rs = stmt.executeQuery("SELECT TOP 1 id FROM Emisores WHERE rfc = '" + rfcEmi + "'");
+            if(rs.next()){
+                respuesta[0] = rs.getInt("id");
+            }else{
+                throw new Exception("No se encuentra el ID de Emisor con RFC " + rfcEmi);
+            }
+            
+            rs.close();
+            
+            //Obtener ID de Receptor
+            rs = stmt.executeQuery("SELECT TOP 1 id FROM Clientes WHERE rfc = '" + rfcRec + "'");
+            if(rs.next()){
+                respuesta[1] = rs.getInt("id");
+            }else{
+                throw new Exception("No se encuentra el ID de Receptor con RFC " + rfcRec);
+            }
+            
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            String msg = "Error al obtener los IDs de Emisor y Receptor (Emisor: " + rfcEmi + ", Receptor: " + rfcRec + ")";
+            util.printError(msg);
+            Elemento.log.error(msg, e);
+            
+            respuesta = null;
+            
+            try {
+                if(stmt != null) stmt.close();
+                if(conn != null) conn.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                Elemento.log.error("No se pudo cerrar la conexión a la base de datos", ex);
+            }
+        }
+        
+        return respuesta;
     }
 }

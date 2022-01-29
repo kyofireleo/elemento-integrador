@@ -68,9 +68,11 @@
                       <Component id="generarNomina" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="aguinaldoBoton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="146" max="-2" attributes="0"/>
-                      <Component id="actualizar" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="utilidadesBoton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
+                      <Component id="actualizar" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="all" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -116,10 +118,11 @@
               <Component id="jScrollPane1" min="-2" pref="228" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="generarNomina" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="all" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="aguinaldoBoton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="actualizar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="utilidadesBoton" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
+                  <Component id="aguinaldoBoton" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
+                  <Component id="generarNomina" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
+                  <Component id="actualizar" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
+                  <Component id="all" alignment="1" min="-2" pref="27" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -269,6 +272,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clavesOPActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="utilidadesBoton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Utilidades"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="utilidadesBotonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

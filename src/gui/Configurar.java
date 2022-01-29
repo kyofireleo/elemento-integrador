@@ -169,6 +169,8 @@ public class Configurar extends javax.swing.JFrame {
             sonSucursales = new ArrayList();
             idSucursales = new ArrayList();
 
+            produccion.setSelected(consulta);
+
             while (rs.next()) {
                 rfct = rs.getString("rfc").trim();
                 cert = rs.getString("nocertificado").trim();
@@ -188,13 +190,11 @@ public class Configurar extends javax.swing.JFrame {
                 //consultarInfoFolios();
 
                 if (consulta) {
-                    produccion.setSelected(true);
-                    if (rfct.equalsIgnoreCase("AAA010101AAA")) {
+                    if (rfct.equalsIgnoreCase("EKU9003173C9")) {
                         continue;
                     }
                 } else {
-                    produccion.setSelected(false);
-                    if (!rfct.equalsIgnoreCase("AAA010101AAA")) {
+                    if (!rfct.equalsIgnoreCase("EKU9003173C9")) {
                         continue;
                     }
                 }
@@ -277,7 +277,8 @@ public class Configurar extends javax.swing.JFrame {
                     for (int i = 0; i < cmbTipo.getSize(); i++) {
                         String x = cmbTipo.getElementAt(i).toString();
                         if(x.contains("N,")){
-                            cmbTipo.removeElementAt(i);
+                            cmbTipo.setSelectedItem(x);
+                            x = x + "**";
                         }
                     }
                 }else{
@@ -1190,8 +1191,8 @@ public class Configurar extends javax.swing.JFrame {
                 user = "SIGI7408036N9_71";
                 pass = "66514482243426681793344";
             } else {
-                user = "SIGI7408036N9_6";
-                pass = "1505794126573071453720";
+                user = "DEMOGon";
+                pass = "cfdi";
             }
 
             llenarFormulario(produ);

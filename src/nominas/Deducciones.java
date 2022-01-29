@@ -6,6 +6,7 @@ package nominas;
 
 import elemento.Elemento;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,6 +28,8 @@ public class Deducciones extends javax.swing.JFrame {
     boolean callNomina = false;
     boolean nuevo;
     private Integer tipoNomina = null;
+    private boolean isPtu = false;
+    private Double importeIsr = 0.0;
     
     public Deducciones() {
         initComponents();
@@ -44,6 +47,18 @@ public class Deducciones extends javax.swing.JFrame {
         this.idEmpleado = idEmpleado;
         this.callNomina = callNomina;
         this.nuevo = !callNomina;
+        initComponents();
+        this.setLocationRelativeTo(null);
+        obtenerDeducciones(idEmpleado);
+        calcular();
+    }
+    
+    public Deducciones(int idEmpleado, boolean callNomina, boolean isPtu, Double importeIsr){
+        this.idEmpleado = idEmpleado;
+        this.callNomina = callNomina;
+        this.nuevo = !callNomina;
+        this.isPtu = isPtu;
+        this.importeIsr = importeIsr;
         initComponents();
         this.setLocationRelativeTo(null);
         obtenerDeducciones(idEmpleado);
@@ -275,7 +290,7 @@ public class Deducciones extends javax.swing.JFrame {
     
     public void setTipoNomina(int tipoNomina){
         this.tipoNomina = tipoNomina;
-        if(tipoNomina == 1){ //Nomina Extraordinaria
+        if(tipoNomina == 1 && !isPtu){ //Nomina Extraordinaria
             DefaultTableModel model = (DefaultTableModel) tabla.getModel();
             model.setRowCount(0);
         }else{
@@ -453,33 +468,42 @@ public class Deducciones extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
  
     private void obtenerDeducciones(int idEmpleado) {
-        Connection con = Elemento.odbc();
-        Statement stmt = factory.stmtLectura(con);
-        Statement stmt2 = factory.stmtLectura(con);
-        ResultSet rs, rs2;
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
         model.setRowCount(0);
         Object [] row = new Object[5];
         
-        try {
-            rs = stmt.executeQuery("SELECT * FROM ImportesDeducciones WHERE idEmpleado = "+idEmpleado);
-            while(rs.next()){
-                String claveD = rs.getString("clave");
-                rs2 = stmt2.executeQuery("SELECT * FROM ConceptosDeducciones WHERE clave = \'" + claveD + "\'");
-                if(rs2.next()){
-                    row[0] = rs2.getString("tipo");
-                    row[1] = claveD;
-                    row[2] = rs2.getString("concepto");
-                    row[3] = rs.getDouble("importe");
-                    model.addRow(row);
+        if(!isPtu){
+            Connection con = Elemento.odbc();
+            Statement stmt = factory.stmtLectura(con);
+            Statement stmt2 = factory.stmtLectura(con);
+            ResultSet rs, rs2;
+
+            try {
+                rs = stmt.executeQuery("SELECT * FROM ImportesDeducciones WHERE idEmpleado = "+idEmpleado);
+                while(rs.next()){
+                    String claveD = rs.getString("clave");
+                    rs2 = stmt2.executeQuery("SELECT * FROM ConceptosDeducciones WHERE clave = \'" + claveD + "\'");
+                    if(rs2.next()){
+                        row[0] = rs2.getString("tipo");
+                        row[1] = claveD;
+                        row[2] = rs2.getString("concepto");
+                        row[3] = rs.getDouble("importe");
+                        model.addRow(row);
+                    }
                 }
+                stmt.close();
+                stmt2.close();
+                con.close();
+            }catch (SQLException e) {
+                e.printStackTrace();
+                Elemento.log.error("Excepcion al consultar las percepciones del empleado: "+ idEmpleado,e);
             }
-            stmt.close();
-            stmt2.close();
-            con.close();
-        }catch (SQLException e) {
-            e.printStackTrace();
-            Elemento.log.error("Excepcion al consultar las percepciones del empleado: "+ idEmpleado,e);
+        }else{
+            row[0] = "002";
+            row[1] = "ISR";
+            row[2] = "ISR";
+            row[3] = importeIsr;
+            model.addRow(row);
         }
     }
     
@@ -492,7 +516,9 @@ public class Deducciones extends javax.swing.JFrame {
             stmt.executeUpdate("DELETE FROM ImportesDeducciones WHERE idEmpleado="+idEmpleado);
             stmt.close();
             con.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Elemento.log.error("Error al borrar deducciones", e);
         }
     }
 }
