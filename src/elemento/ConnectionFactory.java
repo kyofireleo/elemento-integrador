@@ -11,7 +11,7 @@ import java.sql.*;
  * @author Abe
  */
 public class ConnectionFactory {
-     
+    
     public Connection crearCon(){ 
         return Elemento.odbc();
     }

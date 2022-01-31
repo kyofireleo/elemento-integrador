@@ -61,7 +61,7 @@ public class Factura_View extends javax.swing.JFrame {
     ConnectionFactory factory = new ConnectionFactory();
     Emisor emisor;
     Receptor receptor;
-    String rfcE, rfc, nombre, calle, numExt, numInt, colonia, municipio, localidad, estado, pais, cp, regimenFiscalReceptor;
+    String rfcE, rfc, nombre, calle, numExt, numInt, colonia, municipio, localidad, estado, pais, cp, regimenFiscalReceptor, tipoPersona;
     int contadorComprobantes = 0;
     int creditosRestantes = 0;
     int idEmpleado;
@@ -688,7 +688,7 @@ public class Factura_View extends javax.swing.JFrame {
                             .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel14)
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(244, 246, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1524,26 +1524,17 @@ public class Factura_View extends javax.swing.JFrame {
                             break;
                         case "Campos":
                             int idCliente = rs.getInt("id");
-                            Statement stmtE = factory.stmtLectura(con);
-                            ResultSet rsE = stmtE.executeQuery("SELECT id FROM Empleados WHERE idEmpleado = " + idCliente);
-                            boolean cont = false;
-                            if (rsE.next()) {
-                                for (int i = 0; i < tipocfd.getItemCount(); i++) {
-                                    String xs = tipocfd.getItemAt(i).toString().trim();
-                                    if (xs.equals("Recibo de Nomina")) {
-                                        cont = true;
-                                    }
+                            if(tipocfd.getSelectedItem().toString().equalsIgnoreCase("N,Nómina")){
+                                Statement stmtE = factory.stmtLectura(con);
+                                ResultSet rsE = stmtE.executeQuery("SELECT id FROM Empleados WHERE idEmpleado = " + idCliente);
+                                boolean cont = false;
+                                if (rsE.next()) {
+                                    idEmpleado = rsE.getInt("id");
                                 }
-                                if (!cont) {
-                                    if (emisor.getEmitirNominas()) {
-                                        tipocfd.addItem("Recibo de Nomina");
-                                    }
-                                }
-                                idEmpleado = rsE.getInt("id");
-                            }
 
-                            rsE.close();
-                            stmtE.close();
+                                rsE.close();
+                                stmtE.close();
+                            }
 
                             rfc = rs.getString("rfc");
                             nombre = rs.getString("nombre");
@@ -1556,7 +1547,8 @@ public class Factura_View extends javax.swing.JFrame {
                             estado = rs.getString("estado");
                             pais = rs.getString("pais");
                             cp = rs.getString("cp");
-                            regimenFiscalReceptor = "606";//rs.getString("regimenFiscal");
+                            tipoPersona = rs.getString("tipoPersona");
+                            regimenFiscalReceptor = rs.getString("regimenfiscal");
 
                             receptor = new Receptor();
                             receptor.setNombre(nombre);
@@ -1564,7 +1556,13 @@ public class Factura_View extends javax.swing.JFrame {
                             receptor.setPais(pais);
                             receptor.setCp(cp);
                             receptor.setRegimenFiscal(regimenFiscalReceptor);
-
+                            
+                            String campo = tipoPersona.equals("F") ? "aplicaFisica" : "aplicaMoral";
+                            String consulta = "SELECT * FROM c_usocfdi WHERE " + campo + " = " + Boolean.TRUE + (regimenFiscalReceptor.trim().isEmpty() ? "" : " AND (regimenFiscalReceptor LIKE '*,"+ regimenFiscalReceptor +",*' OR regimenFiscalReceptor = '" + regimenFiscalReceptor + "')");
+                            
+                            this.usocfdi.removeAllItems();
+                            this.usocfdi.addItem("Seleccione un Uso de CFDi");
+                            consultar("ComboU", consulta);
                             break;
                         case "ComboE":
                             listaEmisores.addItem(rs.getInt("id") + ", " + rs.getString("nombre"));
@@ -1681,7 +1679,7 @@ public class Factura_View extends javax.swing.JFrame {
             if (!cond.contains("Seleccione un")) {
                 verCte.setEnabled(true);
                 String id = cond.split(",")[0];
-                if (emisor.getEmitirNominas() && tipocfd.getSelectedItem().toString().equalsIgnoreCase("Recibo de Nomina")) {
+                if (emisor.getEmitirNominas() && tipocfd.getSelectedItem().toString().equalsIgnoreCase("N,Nómina")) {
                     consultar("Campos", "SELECT * FROM EmpleadosRec WHERE id = " + id);
                 } else {
                     consultar("Campos", "SELECT * FROM Clientes WHERE id = " + id);
