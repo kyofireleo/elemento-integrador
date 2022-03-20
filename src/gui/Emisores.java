@@ -121,6 +121,7 @@ public class Emisores extends javax.swing.JFrame {
         emiteNominas = new javax.swing.JCheckBox();
         jLabel15 = new javax.swing.JLabel();
         curp = new javax.swing.JTextField();
+        btnBancos = new javax.swing.JButton();
 
         jCheckBox1.setText("jCheckBox1");
 
@@ -228,6 +229,13 @@ public class Emisores extends javax.swing.JFrame {
 
         curp.setEnabled(false);
 
+        btnBancos.setText("Bancos");
+        btnBancos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBancosActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -254,8 +262,11 @@ public class Emisores extends javax.swing.JFrame {
                         .addComponent(jButton1)
                         .addGap(18, 18, 18)
                         .addComponent(cancelar))
-                    .addComponent(emiteNominas)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addComponent(emiteNominas)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnBancos))
                         .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                             .addComponent(jLabel14)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -349,8 +360,10 @@ public class Emisores extends javax.swing.JFrame {
                     .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel13)
                     .addComponent(pass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
-                .addComponent(emiteNominas)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(emiteNominas)
+                    .addComponent(btnBancos))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
@@ -507,6 +520,12 @@ public class Emisores extends javax.swing.JFrame {
         curp.setEnabled(emiteNominas.isSelected());
     }//GEN-LAST:event_emiteNominasActionPerformed
 
+    private void btnBancosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBancosActionPerformed
+        String [] args = new String[1];
+        args[0] = this.id + "";
+        Emisores.main(args);
+    }//GEN-LAST:event_btnBancosActionPerformed
+
     private void borrarEmisor(){
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtEscritura(con);
@@ -554,6 +573,7 @@ public class Emisores extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton borrar;
+    private javax.swing.JButton btnBancos;
     public javax.swing.JTextField calle;
     private javax.swing.JButton cancelar;
     public javax.swing.JTextField colonia;
