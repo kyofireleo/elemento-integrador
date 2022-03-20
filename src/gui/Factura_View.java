@@ -1913,14 +1913,12 @@ public class Factura_View extends javax.swing.JFrame {
                         asociarCfdi.setEnabled(true);
                         break;
                     case "P":
-                        rp = new RecibosPagos();
                         asociarCfdi.setEnabled(true);
                         if (!rp.isVisible()) {
                             if (emisor == null) {
                                 consultar("Emisores", "SELECT * FROM Emisores WHERE id = " + id);
                             }
-                            rp.setEmisor(emisor);
-                            rp.setReceptor(receptor);
+                            rp = new RecibosPagos(emisor, receptor);
                             rp.setFormasPago(formasPagoCombo.getModel());
                             rp.setBancarizado(bancarizado);
                             rp.setFolio(this.folioText.getText());
@@ -2341,6 +2339,7 @@ public class Factura_View extends javax.swing.JFrame {
             Statement stmt;
             ResultSet res;
             int idEmisor = rs.getInt("id");
+            emi.setIdEmisor(idEmisor);
             emi.setNombre(rs.getString("nombre").trim());
             emi.setRfc(rs.getString("rfc").trim());
             /*emi.setCalle(rs.getString("calle").trim());

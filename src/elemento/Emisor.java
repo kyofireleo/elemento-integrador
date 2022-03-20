@@ -14,6 +14,15 @@ public class Emisor {
     private String municipio,estado,pais,cp,regimenFiscal,curp;
     private ExpedidoEn expedidoEn;
     private Boolean emitirNominas;
+    private int idEmisor = 0;
+
+    public int getIdEmisor() {
+        return idEmisor;
+    }
+
+    public void setIdEmisor(int idEmisor) {
+        this.idEmisor = idEmisor;
+    }
 
     public String getCurp() {
         return curp;

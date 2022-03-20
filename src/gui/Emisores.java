@@ -523,7 +523,7 @@ public class Emisores extends javax.swing.JFrame {
     private void btnBancosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBancosActionPerformed
         String [] args = new String[1];
         args[0] = this.id + "";
-        Emisores.main(args);
+        EmisorBancos.main(args);
     }//GEN-LAST:event_btnBancosActionPerformed
 
     private void borrarEmisor(){

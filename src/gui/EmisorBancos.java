@@ -4,17 +4,50 @@
  */
 package gui;
 
-/**
- *
- * @author Sammy Guergachi <sguergachi at gmail.com>
- */
+import com.mxrck.autocompleter.AutoCompleterCallback;
+import com.mxrck.autocompleter.TextAutoCompleter;
+import elemento.Elemento;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+
+
 public class EmisorBancos extends javax.swing.JFrame {
 
-    /**
-     * Creates new form EmisorBancos
-     */
-    public EmisorBancos() {
+    private TextAutoCompleter texter;
+    private String [] bancos;
+    private int idEmisor;
+    private utils.Utils util;
+    
+    public EmisorBancos(int idEmisor) {
+        util = new utils.Utils();
         initComponents();
+        this.setLocationRelativeTo(null);
+        
+        tblBancos.getColumnModel().getColumn(0).setPreferredWidth(100);
+        tblBancos.getColumnModel().getColumn(1).setPreferredWidth(800);
+        
+        this.idEmisor = idEmisor;
+        
+        obtenerBancos();
+        obtenerBancosEmisor();
+        
+        texter = new TextAutoCompleter(txtBuscar, new AutoCompleterCallback() {
+            @Override
+            public void callback(Object selectedItem) {
+                System.out.println("El usuario seleccionó: " + selectedItem.toString());
+                agregarBanco(selectedItem.toString());
+            };
+        });
+
+        texter.setCaseSensitive(false);
+        texter.setItems(bancos);
+        texter.setMode(0);
+        
     }
 
     /**
@@ -30,7 +63,8 @@ public class EmisorBancos extends javax.swing.JFrame {
         tblBancos = new javax.swing.JTable();
         txtBuscar = new javax.swing.JTextField();
         btnCerrar = new javax.swing.JButton();
-        btnAgregar = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        btnEliminar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Bancos del Emisor");
@@ -40,11 +74,11 @@ public class EmisorBancos extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Nombre", "Acción"
+                "ID", "Nombre"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -54,8 +88,20 @@ public class EmisorBancos extends javax.swing.JFrame {
         jScrollPane1.setViewportView(tblBancos);
 
         btnCerrar.setText("Cerrar");
+        btnCerrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCerrarActionPerformed(evt);
+            }
+        });
 
-        btnAgregar.setText("Agregar");
+        jLabel1.setText("Escriba el nombre del banco para buscarlo y presione Enter");
+
+        btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -66,69 +112,251 @@ public class EmisorBancos extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnEliminar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnCerrar))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(txtBuscar)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnAgregar)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(txtBuscar))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAgregar))
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addComponent(txtBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(btnCerrar)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCerrar)
+                    .addComponent(btnEliminar))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        eliminarBanco();
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void btnCerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarActionPerformed
+        this.dispose();
+    }//GEN-LAST:event_btnCerrarActionPerformed
+
+    private void obtenerBancos(){
+        Connection con = Elemento.odbc();
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT id_banco, nombre FROM c_bancos");
+            List<String> banks = new ArrayList<>();
+            
+            while(rs.next()){
+                banks.add(rs.getString("id_banco") + " - " + rs.getString("nombre"));
+            }
+            this.bancos = new String[banks.size()];
+            this.bancos = banks.toArray(bancos);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Elemento.log.error("Error al obtener los bancos: ", e);
+            util.printError("Error al obtener los bancos: " + e.getMessage());
+        } finally{
+            try{
+                if(rs != null && !rs.isClosed())
+                    rs.close();
+                if(stmt != null && !stmt.isClosed())
+                    stmt.close();
+                if(con != null && !con.isClosed())
+                    con.close();
+            }catch(SQLException ex){
+                ex.printStackTrace();
+                Elemento.log.error("Error al cerrar la conexion: ", ex);
+            }
+        }
+    }
+    
+    private void obtenerBancosEmisor(){
+        Connection con = Elemento.odbc();
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT eb.id_banco, b.nombre FROM EmisoresBancos eb "
+                    + "INNER JOIN c_bancos b ON eb.id_banco = b.id_banco "
+                    + "WHERE eb.id_emisor = " + idEmisor);
+            
+            List<String> banks = new ArrayList<>();
+            
+            while(rs.next()){
+               DefaultTableModel model = (DefaultTableModel)tblBancos.getModel();
+               model.addRow(new String[]{rs.getString("id_banco"), rs.getString("nombre")});
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Elemento.log.error("Error al obtener los bancos: ", e);
+            util.printError("Error al obtener los bancos: " + e.getMessage());
+        } finally{
+            try{
+                if(rs != null && !rs.isClosed())
+                    rs.close();
+                if(stmt != null && !stmt.isClosed())
+                    stmt.close();
+                if(con != null && !con.isClosed())
+                    con.close();
+            }catch(SQLException ex){
+                ex.printStackTrace();
+                Elemento.log.error("Error al cerrar la conexion: ", ex);
+            }
+        }
+    }
+
+    private void agregarBanco(String banco){
+        DefaultTableModel dtm = (DefaultTableModel)tblBancos.getModel();
+        String [] bank = banco.split(" - ");
+        
+        for (int i = 0; i < dtm.getRowCount(); i++) {
+            String id = dtm.getValueAt(i, 0).toString();
+            if(id.equals(bank[0])){
+                util.printError("Ese banco ya habia sido agregado anteriormente al emisor");
+                seleccionarTxtBuscar();
+                return;
+            }
+        }
+        
+        dtm.addRow(new String[]{bank[0], bank[1], ""});
+        
+        Connection con = Elemento.odbc();
+        Statement stmt = null;
+        
+        try {
+            stmt = con.createStatement();
+            stmt.executeUpdate("INSERT INTO EmisoresBancos (id_emisor, id_banco) VALUES (" + idEmisor + ", " + bank[0] + ")");
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Elemento.log.error("Error al guardar el banco del emisor: ", e);
+            util.printError("Error al guardar el banco del emisor: " + e.getMessage());
+        } finally{
+            try{
+                if(stmt != null && !stmt.isClosed())
+                    stmt.close();
+                if(con != null && !con.isClosed())
+                    con.close();
+            }catch(SQLException ex){
+                ex.printStackTrace();
+                Elemento.log.error("No se pudo cerrar la conexion al guardar el banco del emisor: ", ex);
+            }
+        }
+        
+        seleccionarTxtBuscar();
+    }
+    
+    private void eliminarBanco(){
+        DefaultTableModel model = (DefaultTableModel)tblBancos.getModel();
+        int rows [] = tblBancos.getSelectedRows();
+        if(rows.length > 0){
+            Connection con = Elemento.odbc();
+            Statement stmt = null;
+            String idsBancos = "";
+            
+            for(int i = rows.length - 1; i >= 0; i--){
+                idsBancos += model.getValueAt(rows[i], 0).toString() + (i == 0 ? "" : ",");
+            }
+            
+            try {
+                stmt = con.createStatement();
+                stmt.executeUpdate("DELETE FROM EmisoresBancos WHERE id_emisor = " + idEmisor + " AND id_banco in (" + idsBancos + ")");
+                
+                for(int i = rows.length - 1; i >= 0; i--){
+                    model.removeRow(rows[i]);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Elemento.log.error("Error al borrar elementos de la tabla EmisoresBancos: ", e);
+                util.printError("Error al borrar los elementos seleccionados: " + e.getMessage());
+            } finally{
+                try {
+                    if(stmt != null && !stmt.isClosed())
+                        stmt.close();
+                    if(con != null && !con.isClosed())
+                        con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    Elemento.log.error("Error al cerrar la conexion despues de eliminar elementos de la tabla EmisoresBancos: ", e);
+                }
+            }
+        }else{
+            util.print("Primero debe seleccionar por lo menos un banco en la tabla");
+        }
+    }
+    
+    private void seleccionarTxtBuscar(){
+        Thread t = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                    txtBuscar.selectAll();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                    Elemento.log.error("Error al intentar seleccionar el campo txtBuscar: ", ex);
+                }
+            }
+        });
+        
+        t.start();
+    }
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Windows".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
+        if(args != null && args.length > 0){
+            /* Set the Nimbus look and feel */
+            //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+            /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+             * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+             */
+            try {
+                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                    if ("Windows".equals(info.getName())) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
                 }
+            } catch (ClassNotFoundException ex) {
+                java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+                java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(EmisorBancos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+            //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new EmisorBancos().setVisible(true);
-            }
-        });
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    new EmisorBancos(new Integer(args[0])).setVisible(true);
+                }
+            });
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnCerrar;
+    private javax.swing.JButton btnEliminar;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tblBancos;
     private javax.swing.JTextField txtBuscar;

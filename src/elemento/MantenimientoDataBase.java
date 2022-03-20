@@ -654,8 +654,6 @@ public class MantenimientoDataBase {
             System.out.println("No existe la tabla EmisoresBancos, se creara...");
             
             try {
-                con.setAutoCommit(false);
-                
                 if(stmt == null)
                     stmt = con.createStatement();
                 
@@ -673,9 +671,18 @@ public class MantenimientoDataBase {
                 ex.printStackTrace();
                 log.error("Error al crear la tabla EmisoresBancos: ", ex);
             }
-            
-            e.printStackTrace();
-            log.error("Error al actualizar la tabla Emisores: ", e);
+        } finally{
+            try{
+                if(rs != null && !rs.isClosed())
+                    rs.close();
+                if(stmt != null && !stmt.isClosed())
+                    stmt.close();
+                if(con != null && !con.isClosed())
+                    con.close();
+            }catch(SQLException e){
+                e.printStackTrace();
+                Elemento.log.error("Error al cerrar la conexion para crear la tabla EmisoresBancos: ", e);
+            }
         }
     }
 }
