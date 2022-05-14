@@ -89,6 +89,11 @@ public class Listener implements JNotifyListener {
             ConectorDF con = new ConectorDF(true, Elemento.user, Elemento.pass, util.leerXml(rootPath + name), Elemento.log);
             String pathXml = Elemento.pathXml;
             if (con.timbrar(Elemento.pathXml)) {
+//                this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
+//                this.restarCredito(rfcEmi);
+//
+//                Elemento.log.info("Se agrega el folio timbrado " + folio + " en la base de datos");
+//                Elemento.log.info("Se comienza la generación del PDF...");
                 try {
                     Factura_View.visualizar(pathXml, name, null);
                 } catch (Exception ex) {
@@ -106,8 +111,9 @@ public class Listener implements JNotifyListener {
                     rfcEmi = lay.get(4).split(":")[1].trim();
                 }
                 Elemento.leerConfig(rfcEmi);
+                //Meter logica de lectura de folios a asociar
                 //ConectorSP con = new ConectorSP(Elemento.log, lay);
-                ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, rootPath + name, Elemento.log, Elemento.unidad, false, Elemento.estructuraNombre);
+                ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, lay, Elemento.log, Elemento.unidad, false, Elemento.estructuraNombre);
                 //JOptionPane.showMessageDialog(null,con.consultarTimbres());
                 ConstruirXML cons = con.getObjXml();
                 Factura_View fv = new Factura_View("");
