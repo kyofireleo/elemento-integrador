@@ -443,7 +443,7 @@ public class CteUpdate extends javax.swing.JFrame {
                 
             } else {
                 this.isNew = false;
-                query = "INSERT INTO Clientes (nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,email,tipoPersona,regimenFiscal) "
+                query = "INSERT INTO Clientes (nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,email) "
                         + "VALUES (\'" + nombre.getText().trim() + "\',\'" + rfc.getText().trim() + "\',\'" + calle.getText().trim() + "\',"
                         + "\'" + noExterior.getText().trim() + "\',\'" + noInterior.getText().trim() + "\',"
                         + "\'" + colonia.getText().trim() + "\',\'" + localidad.getText().trim() + "\',"
