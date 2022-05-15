@@ -9,6 +9,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import conectordf.ConectorDF;
 import conectordf.ConstruirXML;
+import static elemento.Elemento.log;
 import gui.Factura_View;
 import gui.Folios;
 import gui.SendMail;
@@ -27,14 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
-import net.contentobjects.jnotify.JNotifyListener;
 import nominas.NominaGeneral;
 
 /**
  *
  * @author Abe
  */
-public class Listener implements JNotifyListener {
+public class Listener {
 
     utils.Utils util = new utils.Utils(Elemento.log);
     utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
@@ -47,25 +47,25 @@ public class Listener implements JNotifyListener {
         Elemento.log.info("Buscando layout creado...");
     }
 
-    @Override
+    
     public void fileRenamed(int wd, String rootPath, String oldName,
             String newName) {
         print("renamed " + rootPath + " : " + oldName + " -> " + newName);
     }
 
-    @Override
+    
     public void fileModified(int wd, String rootPath, String name) {
         print("modified " + rootPath + " : " + name);
     }
 
-    @Override
+    
     public void fileDeleted(int wd, String rootPath, String name) {
         print("deleted " + rootPath + " : " + name);
     }
 
-    @Override
+    
     public void fileCreated(int wd, String rootPath, String name) {
-        Elemento.log.info("Layout Detectado: " + name);
+        Elemento.log.info("Layout Detectado: " + (rootPath + name));
         try {
             this.procesar(rootPath, name);
         } catch (Exception ex) {
@@ -89,6 +89,11 @@ public class Listener implements JNotifyListener {
             ConectorDF con = new ConectorDF(true, Elemento.user, Elemento.pass, util.leerXml(rootPath + name), Elemento.log);
             String pathXml = Elemento.pathXml;
             if (con.timbrar(Elemento.pathXml)) {
+//                this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
+//                this.restarCredito(rfcEmi);
+//
+//                Elemento.log.info("Se agrega el folio timbrado " + folio + " en la base de datos");
+//                Elemento.log.info("Se comienza la generación del PDF...");
                 try {
                     Factura_View.visualizar(pathXml, name, null);
                 } catch (Exception ex) {
@@ -106,8 +111,9 @@ public class Listener implements JNotifyListener {
                     rfcEmi = lay.get(4).split(":")[1].trim();
                 }
                 Elemento.leerConfig(rfcEmi);
+                //Meter logica de lectura de folios a asociar
                 //ConectorSP con = new ConectorSP(Elemento.log, lay);
-                ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, rootPath + name, Elemento.log, Elemento.unidad, false, Elemento.estructuraNombre);
+                ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, lay, Elemento.log, Elemento.unidad, false, Elemento.estructuraNombre);
                 //JOptionPane.showMessageDialog(null,con.consultarTimbres());
                 ConstruirXML cons = con.getObjXml();
                 Factura_View fv = new Factura_View("");
@@ -149,7 +155,7 @@ public class Listener implements JNotifyListener {
                     fv.consultar("Folio", "SELECT * FROM Folios WHERE rfc = \'" + cons.getRfcEmisor() + "\' AND idComprobante = " + fv.getIdComprobante(tipoComprobante));
 
                     //con.crearLayout(layout, name);
-                    if (!tipoComprobante.equalsIgnoreCase("recibo de nomina")) {
+                    if (!tipoComprobante.equalsIgnoreCase("N")) {
                         if (!verificarCliente(rfcRe)) {
                             agregarCliente(cons);
                         }
@@ -180,6 +186,11 @@ public class Listener implements JNotifyListener {
                     if (msg == null) {
                         if (Elemento.checarCreditos(cons.getRfcEmisor())) {
                             if (con.timbrar(Elemento.pathXml)) {
+                                util.fileMove(rootPath + name, Elemento.pathLayoutDone + name);
+                                String text = "Archivo " + name + " movido a done.";
+                                System.out.println(text);
+                                log.info(text);
+                                
                                 try {
                                     Folios fol = new Folios("");
                                     String fechaT = cons.getFechaTim();
@@ -213,7 +224,7 @@ public class Listener implements JNotifyListener {
                                     }
 
                                     this.crearQR(nameXml, "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid + "&fe=" + sello.substring(sello.length() - 8 , sello.length()));
-                                    if (!(cons.getTipoComprobanteLayout().equalsIgnoreCase("recibo de nomina") || cons.getTipoComprobanteLayout().equalsIgnoreCase("N"))) {
+                                    if (!tipoComprobante.equalsIgnoreCase("N")) {
                                         int selec = JOptionPane.showConfirmDialog(null, "Desea enviar la factura por e-mail?", "Enviar", JOptionPane.YES_NO_OPTION);
 
                                         String emailO = fol.getEmail("Emisores", rfcEmi);
@@ -259,6 +270,11 @@ public class Listener implements JNotifyListener {
                                 fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
                                 print(con.getMensajeError());
                                 Elemento.log.info("Se agrega el folio no timbrado " + folio + " en la base de datos");
+                                
+                                util.fileMove(rootPath + name, Elemento.pathLayoutError + name);
+                                String text = "Archivo " + name + " movido a error.";
+                                System.out.println(text);
+                                log.info(text);
                             }
                         } else {
                             this.print("No cuenta con creditos, favor de comunicarse\nal 6672802966 o al 6672804444");

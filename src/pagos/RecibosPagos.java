@@ -50,7 +50,7 @@ public class RecibosPagos extends javax.swing.JFrame {
     private List<String> arrayTipoRel;
     private List<String> cfdisAsoc;
     private String uuids;
-    private List<Banco> bancos;
+    private List<Banco> bancosBene, bancosOrde;
     private String[] bene, orde;
 
     public List<String> getArrayTipoRel() {
@@ -62,9 +62,20 @@ public class RecibosPagos extends javax.swing.JFrame {
         llenarTipoRelacion();
     }
     
-    public RecibosPagos() {
+    public RecibosPagos(){
         initComponents();
-        getBancos();
+        this.getBancos();
+        this.setLocationRelativeTo(null);
+        pagos = new ArrayList();
+        setHolders();
+        setCellListener();
+    }
+    
+    public RecibosPagos(Emisor emi, Receptor rec) {
+        this.emi = emi;
+        this.rec = rec;
+        initComponents();
+        this.getBancos();
         this.setLocationRelativeTo(null);
         pagos = new ArrayList();
         setHolders();
@@ -72,30 +83,54 @@ public class RecibosPagos extends javax.swing.JFrame {
     }
     
     private void getBancos(){
-        bancos = new ArrayList();
+        bancosBene = new ArrayList();
+        bancosOrde = new ArrayList();
         List<String> nombresBancosBene = new ArrayList();
         List<String> nombresBancosOrde = new ArrayList();
         Connection con = Elemento.odbc();
         Statement stmt = null;
-        ResultSet rs = null;
+        ResultSet rsBene = null;
+        ResultSet rsOrde = null;
         
         try {
             stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT nombre, rfc FROM c_bancos");
+            if(emi != null)
+                rsBene = stmt.executeQuery("SELECT b.id_banco, b.nombre, b.rfc FROM c_bancos b INNER JOIN EmisoresBancos eb ON b.id_banco = eb.id_banco AND eb.id_emisor = " + emi.getIdEmisor());
+            else
+                rsBene = stmt.executeQuery("SELECT id_banco, nombre, rfc FROM c_bancos b");
+            
+            rsOrde = stmt.executeQuery("SELECT id_banco, nombre, rfc FROM c_bancos b");
             nombresBancosBene.add("Seleccione Banco Beneficiario");
             nombresBancosOrde.add("Seleccione Banco Ordenante");
-            bancos.add(null);
-            while(rs.next()){
-                Banco b = new Banco(rs.getString("nombre"), rs.getString("rfc"));
-                bancos.add(b);
-                nombresBancosBene.add(rs.getString("nombre"));
-                nombresBancosOrde.add(rs.getString("nombre"));
+            bancosBene.add(null);
+            bancosOrde.add(null);
+            
+            if(!rsBene.next()){
+                rsBene.close();
+                rsBene = stmt.executeQuery("SELECT id_banco, nombre, rfc FROM c_bancos b");
+            }else{
+                rsBene.beforeFirst();
+            }
+            
+            while(rsBene.next()){
+                Banco b = new Banco(rsBene.getString("nombre"), rsBene.getString("rfc"), rsBene.getInt("id_banco"));
+                bancosBene.add(b);
+                
+                nombresBancosBene.add(b.getId() + " - " + b.getBanco());
+            }
+            
+            while(rsOrde.next()){
+                Banco b = new Banco(rsOrde.getString("nombre"), rsOrde.getString("rfc"), rsOrde.getInt("id_banco"));
+                bancosOrde.add(b);
+                
+                nombresBancosOrde.add(b.getId() + " - " + b.getBanco());
             }
             
             bancoBeneficiario.setModel(new DefaultComboBoxModel(nombresBancosBene.toArray(new String[nombresBancosBene.size()])));
             bancoOrdenante.setModel(new DefaultComboBoxModel(nombresBancosOrde.toArray(new String[nombresBancosOrde.size()])));
             
-            rs.close();
+            rsBene.close();
+            rsOrde.close();
             stmt.close();
             con.close();
         } catch (Exception e) {
@@ -162,7 +197,8 @@ public class RecibosPagos extends javax.swing.JFrame {
     
     public void setEmisor(Emisor emi){
         this.emi = emi;
-        labelEmisor.setText(emi.getNombre());
+        this.labelEmisor.setText(emi.getNombre());
+        this.getBancos();
     }
     
     public void setReceptor(Receptor rec){
@@ -235,6 +271,7 @@ public class RecibosPagos extends javax.swing.JFrame {
 
         jLabel1.setText("Pagos");
 
+        comboFormaPago.setName(""); // NOI18N
         comboFormaPago.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboFormaPagoActionPerformed(evt);
@@ -377,8 +414,10 @@ public class RecibosPagos extends javax.swing.JFrame {
         });
 
         bancoBeneficiario.setEnabled(false);
+        bancoBeneficiario.setName("bancoBeneficiario"); // NOI18N
 
         bancoOrdenante.setEnabled(false);
+        bancoOrdenante.setName("bancoOrdenante"); // NOI18N
 
         chkOrdenante.setSelected(true);
         chkOrdenante.setText("Enviar informacion de cuenta ordenante");
@@ -432,8 +471,7 @@ public class RecibosPagos extends javax.swing.JFrame {
                                 .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnDel, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                             .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(18, 18, 18)
                             .addComponent(asociarCfdi)
@@ -441,7 +479,7 @@ public class RecibosPagos extends javax.swing.JFrame {
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jScrollPane3)))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                             .addComponent(comboFormaPago, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(montoPago, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -453,16 +491,16 @@ public class RecibosPagos extends javax.swing.JFrame {
                             .addComponent(fechaPago, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(chkOrdenante))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                             .addComponent(jLabel3)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(jSeparator2))
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addComponent(jScrollPane2)
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
                             .addComponent(jLabel8)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 908, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 908, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -620,16 +658,31 @@ public class RecibosPagos extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAddActionPerformed
     
     private String getRfcBanco(javax.swing.JComboBox banco){
-        return this.bancos.get(banco.getSelectedIndex()) != null ? this.bancos.get(banco.getSelectedIndex()).rfc : "";
+        if(banco.getName().equalsIgnoreCase("bancoBeneficiario"))
+            return this.bancosBene.get(banco.getSelectedIndex()) != null ? this.bancosBene.get(banco.getSelectedIndex()).getRfc() : "";
+        
+        if(banco.getName().equalsIgnoreCase("bancoOrdenante"))
+            return this.bancosOrde.get(banco.getSelectedIndex()) != null ? this.bancosOrde.get(banco.getSelectedIndex()).getRfc() : "";
+        
+        return null;
     }
     
-    private int getIndexBanco(String rfc){
-        for (int i = 0; i < bancos.size(); i++) {
-            String r = bancos.get(i).rfc;
+    private int getIndexBanco(String rfc, char tipo){
+        if(tipo == 'B')
+            for (int i = 0; i < bancosBene.size(); i++) {
+                String r = bancosBene.get(i).getRfc();
             if(rfc.equals(r)){
                 return i;
             }
         }
+        else
+            for (int i = 0; i < bancosOrde.size(); i++) {
+                String r = bancosOrde.get(i).getRfc();
+                if(rfc.equals(r)){
+                    return i;
+                }
+            }
+        
         return 0;
     }
     
@@ -779,9 +832,9 @@ public class RecibosPagos extends javax.swing.JFrame {
             Pago p = pagos.get(pos);
             comboFormaPago.setSelectedIndex(getIndexFormaPago(p.getFormaPago()));
             cuentaBeneficiario.setText(p.getCuentaBeneficiario());
-            bancoBeneficiario.setSelectedIndex(getIndexBanco(p.getRfcCtaBen()));
+            bancoBeneficiario.setSelectedIndex(getIndexBanco(p.getRfcCtaBen(), 'B'));
             cuentaOrdenante.setText(p.getCuentaOrdenante());
-            bancoOrdenante.setSelectedIndex(getIndexBanco(p.getRfcCtaOrd()));
+            bancoOrdenante.setSelectedIndex(getIndexBanco(p.getRfcCtaOrd(), 'O'));
             montoPago.setText(p.getMonto().toString());
             comboMoneda.setSelectedItem(p.getMoneda());
             tipoCambio.setText(p.getTipoCambio() != null ? p.getTipoCambio().toString() : "");
@@ -1016,12 +1069,14 @@ public class RecibosPagos extends javax.swing.JFrame {
 }
 
 class Banco{
-    String nombre;
-    String rfc;
+    private String nombre;
+    private String rfc;
+    private int id;
     
-    public Banco(String nombre, String rfc){
+    public Banco(String nombre, String rfc, int id){
         this.nombre = nombre;
         this.rfc = rfc;
+        this.id = id;
     }
     
     public String getBanco(){
@@ -1030,5 +1085,9 @@ class Banco{
     
     public String getRfc(){
         return this.rfc;
+    }
+    
+    public int getId(){
+        return this.id;
     }
 }
