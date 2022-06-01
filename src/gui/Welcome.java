@@ -110,7 +110,7 @@ public class Welcome extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("v3.3.2");
+        jLabel1.setText("v4.0");
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/elemento/empleadosIcon.png"))); // NOI18N
         jButton6.setText("Nomina");
