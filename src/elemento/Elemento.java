@@ -18,7 +18,6 @@ import java.sql.Statement;
 import java.util.Properties;
 import javax.swing.JOptionPane;
 import log.Log;
-import net.contentobjects.jnotify.JNotify;
 import org.apache.log4j.Logger;
 
 /**
@@ -36,6 +35,7 @@ public class Elemento {
     public static final int PORT = 1334;
     private final static ConnectionFactory factory = new ConnectionFactory();
     public static String pathXml, pathPdf, pathXmlST, pathXmlMod, pathLayout, pathConfig, pathPlantillas, pathQR;
+    public static String pathLayoutWorking, pathLayoutDone, pathLayoutError;
     public static String user, pass;
     private static String tipoConexion, baseDatos;
     public static String estructuraNombre;
@@ -136,25 +136,17 @@ public class Elemento {
         pathXml = unidad + ":\\Facturas\\C_Procesados\\";
         pathPdf = unidad + ":\\Facturas\\D_Pdfs\\";
         pathLayout = unidad + ":\\Facturas\\B_Layout\\";
+        
+        pathLayoutWorking = pathLayout + "working\\";
+        pathLayoutDone = pathLayout + "done\\";
+        pathLayoutError = pathLayout + "error\\";
+        
         pathXmlST = unidad + ":\\Facturas\\C_Interpretados\\";
         pathXmlMod = unidad + ":\\Facturas\\XmlModificados\\";
         pathConfig = unidad + ":\\Facturas\\config\\";
         pathPlantillas = unidad + ":\\Facturas\\config\\plantillas\\";
         pathQR = unidad + ":\\Facturas\\qrs\\";
 
-        if (sistema.contains("Windows Vista") || sistema.contains("Windows 7") || sistema.contains("Windows 8") || sistema.contains("Windows 10")) {
-            path = unidad + ":\\Program Files (x86)\\Java\\" + jVersion + "\\bin\\";
-            if (!new File(path).exists()) {
-                path = unidad + ":\\Program Files\\Java\\" + jVersion + "\\bin\\";
-            }
-        } else {
-            path = unidad + ":\\Archivos de Programa\\Java\\" + jVersion + "\\bin\\";
-        }
-        path = System.getProperty("java.home");
-        File dll = new File(unidad + ":\\Facturas\\jnotify.dll");
-        File libso = new File(unidad + ":\\Facturas\\libjnotify.so");
-        File programDll = new File(path + "\\bin\\jnotify.dll");
-        File programLibso = new File(path + "\\bin\\libjnotify.so");
 
         File file1 = new File(unidad + ":\\Facturas");
         File file2 = new File(unidad + ":\\Facturas\\A_Archivos");
@@ -167,6 +159,10 @@ public class Elemento {
         File file9 = new File(pathConfig);
         File file10 = new File(pathPlantillas);
         File file11 = new File(pathQR);
+        
+        File file12 = new File(pathLayoutWorking);
+        File file13 = new File(pathLayoutDone);
+        File file14 = new File(pathLayoutError);
 
         file1.mkdir();
         file2.mkdirs();
@@ -179,13 +175,10 @@ public class Elemento {
         file9.mkdir();
         file10.mkdir();
         file11.mkdir();
-
-        if (!programDll.exists()) {
-            fileCopy(dll.getAbsolutePath(), programDll.getAbsolutePath());
-            fileCopy(libso.getAbsolutePath(), programLibso.getAbsolutePath());
-        } else {
-            System.out.println("Ya existe la DLL");
-        }
+        
+        file12.mkdir();
+        file13.mkdir();
+        file14.mkdir();
 
         try {
             logObject = new Log(unidad + ":/Facturas/");
@@ -289,8 +282,26 @@ public class Elemento {
     private void sample() throws Exception {
         // path to watch
         log.info("Se ha ejecutado el elemento...");
+        utils.Utils u = new utils.Utils(log);
         String ruta = Elemento.pathLayout;
-
+        
+        File f = new File(pathLayout);
+        
+        while(true){    
+            if(f.listFiles().length > 0){
+                Listener l = new Listener();
+                for(File a : f.listFiles()){
+                    if(a.isFile()){
+                        u.fileMove(a.getPath(), pathLayoutWorking + a.getName());
+                        l.fileCreated(0, pathLayoutWorking, a.getName()); 
+                    }
+                }
+            }
+            
+            Thread.sleep(10000);
+        }
+        
+        /*
         int mask = JNotify.FILE_CREATED;
 
         // watch subtree?
@@ -310,6 +321,7 @@ public class Elemento {
             // invalid watch ID specified.
             System.out.println("ID invalido");
         }
+        */
     }
 
     public void listen() {

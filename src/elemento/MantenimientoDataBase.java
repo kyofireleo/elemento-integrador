@@ -46,6 +46,9 @@ public class MantenimientoDataBase {
         
         /******cambios en tabla de Clientes******/
         verificarClientes();
+        
+        /******cambios en tabla de EmisoresBancos******/
+        verificarEmisoresBancos();
     }
     
     private void verificarCBancos(){
@@ -54,7 +57,7 @@ public class MantenimientoDataBase {
         ResultSet rs;
         try{
             stmt = factory.stmtEscritura(con);
-            rs = stmt.executeQuery("select 1 from c_bancos");
+            rs = stmt.executeQuery("select top 1 1 from c_bancos");
             
             rs.close();
             stmt.close();
@@ -207,6 +210,7 @@ public class MantenimientoDataBase {
                 ps.executeBatch();
                 
                 log.info("Catalogo insertado correctamente");
+                
                 if(stmt != null)
                     stmt.close();
                 con.commit();
@@ -630,6 +634,55 @@ public class MantenimientoDataBase {
                     log.error("Error al cerrar la conexion despues de intentar actualizar estructura de la tabla Clientes: ", sex);
                 }
                 util.printError(error);
+            }
+        }
+    }
+    
+    private void verificarEmisoresBancos(){
+        Connection con = Elemento.odbc();
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT TOP 1 1 FROM EmisoresBancos");
+            
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (SQLException e) {
+            log.info("No existe la tabla EmisoresBancos, se creara...");
+            System.out.println("No existe la tabla EmisoresBancos, se creara...");
+            
+            try {
+                if(stmt == null)
+                    stmt = con.createStatement();
+                
+                stmt.executeUpdate("CREATE TABLE EmisoresBancos"
+                        + "("
+                            + "id_emisorBanco AUTOINCREMENT, "
+                            + "id_emisor int not null, "
+                            + "id_banco int not null, "
+                            + "CONSTRAINT emisorBanco_PK PRIMARY KEY(id_emisorBanco),"
+                            + "CONSTRAINT emisor_FK FOREIGN KEY(id_emisor) REFERENCES Emisores(id),"
+                            + "CONSTRAINT banco_FK FOREIGN KEY(id_banco) REFERENCES c_bancos(id_banco)"
+                        + ")");
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                log.error("Error al crear la tabla EmisoresBancos: ", ex);
+            }
+        } finally{
+            try{
+                if(rs != null && !rs.isClosed())
+                    rs.close();
+                if(stmt != null && !stmt.isClosed())
+                    stmt.close();
+                if(con != null && !con.isClosed())
+                    con.close();
+            }catch(SQLException e){
+                e.printStackTrace();
+                Elemento.log.error("Error al cerrar la conexion para crear la tabla EmisoresBancos: ", e);
             }
         }
     }

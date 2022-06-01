@@ -2339,6 +2339,7 @@ public class Factura_View extends javax.swing.JFrame {
             Statement stmt;
             ResultSet res;
             int idEmisor = rs.getInt("id");
+            emi.setIdEmisor(idEmisor);
             emi.setNombre(rs.getString("nombre").trim());
             emi.setRfc(rs.getString("rfc").trim());
             /*emi.setCalle(rs.getString("calle").trim());
