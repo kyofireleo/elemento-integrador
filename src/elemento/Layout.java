@@ -24,6 +24,7 @@ import java.util.Map;
 import nominas.Empleado;
 import pagos.Documento;
 import pagos.Pago;
+import pagos.Pagos;
 
 public class Layout {
 
@@ -56,6 +57,7 @@ public class Layout {
     private List<String> layoutLista;
     private Long transId;
     List<String> conceptos;
+    private utils.Utils util = new utils.Utils(Elemento.log);
 
     public Layout(Factura fact) {
         this.serie = fact.getSerie();
@@ -67,9 +69,9 @@ public class Layout {
         this.numRegIdTrib = fact.getNumRegIdTrib();
         this.pais = fact.getPais();
         this.conceptos = fact.getConceptos();
-        this.iva = BigDecimal.valueOf(fact.getIva());
-        this.subtotal = BigDecimal.valueOf(fact.getSubtotal());
-        this.total = BigDecimal.valueOf(fact.getTotal());
+        this.iva = fact.getIva();
+        this.subtotal = fact.getSubtotal();
+        this.total = fact.getTotal();
         this.emisor = fact.getEmisor();
         this.rfcEmi = this.emisor.getRfc();
         fol = this.folio = fact.getFolio();
@@ -85,9 +87,9 @@ public class Layout {
         this.numRegIdTrib = fact.getNumRegIdTrib();
         this.pais = fact.getPais();
         this.conceptos = fact.getConceptos();
-        this.iva = BigDecimal.valueOf(fact.getIva());
-        this.subtotal = BigDecimal.valueOf(fact.getSubtotal());
-        this.total = BigDecimal.valueOf(fact.getTotal());
+        this.iva = fact.getIva();
+        this.subtotal = fact.getSubtotal();
+        this.total = fact.getTotal();
         this.emisor = fact.getEmisor();
         this.rfcEmi = this.emisor.getRfc();
         this.serie = fact.getSerie();
@@ -110,9 +112,9 @@ public class Layout {
         this.numRegIdTrib = fact.getNumRegIdTrib();
         this.pais = fact.getPais();
         this.conceptos = fact.getConceptos();
-        this.iva = BigDecimal.valueOf(fact.getIva());
-        this.subtotal = BigDecimal.valueOf(fact.getSubtotal());
-        this.total = BigDecimal.valueOf(fact.getTotal());
+        this.iva = fact.getIva();
+        this.subtotal = fact.getSubtotal();
+        this.total = fact.getTotal();
         this.emisor = fact.getEmisor();
         this.rfcEmi = this.emisor.getRfc();
         this.serie = fact.getSerie();
@@ -141,9 +143,9 @@ public class Layout {
         //this.numRegIdTrib = fact.getNumRegIdTrib();
         //this.pais = fact.getPais();
         this.conceptos = fact.conceptos;
-        this.iva = BigDecimal.valueOf(fact.iva);
-        this.subtotal = BigDecimal.valueOf(fact.subtotal);
-        this.total = BigDecimal.valueOf(fact.total);
+        this.iva = fact.iva;
+        this.subtotal = fact.subtotal;
+        this.total = fact.total;
         this.rfcEmi = this.emisor.getRfc();
         this.folio = fact.folio;
         this.serie = fact.serie;
@@ -156,12 +158,13 @@ public class Layout {
         }
     }
 
-    public Layout(Factura fact, List<Pago> pagos) {
+    public Layout(Factura fact, Pagos pagos) {
         this.fact = fact;
         this.emisor = fact.emisor;
         this.nombre = fact.nombre;
         this.rfc = fact.rfc;
         this.codigoPostal = fact.getCp();
+        this.pais = fact.getPais();
         this.regimenFiscalReceptor = fact.getRegimenFiscalReceptor();
         //this.numRegIdTrib = fact.getNumRegIdTrib();
         //this.pais = fact.getPais();
@@ -217,8 +220,8 @@ public class Layout {
         if (this.emisor.getRfc().trim().length() == 13) {
             re.append("CURPE: ").append(this.emisor.getCurp()).append("\r\n");
         }
-
         re.append("[/DATOS_EMISOR]\r\n\r\n");
+        
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
         re.append("RFC2: ").append(this.rfc).append("\r\n");
@@ -231,6 +234,9 @@ public class Layout {
         re.append("ESTADO2: ").append(this.fact.getEstado()).append("\r\n");
         re.append("PAIS2: ").append(this.fact.getPais()).append("\r\n");
         re.append("CP2: ").append(this.fact.getCp()).append("\r\n");*/
+        re.append("REGIMENFISCAL2: ").append(this.regimenFiscalReceptor).append("\r\n");
+        re.append("DOMICILIOFISCAL: ").append(this.codigoPostal).append("\r\n");
+        //re.append("RESIDENCIAFISCAL: ").append(this.pais).append("\r\n");
         re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
 
@@ -266,10 +272,11 @@ public class Layout {
         
         re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");*/
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        if (this.fact.getIsrRetenido() > 0) {
+        if (this.fact.getIsrRetenido().compareTo(BigDecimal.ZERO) == 1) {
             re.append("IR2: 001@").append(this.fact.getIsrRetenido()).append("\r\n");
         }
         re.append("[/IMPUESTOS_RETENIDOS]\r\n\r\n");
+        
         re.append("[EMPLEADO]\r\n");
         re.append("NUMEMPLEADO: ").append(this.emp.getNumEmpleado()).append("\r\n");
         re.append("CURP: ").append(this.emp.getCurp()).append("\r\n");
@@ -287,6 +294,7 @@ public class Layout {
         re.append("SUELDO_BASE: ").append(this.emp.getSalarioBaseCotApor()).append("\r\n");
         re.append("SALARIO_DIARIO_INT: ").append(this.emp.getSalarioDiarioInt()).append("\r\n");
         re.append("[/EMPLEADO]\r\n\r\n");
+        
         re.append("[NOMINA]\r\n");
         re.append("TIPO_NOMINA: ").append(this.nomi.getTipoNomina()).append("\r\n");
         re.append("TOTAL_PER: ").append(this.redondear(per.getTotalSueldos())).append("\r\n");
@@ -344,20 +352,27 @@ public class Layout {
         return re.toString();
     }
 
-    private String rellenarPagos(List<Pago> pagos) throws Error, Exception {
+    private String rellenarPagos(Pagos pagos) throws Error, Exception {
         Elemento.log.info((Object) "Se comienza a llenar el Layout...");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         StringBuilder re = new StringBuilder();
+        StringBuilder retPago = new StringBuilder();
+        StringBuilder traPago = new StringBuilder();
+        StringBuilder retDoc = new StringBuilder();
+        StringBuilder traDoc = new StringBuilder();
 
         re.append("[DATOS_EMISOR]\r\n");
         re.append("NOMBRE1: ").append(this.emisor.getNombre()).append("\r\n");
         re.append("REGIMENFISCAL: ").append(this.emisor.getRegimenFiscal()).append("\r\n");
         re.append("RFC1: ").append(this.emisor.getRfc()).append("\r\n");
-
         re.append("[/DATOS_EMISOR]\r\n\r\n");
+        
         re.append("[DATOS_RECEPTOR]\r\n");
         re.append("NOMBRE2: ").append(this.nombre).append("\r\n");
         re.append("RFC2: ").append(this.rfc).append("\r\n");
+        re.append("DOMICILIOFISCAL: ").append(this.codigoPostal).append("\r\n");
+        re.append("REGIMENFISCAL2: ").append(this.regimenFiscalReceptor).append("\r\n");
+        re.append("RESIDENCIAFISCAL: ").append(this.pais).append("\r\n");
         re.append("USOCFDI: ").append(this.fact.usoCfdi).append("\r\n");
         re.append("[/DATOS_RECEPTOR]\r\n\r\n");
 
@@ -375,7 +390,7 @@ public class Layout {
         re.append("DESCUENTO: 0.00\r\n");
         re.append("MOTIVODESCUENTO: \r\n");
         re.append("MONEDA: ").append(this.fact.getMoneda()).append("\r\n");
-        re.append("TIPOCAMBIO: \r\n");
+        re.append("TIPOCAMBIO: ").append(this.fact.getTipoCambio()).append("\r\n");
         re.append("TOTALRETENIDOS: 0\r\n");
         re.append("TOTALTRASLADOS: 0\r\n");
         re.append("SUBTOTAL: 0\r\n");
@@ -386,10 +401,24 @@ public class Layout {
         re.append("[CONCEPTOS]\r\n");
         re.append("C1: 84111506@ACT@.@.@1@Pago@0@0@0\r\n");
         re.append("[/CONCEPTOS]\r\n\r\n");
-
+        
+        re.append("[INFO_PAGOS]\r\n");
+        re.append("MontoTotalPagos: ").append(pagos.getTotalMontoPagos().toString()).append("\r\n");
+        re.append("TotalRetencionesIVA: ").append(pagos.getTotalRetencionesIVA().toString()).append("\r\n");
+        re.append("TotalRetensionesISR: ").append(pagos.getTotalRetensionesISR().toString()).append("\r\n");
+        re.append("TotalRetensionesIEPS: ").append(pagos.getTotalRetensionesIEPS().toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVA16: ").append(pagos.getTotalTrasladosBaseIVA16().toString()).append("\r\n");
+        re.append("TotalTrasladosImpuestoIVA16: ").append(pagos.getTotalTrasladosImpuestoIVA16().toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVA8: ").append(pagos.getTotalTrasladosBaseIVA8().toString()).append("\r\n");
+        re.append("TotalTrasladosImpuestoIVA8: ").append(pagos.getTotalTrasladosImpuestoIVA8().toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVA0: ").append(pagos.getTotalTrasladosBaseIVA0().toString()).append("\r\n");
+        re.append("TotalTrasladosImpuestoIVA0: ").append(pagos.getTotalTrasladosImpuestoIVA0().toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVAExento: ").append(pagos.getTotalTrasladosBaseIVAExento().toString()).append("\r\n");
+        re.append("[/INFO_PAGOS]\r\n\r\n");
+        
         re.append("[PAGOS]\r\n");
-        for (int i = 0; i < pagos.size(); i++) {
-            Pago p = pagos.get(i);
+        for (int i = 0; i < pagos.getPagos().size(); i++) {
+            Pago p = pagos.getPagos().get(i);
             re.append("P").append((i + 1)).append(": ").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getCuentaBeneficiario());
             re.append("@").append(p.getCuentaBeneficiario().isEmpty() ? "." : p.getRfcCtaBen());
             re.append("@").append(p.getCuentaOrdenante().isEmpty() ? "." : p.getCuentaOrdenante());
@@ -398,13 +427,72 @@ public class Layout {
             re.append("@").append(p.getMoneda());
             re.append("@").append(p.getTipoCambio() == null ? "." : p.getTipoCambio().toString());
             re.append("@").append(p.getFormaPago());
-            re.append("@").append(sdf.format(p.getFechaPago())).append("\r\n");
+            re.append("@").append(sdf.format(p.getFechaPago()));
+            re.append("@").append(p.getTipoCadPago() != null ? p.getTipoCadPago() : "");
+            re.append("@").append(p.getCertPago() != null ? p.getCertPago() : "");
+            re.append("@").append(p.getCadPago() != null ? p.getCadPago() : "");
+            re.append("@").append(p.getSelloPago() != null ? p.getSelloPago() : "");
+            re.append("@").append(p.getNumOperacion());
+            
+            if(p.getRfcCtaOrd().equals("XEXX010101000")){
+                re.append("@").append(p.getNomBancoOrdExt());
+            }
+            
+            re.append("\r\n");
+            int cont = 0;
+            
+            /*
+            //Retenciones
+            if(p.getPagoRetensionesISR() != null){
+                cont++;
+                retPago.append("PIR").append(cont).append(": P").append((i + 1)).append("@001@").append(p.getPagoRetensionesISR().toString()).append("\r\n");
+            }
+            if(p.getPagoRetencionesIVA() != null){
+                cont++;
+                retPago.append("PIR").append(cont).append(": P").append((i + 1)).append("@002@").append(p.getPagoRetencionesIVA().toString()).append("\r\n");
+            }
+            if(p.getPagoRetensionesIEPS() != null){
+                cont++;
+                retPago.append("PIR").append(cont).append(": P").append((i + 1)).append("@003@").append(p.getPagoRetensionesIEPS().toString()).append("\r\n");
+            }
+            */
+            
+            //Traslados
+            cont = 0;
+            if(p.getPagoTrasladosBaseIVA0() != null){
+                cont++;
+                traPago.append("PIT").append(cont).append(": P").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVA0().toString()).append("@").append(p.getPagoTrasladosImpuestoIVA0()).append("@Tasa@0.000000").append("\r\n");
+            }
+            if(p.getPagoTrasladosBaseIVA8() != null){
+                cont++;
+                traPago.append("PIT").append(cont).append(": P").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVA8().toString()).append("@").append(p.getPagoTrasladosImpuestoIVA8()).append("@Tasa@0.080000").append("\r\n");
+            }
+            if(p.getPagoTrasladosBaseIVA16() != null){
+                cont++;
+                traPago.append("PIT").append(cont).append(": P").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVA16().toString()).append("@").append(p.getPagoTrasladosImpuestoIVA16()).append("@Tasa@0.160000").append("\r\n");
+            }
+            if(p.getPagoTrasladosBaseIVAExento() != null){
+                cont++;
+                traPago.append("PIT").append(cont).append(": P").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVAExento().toString()).append("@").append("0.00").append("@Exento@0.000000").append("\r\n");
+            }
         }
         re.append("[/PAGOS]\r\n\r\n");
+        
+        //IMPUESTOS_PAGOS
+        
+        re.append("[PAGOS_IMPUESTOS_RETENIDOS]\r\n");
+        if(!retPago.toString().trim().isEmpty())
+            re.append(retPago.toString());
+        re.append("[/PAGOS_IMPUESTOS_RETENIDOS]\r\n\r\n");
+        
+        re.append("[PAGOS_IMPUESTOS_TRASLADOS]\r\n");
+        if(!traPago.toString().trim().isEmpty())
+            re.append(traPago.toString());
+        re.append("[/PAGOS_IMPUESTOS_TRASLADOS]\r\n\r\n");
 
         re.append("[DOCTOS_PAGOS]\r\n");
-        for (int h = 0; h < pagos.size(); h++) {
-            Pago p = pagos.get(h);
+        for (int h = 0; h < pagos.getPagos().size(); h++) {
+            Pago p = pagos.getPagos().get(h);
             for (int i = 0; i < p.getDocumentos().size(); i++) {
                 Documento d = p.getDocumentos().get(i);
                 re.append("DP").append((i + 1)).append(": P").append((h + 1));
@@ -414,13 +502,62 @@ public class Layout {
                 re.append("@").append(d.getImpPagado().toString());
                 re.append("@").append(d.getImpSaldoAnterior().toString());
                 re.append("@").append(d.getNumParcialidad());
-                re.append("@").append(d.getMetodoPago());
+                //re.append("@").append(d.getMetodoPago());
                 re.append("@").append(d.getMoneda());
-                re.append("@").append(d.getTipoCambio() == null ? "." : d.getTipoCambio().toString());
-                re.append("@").append(d.getUuid()).append("\r\n");
+                re.append("@").append(d.getEquivalencia().toString());
+                re.append("@").append(d.getUuid());
+                re.append("@").append(d.getObjImp()).append("\r\n");
+                
+                int cont = 0;
+                
+                /*
+                //Retenciones
+                if(d.getRetensionISR()!= null){
+                    cont++;
+                    retDoc.append("PIR").append(cont).append(": DP").append((i + 1)).append("@001@").append(d.getRetensionISR().toString()).append("@Tasa@").append(d.getR).append("\r\n");
+                }
+                if(d.getRetencionIVA()!= null){
+                    cont++;
+                    retDoc.append("PIR").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getRetencionIVA().toString()).append("\r\n");
+                }
+                if(d.getRetensionIEPS() != null){
+                    cont++;
+                    retDoc.append("PIR").append(cont).append(": DP").append((i + 1)).append("@003@").append(d.getRetensionIEPS().toString()).append("\r\n");
+                }
+                */
+                
+                //Traslados
+                cont = 0;
+                if(d.getTrasladoBaseIVA0() != null){
+                    cont++;
+                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA0().toString()).append("@").append(d.getTrasladoImpuestoIVA0()).append("@Tasa@0.000000").append("\r\n");
+                }
+                if(d.getTrasladoBaseIVA8() != null){
+                    cont++;
+                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA8().toString()).append("@").append(d.getTrasladoImpuestoIVA8()).append("@Tasa@0.080000").append("\r\n");
+                }
+                if(d.getTrasladoBaseIVA16() != null){
+                    cont++;
+                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA16().toString()).append("@").append(d.getTrasladoImpuestoIVA16()).append("@Tasa@0.160000").append("\r\n");
+                }
+                /*if(d.getTrasladoBaseIVAExento() != null){
+                    cont++;
+                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVAExento().toString()).append("@").append("0.00").append("@Exento@0.000000").append("\r\n");
+                }*/
             }
         }
-        re.append("[/DOCTOS_PAGOS]\r\n");
+        re.append("[/DOCTOS_PAGOS]\r\n\r\n");
+        
+        //DOCTOS_IMPUESTOS_PAGOS
+        re.append("[DOCTOS_PAGOS_RETENCIONES]\r\n");
+        if(!retDoc.toString().trim().isEmpty())
+            re.append(retDoc.toString());
+        re.append("[/DOCTOS_PAGOS_RETENCIONES]\r\n\r\n");
+        
+        re.append("[DOCTOS_PAGOS_TRASLADOS]\r\n");
+        if(!traDoc.toString().trim().isEmpty())
+            re.append(traDoc.toString());
+        re.append("[/DOCTOS_PAGOS_TRASLADOS]\r\n\r\n");
 
         return re.toString();
     }
@@ -430,8 +567,12 @@ public class Layout {
         Elemento.log.info((Object) "Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
         this.fecha = this.getFecha();
-        BigDecimal porIeps = new BigDecimal(this.fact.porIeps / 100).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalIeps = new BigDecimal(this.fact.totalIeps).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal porIeps;
+        BigDecimal totalIeps;
+        if(this.fact.porIeps != null){
+            porIeps = util.redondear(this.fact.porIeps.divide(new BigDecimal("100")));
+            totalIeps = this.fact.totalIeps;
+        }
 
         re.append(preFactura).append("\r\n");
         re.append("[DATOS_EMISOR]\r\n");
@@ -493,14 +634,14 @@ public class Layout {
         re.append("FORMAPAGO: ").append(this.fact.getFormaPago()).append("\r\n");
         re.append("CONDICIONPAGO: ").append(this.fact.getCondicionPago()).append("\r\n");
         re.append("METODOPAGO: ").append(this.fact.getMetodoPago()).append("\r\n");
-        re.append("DESCUENTO: ").append(new BigDecimal(this.fact.getDescuento())).append("\r\n");
+        re.append("DESCUENTO: ").append(this.fact.getDescuento().toString()).append("\r\n");
         re.append("MOTIVODESCUENTO: _\r\n");
         re.append("MONEDA: ").append(this.fact.getMoneda()).append("\r\n");
         re.append("TIPOCAMBIO: ").append(new BigDecimal(this.fact.getTipoCambio())).append("\r\n");
-        re.append("TOTALRETENIDOS: ").append(new BigDecimal(this.fact.getTotalRetenidos()).setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-        re.append("TOTALTRASLADOS: ").append(new BigDecimal(this.fact.getTotalTraslados()).setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-        re.append("SUBTOTAL: ").append(new BigDecimal(this.subtotal.toString()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
-        re.append("TOTALNETO: ").append(new BigDecimal(this.total.toString()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
+        re.append("TOTALRETENIDOS: ").append(this.fact.getTotalRetenidos().toString()).append("\r\n");
+        re.append("TOTALTRASLADOS: ").append(this.fact.getTotalTraslados().toString()).append("\r\n");
+        re.append("SUBTOTAL: ").append(this.subtotal.toString()).append("\r\n");
+        re.append("TOTALNETO: ").append(this.total.toString()).append("\r\n");
         re.append("LEYENDA: ").append(this.fact.getLeyenda()).append("\r\n");
         re.append("[/DATOS_CFD]\r\n\r\n");
 
@@ -521,17 +662,19 @@ public class Layout {
 
                     if (!trasladosBase.containsKey(tr.getImpuesto())) {
                         Map<BigDecimal, ImpuestoTraslado> mit = new HashMap();
-                        mit.put(tr.getTasa(), new ImpuestoTraslado(tr.getBase(), tr.getTasa()));
+                        mit.put(tr.getTasa(), new ImpuestoTraslado(tr.getBase(), tr.getTasa(), util.redondear(tr.getImporte())));
                         trasladosBase.put(tr.getImpuesto(), mit);
                     } else {
                         Map<BigDecimal, ImpuestoTraslado> mit = trasladosBase.get(tr.getImpuesto());
                         if (mit.containsKey(tr.getTasa())) {
                             ImpuestoTraslado it = mit.get(tr.getTasa());
                             BigDecimal suma = it.getBase().add(tr.getBase());
-                            it.setBase(suma);
+                            BigDecimal sumaImporte = it.getImporte().add(util.redondear(tr.getImporte()));
+                            it.setBase(util.redondear(suma));
+                            it.setImporte(util.redondear(sumaImporte));
                             mit.replace(tr.getTasa(), it);
                         } else {
-                            mit.put(tr.getTasa(), new ImpuestoTraslado(tr.getBase(), tr.getTasa()));
+                            mit.put(tr.getTasa(), new ImpuestoTraslado(tr.getBase(), tr.getTasa(), redondear(tr.getImporte())));
                         }
 
                         trasladosBase.replace(tr.getImpuesto(), mit);
@@ -541,7 +684,7 @@ public class Layout {
 
                     re.append("TC" + (i + 1) + ": ").append("C" + tr.getNumConcepto()).append("@").append(tr.getBase().toString())
                             .append("@").append(tr.getImpuesto()).append("@").append(tr.getTipoFactor()).append("@").append(tr.getTasa().toString())
-                            .append("@").append(tr.getImporte().toString()).append("\r\n");
+                            .append("@").append(util.redondear(tr.getImporte()).toString()).append("\r\n");
                 }
             }
             re.append("[/TRASLADADOS_CONCEPTOS]\r\n\r\n");
@@ -553,7 +696,7 @@ public class Layout {
                 Factura.ConceptoRetencion rr = fact.retenciones.get(i);
                 re.append("RC" + (i + 1) + ": ").append("C" + rr.getNumConcepto()).append("@").append(rr.getBase().toString())
                         .append("@").append(rr.getImpuesto()).append("@").append(rr.getTipoFactor()).append("@").append(rr.getTasa().toString())
-                        .append("@").append(rr.getImporte().toString()).append("\r\n");
+                        .append("@").append(util.redondear(rr.getImporte()).toString()).append("\r\n");
             }
             re.append("[/RETENCIONES_CONCEPTOS]\r\n\r\n");
         }
@@ -576,44 +719,42 @@ public class Layout {
 
         int contTras = 1;
 
-        if (writeIva) {
-            if (trasladosBase.containsKey("002")) {
-                Map<BigDecimal, ImpuestoTraslado> mip = trasladosBase.get("002");
-                if (mip.containsKey(new BigDecimal("0.160000"))) {
-                    ImpuestoTraslado it = mip.get(new BigDecimal("0.160000"));
-                    re.append("IT").append(contTras).append(": 002@Tasa@")
-                            .append(it.getTasa().setScale(6, RoundingMode.HALF_UP))
-                            .append("@").append(this.iva.setScale(2, RoundingMode.HALF_UP).toString())
-                            .append("@").append(it.getBase().setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-                    contTras++;
-                }
-            }
+        if (trasladosBase.containsKey("002")) {
+            escribirTraslados("002", contTras, re, trasladosBase);
+            
+            contTras++;
         }
 
         if (trasladosBase.containsKey("003")) {
-            Map<BigDecimal, ImpuestoTraslado> mip = trasladosBase.get("003");
-            ImpuestoTraslado its[] = (ImpuestoTraslado[]) mip.values().toArray();
-            for (ImpuestoTraslado it : its) {
-                if (it.getTasa().compareTo(BigDecimal.ZERO) == 1) {
-                    re.append("IT").append(contTras).append(": 003@Tasa@")
-                            .append(it.getTasa().toString())
-                            .append("@").append(totalIeps.setScale(2, RoundingMode.HALF_UP).toString())
-                            .append("@").append(it.getBase().setScale(2, RoundingMode.HALF_UP).toString()).append("\r\n");
-                }
-            }
+            escribirTraslados("003", contTras, re, trasladosBase);
         }
+        
         re.append("[/IMPUESTOS_TRASLADADOS]\r\n\r\n");
 
         re.append("[IMPUESTOS_RETENIDOS]\r\n");
-        if (this.fact.getIvaRetenido() > 0) {
-            re.append("IR1: 002@").append(new BigDecimal(this.fact.getIvaRetenido()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
+        if (this.fact.getIvaRetenido().compareTo(BigDecimal.ZERO) == 1) {
+            re.append("IR1: 002@").append(this.fact.getIvaRetenido().toString()).append("\r\n");
         }
-        if (this.fact.getIsrRetenido() > 0) {
-            re.append("IR2: 001@").append(new BigDecimal(this.fact.getIsrRetenido()).setScale(2, RoundingMode.HALF_UP)).append("\r\n");
+        if (this.fact.getIsrRetenido().compareTo(BigDecimal.ZERO) == 1) {
+            re.append("IR2: 001@").append(this.fact.getIsrRetenido().toString()).append("\r\n");
         }
         re.append("[/IMPUESTOS_RETENIDOS]\r\n");
         this.texto = re.toString();
         return this.texto;
+    }
+    
+    private void escribirTraslados(String impuesto, int contTras, StringBuilder re, Map<String, Map<BigDecimal, ImpuestoTraslado>> trasladosBase){
+        Map<BigDecimal, ImpuestoTraslado> mip = trasladosBase.get(impuesto);
+        Object its[] = mip.values().toArray();
+        for (Object ot : its) {
+            ImpuestoTraslado it = (ImpuestoTraslado) ot;
+            if (it.getTasa().compareTo(BigDecimal.ZERO) == 1 || impuesto.equals("002")) {
+                re.append("IT").append(contTras).append(": " + impuesto + "@Tasa@")
+                        .append(it.getTasa().toString())
+                        .append("@").append(util.redondear(it.getImporte()).toString())
+                        .append("@").append(util.redondear(it.getBase()).toString()).append("\r\n");
+            }
+        }
     }
 
     private void crearLayout(String texto) {
@@ -670,10 +811,20 @@ class ImpuestoTraslado {
 
     private BigDecimal base;
     private BigDecimal tasa;
+    private BigDecimal importe;
 
-    public ImpuestoTraslado(BigDecimal base, BigDecimal tasa) {
+    public ImpuestoTraslado(BigDecimal base, BigDecimal tasa, BigDecimal importe) {
         this.base = base;
         this.tasa = tasa;
+        this.importe = importe;
+    }
+
+    public BigDecimal getImporte() {
+        return importe;
+    }
+
+    public void setImporte(BigDecimal importe) {
+        this.importe = importe;
     }
 
     public BigDecimal getBase() {

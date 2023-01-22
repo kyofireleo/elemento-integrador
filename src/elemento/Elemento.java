@@ -163,6 +163,8 @@ public class Elemento {
         File file12 = new File(pathLayoutWorking);
         File file13 = new File(pathLayoutDone);
         File file14 = new File(pathLayoutError);
+        
+        File file15 = new File(unidad + ":\\Facturas\\zips");
 
         file1.mkdir();
         file2.mkdirs();
@@ -179,6 +181,8 @@ public class Elemento {
         file12.mkdir();
         file13.mkdir();
         file14.mkdir();
+        
+        file15.mkdir();
 
         try {
             logObject = new Log(unidad + ":/Facturas/");

@@ -309,6 +309,8 @@ public class Aguinaldo extends javax.swing.JFrame {
                 fact.nombre = rs.getString("nombre");
                 fact.rfc = rs.getString("rfc");
                 fact.idEmpleado = rs.getInt("id");
+                fact.cp = rs.getString("cp");
+                fact.regimenFiscalReceptor = rs.getString("regimenFiscal");
             }
             rs.close();
             stmt.close();
@@ -591,7 +593,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                     fact.moneda = "MXN";
                     fact.tipoCambio = "1.0";
                     fact.prefactura = "";
-                    fact.usoCfdi = "P01";
+                    fact.usoCfdi = "CN01";
 
                     nom.setAntiguedad(new Integer(model.getValueAt(i, 2).toString()));
                     nom.setTipoNomina("E"); //Extraordinaria
@@ -609,30 +611,30 @@ public class Aguinaldo extends javax.swing.JFrame {
                     if(d.size() > 0){
                         dedu.setDeducciones(d);
                         dedu.setTotalRetenido(d.get(0).getImporte());
-                        dedu.setTotalOtras(0.0);
+                        dedu.setTotalOtras(BigDecimal.ZERO);
                         nom.setDeducciones(dedu);
-                        nom.setTotalDeducciones(util.redondearBigDecimal(dedu.getTotalRetenido()));
+                        nom.setTotalDeducciones(dedu.getTotalRetenido());
                     }else{
                         dedu.setDeducciones(null);
-                        dedu.setTotalRetenido(0.0);
-                        dedu.setTotalOtras(0.0);
+                        dedu.setTotalRetenido(BigDecimal.ZERO);
+                        dedu.setTotalOtras(BigDecimal.ZERO);
                         nom.setTotalDeducciones(util.redondearBigDecimal(0.0));
                     }
 
                     //Seteamos percepciones
                     perc.setPercepciones(getPercepciones(i));
-                    perc.setTotalExento(0.0);
-                    perc.setTotalGravado(perc.getPercepciones().get(0).getImporteGravado() + perc.getPercepciones().get(0).getImporteExento());
-                    perc.setTotalSueldos(perc.getTotalGravado() + perc.getTotalExento());
+                    perc.setTotalExento(BigDecimal.ZERO);
+                    perc.setTotalGravado(util.redondear(perc.getPercepciones().get(0).getImporteGravado().add(perc.getPercepciones().get(0).getImporteExento())));
+                    perc.setTotalSueldos(util.redondear(perc.getTotalGravado().add(perc.getTotalExento())));
                     nom.setPercepciones(perc);
-                    nom.setTotalPercepciones(new BigDecimal(perc.getTotalSueldos()));
+                    nom.setTotalPercepciones(perc.getTotalSueldos());
                     
                     List<complementos.nominas.OtrosPagos.OtroPago> otrosPagos = getOtrosPagos(i);
                     if(otrosPagos.size() > 0){
                         otro.setOtrosPagos(otrosPagos);
                         otro.setTotalOtrosPagos(otro.getOtrosPagos().get(0).getImporte());
                         nom.setOtrosPagos(otro);
-                        nom.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
+                        nom.setTotalOtrosPagos(otro.getTotalOtrosPagos());
                     }
 
                     fact.conceptos = getConceptos(perc, dedu, otro);
@@ -648,30 +650,30 @@ public class Aguinaldo extends javax.swing.JFrame {
 
     private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dec, complementos.nominas.OtrosPagos otro) {
         List<String> conceptos = new ArrayList();
-        BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos() + otro.getTotalOtrosPagos());
-        BigDecimal deds = util.redondearBigDecimal(dec != null ? dec.getTotalRetenido() + dec.getTotalOtras(): 0.0);
+        BigDecimal pers = util.redondear(perc.getTotalSueldos().add(otro.getTotalOtrosPagos()));
+        BigDecimal deds = util.redondear(dec != null ? dec.getTotalRetenido().add(dec.getTotalOtras()) : BigDecimal.ZERO);
         String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@"+deds.toString()+"@" + pers.toString() + "\r\n";
         conceptos.add(con);
         return conceptos;
     }
 
     private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, Factura fact) {
-        double sub = perc.getTotalSueldos();
+        BigDecimal sub = perc.getTotalSueldos();
 
         fact.isrRetenido = dedu.getTotalRetenido();
-        fact.descuento = dedu.getTotalOtras() + dedu.getTotalRetenido();
+        fact.descuento = dedu.getTotalOtras().add(dedu.getTotalRetenido());
         fact.totalRetenidos = fact.isrRetenido;
-        fact.totalTraslados = 0.0;
-        fact.iva = 0.0;
-        fact.ivaRetenido = 0.0;
+        fact.totalTraslados = BigDecimal.ZERO;
+        fact.iva = BigDecimal.ZERO;
+        fact.ivaRetenido = BigDecimal.ZERO;
 
-        if (fact.descuento > 0) {
+        if (fact.descuento.compareTo(BigDecimal.ZERO) == 1) {
             fact.motivoDescuento = "Deducciones Nómina";
         } else {
             fact.motivoDescuento = "";
         }
 
-        double to = sub - fact.descuento;
+        BigDecimal to = sub.subtract(fact.descuento);
         fact.subtotal = util.redondear(sub);
         fact.total = util.redondear(to);
 
@@ -684,8 +686,8 @@ public class Aguinaldo extends javax.swing.JFrame {
         List<complementos.nominas.Deducciones.Deduccion> lista = new ArrayList();
         complementos.nominas.Deducciones.Deduccion ded;
         complementos.nominas.Deducciones dedus = new complementos.nominas.Deducciones();
-        double importe = new Double(model.getValueAt(pos, 5).toString());
-        if(importe > 0){
+        BigDecimal importe = new BigDecimal(model.getValueAt(pos, 5).toString());
+        if(importe.compareTo(BigDecimal.ZERO) == 1){
             ded = dedus.getClase();
             ded.setTipoDeduccion(cc.getTipoConcepto());
             ded.setClave(cc.getCodigo());
@@ -707,8 +709,8 @@ public class Aguinaldo extends javax.swing.JFrame {
         perc.setTipoPercepcion(cc.getTipoConcepto());
         perc.setClave(cc.getCodigo());
         perc.setConcepto(cc.getDescripcion());
-        perc.setImporteGravado(new Double(model.getValueAt(pos, 4).toString()));
-        perc.setImporteExento(0.0);
+        perc.setImporteGravado(new BigDecimal(model.getValueAt(pos, 4).toString()));
+        perc.setImporteExento(BigDecimal.ZERO);
         lista.add(perc);
 
         return lista;
@@ -720,10 +722,10 @@ public class Aguinaldo extends javax.swing.JFrame {
         List<complementos.nominas.OtrosPagos.OtroPago> lista = new ArrayList();
         complementos.nominas.OtrosPagos.OtroPago otr;
         complementos.nominas.OtrosPagos otros = new complementos.nominas.OtrosPagos();
-        double importe = new Double(model.getValueAt(pos, 5).toString());
+        BigDecimal importe = new BigDecimal(model.getValueAt(pos, 5).toString());
         otr = otros.getClase();
         
-        if(importe > 0){
+        if(importe.compareTo(BigDecimal.ZERO) == 1){
             otr.setTipoOtroPago(cc.getTipoConcepto());
             otr.setClave(cc.getCodigo());
             otr.setConcepto(cc.getDescripcion());
@@ -732,7 +734,7 @@ public class Aguinaldo extends javax.swing.JFrame {
             otr.setTipoOtroPago("002");
             otr.setClave("SUB");
             otr.setConcepto("Subsidio para el empleo");
-            otr.setImporte(0.0);
+            otr.setImporte(BigDecimal.ZERO);
         }
         
         lista.add(otr);

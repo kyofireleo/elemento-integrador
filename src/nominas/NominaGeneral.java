@@ -14,6 +14,7 @@ import java.awt.HeadlessException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,9 +53,9 @@ public class NominaGeneral extends javax.swing.JFrame {
     String lugarExpedicion;
     private int totalRecibos = 0;
     private boolean isPtu = false;
-    private Double importeTotalPtu = 0.0;
-    private Double importePtu = 0.0;
-    private Double importeIsr = 0.0;
+    private BigDecimal importeTotalPtu = BigDecimal.ZERO;
+    private BigDecimal importePtu = BigDecimal.ZERO;
+    private BigDecimal importeIsr = BigDecimal.ZERO;
     DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 
     public NominaGeneral() {
@@ -111,8 +112,10 @@ public class NominaGeneral extends javax.swing.JFrame {
                 cont++;
             }while(cantidadTotalPtu.trim().isEmpty() && !util.isNumeric(util.quitarComas(cantidadTotalPtu)));
             
-            this.importeTotalPtu = df.parse(cantidadTotalPtu).doubleValue();
-            this.importePtu = util.redondear(importeTotalPtu / idEmpleados.size());
+            cantidadTotalPtu = cantidadTotalPtu.trim();
+            
+            this.importeTotalPtu = (BigDecimal)df.parse(cantidadTotalPtu.contains(".") ? (cantidadTotalPtu.endsWith(".") ? (cantidadTotalPtu + "0") : cantidadTotalPtu) : (cantidadTotalPtu + ".0"));
+            this.importePtu = util.redondear(importeTotalPtu.divide(new BigDecimal(idEmpleados.size()), 2, RoundingMode.HALF_UP));
 
             cont = 0;
             do{
@@ -123,7 +126,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 cont++;
             }while(cantidadIsr.trim().isEmpty() && util.isNumeric(util.quitarComas(cantidadIsr)));
             
-            this.importeIsr = df.parse(cantidadIsr).doubleValue();
+            this.importeIsr = (BigDecimal)df.parse(cantidadIsr);
             
         }catch(HeadlessException | ParseException e){
             e.printStackTrace();
@@ -422,7 +425,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact.moneda = "MXN";
                 fact.tipoCambio = "1.0";
                 fact.prefactura = "";
-                fact.usoCfdi = "P01";
+                fact.usoCfdi = "CN01";
                 
                 if(!ventanasOtr.containsKey(emp.getIdEmpleado()))
                     otr = new OtrosPagos(emp.getIdEmpleado(), false);
@@ -454,14 +457,14 @@ public class NominaGeneral extends javax.swing.JFrame {
                 otro.setOtrosPagos(getOtrosPagos(otr));
                 otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
                 nom.setOtrosPagos(otro);
-                nom.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
+                nom.setTotalOtrosPagos(otro.getTotalOtrosPagos());
                 
                 //Seteamos deducciones
                 dedu.setDeducciones(getDeducciones(dec));
                 dedu.setTotalRetenido(dec.getTotalRetenido());
                 dedu.setTotalOtras(dec.getTotalOtras());
                 nom.setDeducciones(dedu);
-                nom.setTotalDeducciones(util.redondearBigDecimal(dec.getTotalRetenido() + dec.getTotalOtras()));
+                nom.setTotalDeducciones(util.redondear(dec.getTotalRetenido().add(dec.getTotalOtras())));
 
                 //Seteamos percepciones
                 perc.setPercepciones(getPercepciones(per));
@@ -469,7 +472,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 perc.setTotalGravado(per.getTotalGravado());
                 perc.setTotalSueldos(per.getTotalSueldos());
                 nom.setPercepciones(perc);
-                nom.setTotalPercepciones(new BigDecimal(per.getTotalSueldos()));
+                nom.setTotalPercepciones(per.getTotalSueldos());
 
                 fact.conceptos = getConceptos(perc,otro,dedu);
                 fact = getTotales(perc, dedu, otro, fact);
@@ -762,9 +765,9 @@ public class NominaGeneral extends javax.swing.JFrame {
                     }
                     
                     //Se igualan a cero cuando el tipo de nomina es Extraordinaria y que no exista un tipo de nomina existente
-                    BigDecimal i = util.redondearBigDecimal(per.getTotalExento() + per.getTotalGravado());
-                    BigDecimal o = util.redondearBigDecimal(op.getTotalOtrosPagos());
-                    BigDecimal d = util.redondearBigDecimal(dec.getTotalRetenido()+ dec.getTotalOtras());
+                    BigDecimal i = util.redondear(per.getTotalExento().add(per.getTotalGravado()));
+                    BigDecimal o = util.redondear(op.getTotalOtrosPagos());
+                    BigDecimal d = util.redondear(dec.getTotalRetenido().add(dec.getTotalOtras()));
                     row[0] = numEmpleados.get(j);
                     row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
                     row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
@@ -894,8 +897,9 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact.localidad = rs.getString("localidad");
                 fact.municipio = rs.getString("municipio");
                 fact.estado = rs.getString("estado");
-                fact.pais = rs.getString("pais");
-                fact.cp = rs.getString("cp");*/
+                fact.pais = rs.getString("pais");*/
+                fact.cp = rs.getString("cp");
+                fact.regimenFiscalReceptor = rs.getString("regimenFiscal");
                 fact.idEmpleado = rs.getInt("id");
             }
             rs.close();
@@ -908,17 +912,17 @@ public class NominaGeneral extends javax.swing.JFrame {
         return fact;
     }
 
-    private Double obtenerNetoAPagar(int idEmpleado) {
+    private BigDecimal obtenerNetoAPagar(int idEmpleado) {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs;
-        Double neto = 0.0;
+        BigDecimal neto = BigDecimal.ZERO;
         try {
             rs = stmt.executeQuery("SELECT * FROM ImportesPercepciones WHERE idEmpleado = " + idEmpleado);
             while (rs.next()) {
-                double ig = rs.getDouble("importeGravado");
-                double ie = rs.getDouble("importeExento");
-                neto += (ig + ie);
+                BigDecimal ig = rs.getBigDecimal("importeGravado");
+                BigDecimal ie = rs.getBigDecimal("importeExento");
+                neto = neto.add(ig.add(ie));
             }
             rs.close();
             stmt.close();
@@ -930,17 +934,17 @@ public class NominaGeneral extends javax.swing.JFrame {
         return util.redondear(neto);
     }
 
-    private Double obtenerNetoDeducciones(int idEmpleado) {
+    private BigDecimal obtenerNetoDeducciones(int idEmpleado) {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs;
-        Double neto = 0.0;
+        BigDecimal neto = BigDecimal.ZERO;
         try {
             rs = stmt.executeQuery("SELECT * FROM ImportesDeducciones WHERE idEmpleado = " + idEmpleado);
             while (rs.next()) {
-                double ig = rs.getDouble("importeGravado");
-                double ie = rs.getDouble("importeExento");
-                neto += (ig + ie);
+                BigDecimal ig = rs.getBigDecimal("importeGravado");
+                BigDecimal ie = rs.getBigDecimal("importeExento");
+                neto = neto.add((ig.add(ie)));
             }
             rs.close();
             stmt.close();
@@ -1017,7 +1021,7 @@ public class NominaGeneral extends javax.swing.JFrame {
             ded.setTipoDeduccion(model.getValueAt(i, 0).toString());
             ded.setClave(model.getValueAt(i, 1).toString());
             ded.setConcepto(model.getValueAt(i, 2).toString());
-            ded.setImporte(new Double(model.getValueAt(i, 3).toString()));
+            ded.setImporte(new BigDecimal(model.getValueAt(i, 3).toString()));
 
             lista.add(ded);
         }
@@ -1036,7 +1040,7 @@ public class NominaGeneral extends javax.swing.JFrame {
             otp.setTipoOtroPago(model.getValueAt(i, 0).toString());
             otp.setClave(model.getValueAt(i, 1).toString());
             otp.setConcepto(model.getValueAt(i, 2).toString());
-            otp.setImporte(new Double(model.getValueAt(i, 3).toString()));
+            otp.setImporte(new BigDecimal(model.getValueAt(i, 3).toString()));
 
             lista.add(otp);
         }
@@ -1055,8 +1059,8 @@ public class NominaGeneral extends javax.swing.JFrame {
             perc.setTipoPercepcion(model.getValueAt(i, 0).toString());
             perc.setClave(model.getValueAt(i, 1).toString());
             perc.setConcepto(model.getValueAt(i, 2).toString());
-            perc.setImporteGravado(new Double(model.getValueAt(i, 3).toString()));
-            perc.setImporteExento(new Double(model.getValueAt(i, 4).toString()));
+            perc.setImporteGravado(new BigDecimal(model.getValueAt(i, 3).toString()));
+            perc.setImporteExento(new BigDecimal(model.getValueAt(i, 4).toString()));
 
             lista.add(perc);
         }
@@ -1066,30 +1070,30 @@ public class NominaGeneral extends javax.swing.JFrame {
 
     private List<String> getConceptos(complementos.nominas.Percepciones perc, complementos.nominas.OtrosPagos otro, complementos.nominas.Deducciones dec) {
         List<String> conceptos = new ArrayList();
-        BigDecimal pers = util.redondearBigDecimal(perc.getTotalSueldos() + otro.getTotalOtrosPagos());
-        BigDecimal deds = util.redondearBigDecimal(dec.getTotalRetenido() + dec.getTotalOtras());
+        BigDecimal pers = util.redondear(perc.getTotalSueldos().add(otro.getTotalOtrosPagos()));
+        BigDecimal deds = util.redondear(dec.getTotalRetenido().add(dec.getTotalOtras()));
         String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@"+deds.toString()+"@" + pers.toString() + "\r\n";
         conceptos.add(con);
         return conceptos;
     }
 
     private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, complementos.nominas.OtrosPagos otro, Factura fact) {
-        double sub = perc.getTotalSueldos() + otro.getTotalOtrosPagos();
+        BigDecimal sub = perc.getTotalSueldos().add(otro.getTotalOtrosPagos());
 
         fact.isrRetenido = dedu.getTotalRetenido();
-        fact.descuento = dedu.getTotalOtras() + dedu.getTotalRetenido();
+        fact.descuento = dedu.getTotalOtras().add(dedu.getTotalRetenido());
         fact.totalRetenidos = fact.isrRetenido;
-        fact.totalTraslados = 0.0;
-        fact.iva = 0.0;
-        fact.ivaRetenido = 0.0;
+        fact.totalTraslados = BigDecimal.ZERO;
+        fact.iva = BigDecimal.ZERO;
+        fact.ivaRetenido = BigDecimal.ZERO;
 
-        if (fact.descuento > 0) {
+        if (fact.descuento.compareTo(BigDecimal.ZERO) == 1) {
             fact.motivoDescuento = "Deducciones Nómina";
         } else {
             fact.motivoDescuento = "";
         }
 
-        double to = sub - fact.descuento;
+        BigDecimal to = sub.subtract(fact.descuento);
         fact.subtotal = util.redondear(sub);
         fact.total = util.redondear(to);
 

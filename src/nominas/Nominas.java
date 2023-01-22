@@ -32,6 +32,7 @@ public class Nominas extends javax.swing.JFrame {
     String nombreEmpleado, rfcEmpleado;
     nominas.Empleado empleado;
     Factura fact;
+    utils.Utils util = new utils.Utils(Elemento.log);
     
     public OtrosPagos getOtro(){
         return otr;
@@ -540,11 +541,11 @@ public class Nominas extends javax.swing.JFrame {
         if(op.size() > 0){
             otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
         }else{
-            otro.setTotalOtrosPagos(0.0);
+            otro.setTotalOtrosPagos(BigDecimal.ZERO);
         }
         
         nomi.setOtrosPagos(otro);
-        nomi.setTotalOtrosPagos(new BigDecimal(otro.getTotalOtrosPagos()));
+        nomi.setTotalOtrosPagos(otro.getTotalOtrosPagos());
         
         //Seteamos deducciones
         dedu.setDeducciones(getDeducciones());
@@ -558,7 +559,7 @@ public class Nominas extends javax.swing.JFrame {
         perc.setTotalGravado(per.getTotalGravado());
         perc.setTotalSueldos(per.getTotalSueldos());
         nomi.setPercepciones(perc);
-        nomi.setTotalPercepciones(new BigDecimal(per.getTotalSueldos()));
+        nomi.setTotalPercepciones(per.getTotalSueldos());
         
         //Seteamos incapacidad
         if(incapacidad.isSelected()){
@@ -579,12 +580,12 @@ public class Nominas extends javax.swing.JFrame {
             nomi.setHorasExtra(horas);
         }
         
-        nomi.setTotalDeducciones(new BigDecimal(dec.getTotalOtras() + dec.getTotalRetenido()));
+        nomi.setTotalDeducciones(dec.getTotalOtras().add(dec.getTotalRetenido()));
         
         fact.isrRetenido = dec.getTotalRetenido();
-        fact.descuento = nomi.getTotalDeducciones().doubleValue();
-        double to = fact.subtotal - fact.descuento;
-        fact.total = Math.rint(to*100)/100;
+        fact.descuento = nomi.getTotalDeducciones();
+        BigDecimal to = util.redondear(fact.subtotal.subtract(fact.descuento));
+        fact.total = to;
         
         per.dispose();
         dec.dispose();
@@ -608,7 +609,7 @@ public class Nominas extends javax.swing.JFrame {
             otp.setTipoOtroPago(model.getValueAt(i, 0).toString());
             otp.setClave(model.getValueAt(i, 1).toString());
             otp.setConcepto(model.getValueAt(i, 2).toString());
-            otp.setImporte(new Double(model.getValueAt(i, 3).toString()));
+            otp.setImporte(new BigDecimal(model.getValueAt(i, 3).toString()));
 
             lista.add(otp);
         }
@@ -627,7 +628,7 @@ public class Nominas extends javax.swing.JFrame {
             ded.setTipoDeduccion(model.getValueAt(i, 0).toString());
             ded.setClave(model.getValueAt(i, 1).toString());
             ded.setConcepto(model.getValueAt(i, 2).toString());
-            ded.setImporte(new Double(model.getValueAt(i, 3).toString()));
+            ded.setImporte(new BigDecimal(model.getValueAt(i, 3).toString()));
             
             lista.add(ded);
         }
@@ -646,8 +647,8 @@ public class Nominas extends javax.swing.JFrame {
             perc.setTipoPercepcion(model.getValueAt(i, 0).toString());
             perc.setClave(model.getValueAt(i, 1).toString());
             perc.setConcepto(model.getValueAt(i, 2).toString());
-            perc.setImporteGravado(new Double(model.getValueAt(i, 3).toString()));
-            perc.setImporteExento(new Double(model.getValueAt(i, 4).toString()));
+            perc.setImporteGravado(new BigDecimal(model.getValueAt(i, 3).toString()));
+            perc.setImporteExento(new BigDecimal(model.getValueAt(i, 4).toString()));
             
             lista.add(perc);
         }

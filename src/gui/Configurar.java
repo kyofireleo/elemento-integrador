@@ -128,8 +128,8 @@ public class Configurar extends javax.swing.JFrame {
 
     private void llenarFormulario(boolean consulta) {
         Connection con;
-        Statement stmt, stmt2, stmt3, stmt4;
-        ResultSet rs, rs2, rs3, rs4;
+        Statement stmt, stmt2, stmt3, stmt4, stmt5;
+        ResultSet rs, rs2, rs3, rs4, rs5;
         DefaultTableModel model = (DefaultTableModel) datos.getModel();
         model.setRowCount(0);
         DefaultTableModel modelFolios = (DefaultTableModel) foliosTabla.getModel();
@@ -139,6 +139,10 @@ public class Configurar extends javax.swing.JFrame {
         combo.removeAllElements();
         combo.addElement("Seleccione un RFC");
         
+        DefaultComboBoxModel comboRegimen = (DefaultComboBoxModel) regimenCombo.getModel();
+        comboRegimen.removeAllElements();
+        comboRegimen.addElement("Seleccione un Régimen Fiscal");
+        
         DefaultComboBoxModel comboTipos = (DefaultComboBoxModel) tipoComprobante.getModel();
         comboTipos.removeAllElements();
         comboTipos.addElement("Tipos de Comprobante");
@@ -147,7 +151,7 @@ public class Configurar extends javax.swing.JFrame {
             rfc.setSelectedIndex(0);
             certificado.setText("");
             logoPath.setText("");
-            regimenText.setText("");
+            regimenCombo.setSelectedIndex(0);
             lugarExpedicion.setText("");
             esSucursalCheck.setSelected(false);
 
@@ -156,6 +160,7 @@ public class Configurar extends javax.swing.JFrame {
             stmt2 = fact.stmtLectura(con);
             stmt3 = fact.stmtLectura(con);
             stmt4 = fact.stmtLectura(con);
+            stmt5 = fact.stmtLectura(con);
 
             rs = consultar(stmt);
             
@@ -189,16 +194,6 @@ public class Configurar extends javax.swing.JFrame {
 
                 //consultarInfoFolios();
 
-                if (consulta) {
-                    if (rfct.equalsIgnoreCase("EKU9003173C9")) {
-                        continue;
-                    }
-                } else {
-                    if (!rfct.equalsIgnoreCase("EKU9003173C9")) {
-                        continue;
-                    }
-                }
-
                 String[] tmp = {rfct, cert, regimen, activados, restantes, usados, cuenta_id};
                 model.addRow(tmp);
                 sonSucursales.add(esSucursal);
@@ -211,7 +206,7 @@ public class Configurar extends javax.swing.JFrame {
                     rfc.setSelectedItem(rs2.getString("rfc").trim());
                     certificado.setText(rs2.getString("nocertificado").trim());
                     logoPath.setText(rs2.getString("logo").trim());
-                    regimenText.setText(rs2.getString("regimenFiscal").trim());
+                    regimenCombo.setSelectedItem(rs2.getString("regimenFiscal").trim());
                     lugarExpedicion.setText(rs2.getString("lugarExpedicion").trim());
                     esSucursalCheck.setSelected(rs2.getBoolean("esSucursal"));
 
@@ -344,9 +339,9 @@ public class Configurar extends javax.swing.JFrame {
 
     private ResultSet consultar(Statement stmt) throws Exception {
         ResultSet rs;
-        if (true) {
-            rs = stmt.executeQuery("SELECT * FROM Cuentas");
-        }
+        
+        rs = stmt.executeQuery("SELECT * FROM Cuentas");
+        
         return rs;
     }
 
@@ -386,7 +381,7 @@ public class Configurar extends javax.swing.JFrame {
     }
 
     public String getRegimen() {
-        return regimenText.getText().trim();
+        return regimenCombo.getSelectedItem().toString().split(",")[0].trim();
     }
 
     public String getLugarExp() {
@@ -420,7 +415,6 @@ public class Configurar extends javax.swing.JFrame {
         logoPath = new javax.swing.JTextField();
         examinar = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        regimenText = new javax.swing.JTextField();
         agregarEmisor = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel5 = new javax.swing.JLabel();
@@ -448,6 +442,7 @@ public class Configurar extends javax.swing.JFrame {
         folio = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
         borrarComprobante = new javax.swing.JButton();
+        regimenCombo = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Configuracion");
@@ -456,9 +451,9 @@ public class Configurar extends javax.swing.JFrame {
         jLabel4.setText("RFC");
 
         produccion.setText("Produccion");
-        produccion.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                produccionActionPerformed(evt);
+        produccion.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                produccionMouseClicked(evt);
             }
         });
 
@@ -526,8 +521,6 @@ public class Configurar extends javax.swing.JFrame {
 
         jLabel2.setText("Regimen Fiscal");
 
-        regimenText.setNextFocusableComponent(logoPath);
-
         agregarEmisor.setText("Agregar Emisor");
         agregarEmisor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -569,9 +562,12 @@ public class Configurar extends javax.swing.JFrame {
 
         jLabel3.setText("No. Certificado");
 
-        certificado.setNextFocusableComponent(regimenText);
-
         rfc.setNextFocusableComponent(certificado);
+        rfc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                rfcItemStateChanged(evt);
+            }
+        });
         rfc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rfcActionPerformed(evt);
@@ -693,38 +689,37 @@ public class Configurar extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel7))
-                                .addGap(24, 24, 24)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(examinar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(agregar))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(26, 26, 26)
-                                .addComponent(regimenText, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(50, 50, 50)
                                         .addComponent(jLabel4))
                                     .addComponent(jLabel3))
-                                .addGap(24, 24, 24)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(certificado, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
                                     .addComponent(rfc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(esSucursalCheck))))
+                                    .addComponent(esSucursalCheck)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(20, 20, 20)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel7)
+                                            .addComponent(jLabel1))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(regimenCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 358, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(examinar, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
@@ -743,13 +738,15 @@ public class Configurar extends javax.swing.JFrame {
                                 .addComponent(borrarComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE))))
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(agregarCreditos)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(borrar, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(actualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(actualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(agregar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnDonat, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -773,7 +770,20 @@ public class Configurar extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(jLabel6)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(exaFact)
+                                .addComponent(agregarComprobante))
+                            .addComponent(borrarComprobante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(11, 11, 11)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
@@ -787,32 +797,18 @@ public class Configurar extends javax.swing.JFrame {
                                 .addComponent(jLabel3)))
                         .addGap(11, 11, 11)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(regimenText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(8, 8, 8)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1)
-                            .addComponent(examinar))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel7)
-                                .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(agregar)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(exaFact)
-                                .addComponent(agregarComprobante))
-                            .addComponent(borrarComprobante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jLabel2)
+                            .addComponent(regimenCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(11, 11, 11)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(examinar)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -822,7 +818,8 @@ public class Configurar extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(agregarCreditos)
                         .addComponent(borrar)
-                        .addComponent(actualizar)))
+                        .addComponent(actualizar)
+                        .addComponent(agregar)))
                 .addGap(11, 11, 11)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -914,7 +911,7 @@ public class Configurar extends javax.swing.JFrame {
 
                 certificado.setText(cert);
                 logoPath.setText(logot);
-                regimenText.setText(regi);
+                setIndexRegimenFiscal(regi);
                 lugarExpedicion.setText(ser);
                 esSucursalCheck.setSelected(esSuc);
 
@@ -995,7 +992,7 @@ public class Configurar extends javax.swing.JFrame {
 
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
         final int creditos = verificarToken();
-        if (creditos > 0) {
+        if (creditos > 0 && validarCuenta()) {
             try {
                 // TODO add your handling code here:
 
@@ -1023,7 +1020,7 @@ public class Configurar extends javax.swing.JFrame {
                         Savepoint sp = con.setSavepoint("Cuentas");
                         stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal)"
                                 + "VALUES (\'" + rfcE + "\', \'" + certificado.getText().trim() + "\', \'" + logoPath.getText() + "\', \'"
-                                + regimenText.getText().trim() + "\', \'" + lugarExpedicion.getText() + "\',"
+                                + regimenCombo.getSelectedItem().toString().split(",")[0] + "\', \'" + lugarExpedicion.getText() + "\',"
                                 + 2 + "," + creditos + "," + creditos + "," + 0 + "," + esSucursalCheck.isSelected() + "," + idSucursal + ")");
                         
                         rs = stmt.executeQuery("SELECT cuenta_id FROM Cuentas WHERE rfc = \'"+rfcE+"\'");
@@ -1149,58 +1146,32 @@ public class Configurar extends javax.swing.JFrame {
         Connection con;
         Statement stmt;
         Boolean facts, notas, dona;
-        try {
-            con = Elemento.odbc();
-            stmt = fact.stmtEscritura(con);
+        if(validarCuenta()){
+            try {
+                con = Elemento.odbc();
+                stmt = fact.stmtEscritura(con);
 
-            noCertificado = getNoCertificado();
-            rfce = getRfc();
-            logo = getLogo();
-            regimenFiscal = getRegimen();
-            lugarExp = getLugarExp();
+                noCertificado = getNoCertificado();
+                rfce = getRfc();
+                logo = getLogo();
+                regimenFiscal = getRegimen();
+                lugarExp = getLugarExp();
 
-            stmt.executeUpdate("UPDATE Cuentas SET rfc=\'" + rfce + "\', nocertificado=\'" + noCertificado + "\',"
-                    + " logo=\'" + logo + "\', regimenFiscal=\'" + regimenFiscal + "\', lugarExpedicion=\'" + lugarExp + "\'"
-                    + " WHERE rfc = \'" + rfcActual + "\' AND nocertificado = \'" + certActual + "\'");
+                stmt.executeUpdate("UPDATE Cuentas SET rfc=\'" + rfce + "\', nocertificado=\'" + noCertificado + "\',"
+                        + " logo=\'" + logo + "\', regimenFiscal=\'" + regimenFiscal + "\', lugarExpedicion=\'" + lugarExp + "\'"
+                        + " WHERE rfc = \'" + rfcActual + "\' AND nocertificado = \'" + certActual + "\'");
 
 
-            util.print("Cuenta actualizada correctamente!!");
-            llenarFormulario(true);
-            stmt.close();
-            con.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Elemento.log.info("Excepcion al actualizar la cuenta productiva: " + e.getMessage());
+                util.print("Cuenta actualizada correctamente!!");
+                llenarFormulario(true);
+                stmt.close();
+                con.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Elemento.log.info("Excepcion al actualizar la cuenta productiva: " + e.getMessage());
+            }
         }
     }//GEN-LAST:event_actualizarActionPerformed
-
-    private void produccionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_produccionActionPerformed
-        // TODO add your handling code here:
-        Connection con;
-        Statement stmt;
-        try {
-            con = Elemento.odbc();
-            stmt = fact.stmtEscritura(con);
-            boolean produ = produccion.isSelected();
-            stmt.executeUpdate("UPDATE Produccion SET produccion = " + produ);
-
-            stmt.close();
-            con.close();
-            
-            if (produ) {
-                user = "SIGI7408036N9_71";
-                pass = "66514482243426681793344";
-            } else {
-                user = "DEMOGon";
-                pass = "cfdi";
-            }
-
-            llenarFormulario(produ);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Elemento.log.error("Excepcion al leer la tabla Produccion: " + e.getMessage(), e);
-        }
-    }//GEN-LAST:event_produccionActionPerformed
 
     private void agregarEmisorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarEmisorActionPerformed
         // TODO add your handling code here:
@@ -1263,6 +1234,11 @@ public class Configurar extends javax.swing.JFrame {
 
     private void rfcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rfcActionPerformed
         // TODO add your handling code here:
+        DefaultComboBoxModel combo = (DefaultComboBoxModel) rfc.getModel();
+        
+        if(combo.getSize() > 1 && rfc.getSelectedIndex() > 0)
+            consultarRegimenesFiscales();
+        
         rfc.transferFocus();
     }//GEN-LAST:event_rfcActionPerformed
 
@@ -1403,6 +1379,36 @@ public class Configurar extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_borrarComprobanteActionPerformed
 
+    private void produccionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_produccionMouseClicked
+        Connection con;
+        Statement stmt;
+        try {
+            con = Elemento.odbc();
+            stmt = fact.stmtEscritura(con);
+            boolean produ = produccion.isSelected();
+            stmt.executeUpdate("UPDATE Produccion SET produccion = " + produ);
+
+            stmt.close();
+            con.close();
+            
+            if (produ) {
+                user = "SIGI7408036N9_71";
+                pass = "66514482243426681793344";
+            } else {
+                user = "DEMOGon";
+                pass = "cfdi";
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            Elemento.log.error("Excepcion al leer la tabla Produccion: " + e.getMessage(), e);
+        }
+    }//GEN-LAST:event_produccionMouseClicked
+
+    private void rfcItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rfcItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rfcItemStateChanged
+
     private void agregarCreditos(final int creditos, final String rfcE, final String cert) {
         try {
             Connection con = Elemento.odbc();
@@ -1447,6 +1453,74 @@ public class Configurar extends javax.swing.JFrame {
         } catch (SQLException ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al agregar creditos: " + ex.getMessage(), ex);
+        }
+    }
+    
+    private void consultarRegimenesFiscales(){
+        Connection con = Elemento.odbc();
+        Statement stmt;
+        ResultSet rs;
+        String rfcEmisor = rfc.getSelectedItem().toString();
+        DefaultComboBoxModel combo = (DefaultComboBoxModel) regimenCombo.getModel();
+        combo.removeAllElements();
+        combo.addElement("Seleccione un Régimen Fiscal");
+        
+        try {
+            stmt = fact.stmtLectura(con);
+            rs = stmt.executeQuery(""
+                    + "SELECT * FROM Emisores e "
+                    + "INNER JOIN c_regimenfiscal rf ON (len(e.rfc) = 13 AND rf.fisica = " + Boolean.TRUE + ") "
+                        + "OR (len(e.rfc) = 12 AND rf.moral = " + Boolean.TRUE + ") "
+                    + "WHERE e.rfc = '" + rfcEmisor + "'");
+            
+            while(rs.next()){
+                combo.addElement(rs.getString("regimenfiscal") + ", " + rs.getString("descripcion"));
+            }
+            
+            rs.close();
+            stmt.close();
+            con.close();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            String msg = "Excepcion al consultas los regimenes fiscales compatibles con el RFC: " + rfcEmisor;
+            Elemento.log.error(msg, e);
+            util.printError(msg + " " + e.getMessage());
+        }
+    }
+    
+    private boolean validarCuenta(){
+        if(rfc.getSelectedIndex() == 0){
+            util.printError("Debe de seleccionar un RFC");
+            return false;
+        }
+        
+        if(certificado.getText().trim().isEmpty()){
+            util.printError("Debe de ingresar un numero de certificado");
+            return false;
+        }
+        
+        if(regimenCombo.getSelectedIndex() == 0){
+            util.printError("Debe de seleccionar un régimen fiscal");
+            return false;
+        }
+        
+        if(lugarExpedicion.getText().trim().isEmpty()){
+            util.printError("Debe de ingresar el código postal del lugar de expedición");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private void setIndexRegimenFiscal(String regi){
+        DefaultComboBoxModel combo = (DefaultComboBoxModel) regimenCombo.getModel();
+        
+        for (int i = 1; i < combo.getSize(); i++) {
+            String r = combo.getElementAt(i).toString();
+            if(regi.equals(r.split(",")[0])){
+                regimenCombo.setSelectedIndex(i);
+            }
         }
     }
     
@@ -1520,7 +1594,7 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JTextField lugarExpedicion;
     private javax.swing.JTextField plantilla;
     private javax.swing.JCheckBox produccion;
-    private javax.swing.JTextField regimenText;
+    private javax.swing.JComboBox<String> regimenCombo;
     private javax.swing.JComboBox rfc;
     private javax.swing.JTextField serie;
     private javax.swing.JComboBox tipoComprobante;

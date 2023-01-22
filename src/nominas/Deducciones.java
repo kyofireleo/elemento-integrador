@@ -21,7 +21,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Deducciones extends javax.swing.JFrame {
 
-    private Double totalOtras=0.0, totalRet=0.0;
+    private BigDecimal totalOtras = BigDecimal.ZERO, totalRet = BigDecimal.ZERO;
     private utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
     private utils.Utils util = new utils.Utils(Elemento.log);
     Integer idEmpleado;
@@ -29,7 +29,7 @@ public class Deducciones extends javax.swing.JFrame {
     boolean nuevo;
     private Integer tipoNomina = null;
     private boolean isPtu = false;
-    private Double importeIsr = 0.0;
+    private BigDecimal importeIsr = BigDecimal.ZERO;
     
     public Deducciones() {
         initComponents();
@@ -53,7 +53,7 @@ public class Deducciones extends javax.swing.JFrame {
         calcular();
     }
     
-    public Deducciones(int idEmpleado, boolean callNomina, boolean isPtu, Double importeIsr){
+    public Deducciones(int idEmpleado, boolean callNomina, boolean isPtu, BigDecimal importeIsr){
         this.idEmpleado = idEmpleado;
         this.callNomina = callNomina;
         this.nuevo = !callNomina;
@@ -113,13 +113,23 @@ public class Deducciones extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
         });
+        DefaultTableModel model = (DefaultTableModel)tabla.getModel();
+        model.addTableModelListener(
+            new javax.swing.event.TableModelListener() 
+            {
+                public void tableChanged(javax.swing.event.TableModelEvent evt) 
+                {
+                    calcular();
+                }
+            }
+        );
         jScrollPane2.setViewportView(tabla);
 
         agregar.setText("Agregar");
@@ -256,7 +266,7 @@ public class Deducciones extends javax.swing.JFrame {
 
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
-        Double impG = new Double(importe.getText());
+        BigDecimal impG = new BigDecimal(importe.getText());
         
         String tipoPer = tipoDeduccion.getSelectedItem().toString().split(",")[0];
         String cla = clave.getText();
@@ -265,27 +275,27 @@ public class Deducciones extends javax.swing.JFrame {
         Object[] x = {tipoPer,cla,conce,impG};
         model.addRow(x);
         
-        calcular();
+        //calcular();
         limpiar();
     }//GEN-LAST:event_agregarActionPerformed
 
     private void calcular(){
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
-        Double imp;
-        totalOtras = 0.0;
-        totalRet = 0.0;
+        BigDecimal imp;
+        totalOtras = BigDecimal.ZERO;
+        totalRet = BigDecimal.ZERO;
         
         for (int i = 0; i < model.getRowCount(); i++) {
-            imp = (Double)model.getValueAt(i, 3);
+            imp = new BigDecimal(model.getValueAt(i, 3).toString());
             if(model.getValueAt(i, 0).toString().equals("002")){
-                totalRet = util.redondear(totalRet+imp);
+                totalRet = util.redondear(totalRet.add(imp));
             }else{
-                totalOtras = util.redondear(totalOtras+imp);
+                totalOtras = util.redondear(totalOtras.add(imp));
             }
         }
         
-        labelRetenido.setText("Total Retenido: "+totalRet);
-        labelOtras.setText("Total Otras Deducciones: "+totalOtras);
+        labelRetenido.setText("Total Retenido: " + totalRet.toString());
+        labelOtras.setText("Total Otras Deducciones: " + totalOtras.toString());
     }
     
     public void setTipoNomina(int tipoNomina){
@@ -339,7 +349,7 @@ public class Deducciones extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel)tabla.getModel();
         int row = tabla.getSelectedRow();
         model.removeRow(row);
-        calcular();
+        //calcular();
     }//GEN-LAST:event_eliminarActionPerformed
 
     private void claveFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_claveFocusLost
@@ -374,11 +384,11 @@ public class Deducciones extends javax.swing.JFrame {
         return 0;
     }
     
-    public Double getTotalOtras(){
+    public BigDecimal getTotalOtras(){
         return totalOtras;
     }
     
-    public Double getTotalRetenido(){
+    public BigDecimal getTotalRetenido(){
         return totalRet;
     }
     
@@ -400,9 +410,10 @@ public class Deducciones extends javax.swing.JFrame {
         }
         try {
             for (int i = 0; i < model.getRowCount(); i++) {
+                BigDecimal impDec = new BigDecimal(model.getValueAt(i, 3).toString());
                 String query = "INSERT INTO ImportesDeducciones (clave,idEmpleado,importe) "
                     + "VALUES (\'"+model.getValueAt(i, 1).toString()+"\',"+idEmpleado+","
-                        + (Double)model.getValueAt(i, 3) +")";
+                        + impDec.toString() +")";
                 stmt.executeUpdate(query);
                 
             }
@@ -487,7 +498,7 @@ public class Deducciones extends javax.swing.JFrame {
                         row[0] = rs2.getString("tipo");
                         row[1] = claveD;
                         row[2] = rs2.getString("concepto");
-                        row[3] = rs.getDouble("importe");
+                        row[3] = rs.getString("importe");
                         model.addRow(row);
                     }
                 }

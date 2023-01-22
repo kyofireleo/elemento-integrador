@@ -23,7 +23,7 @@ public class Percepciones extends javax.swing.JFrame {
     /**
      * Creates new form Percepciones
      */
-    private Double totalExento = 0.0, totalGravado = 0.0, totalSueldos = 0.0;
+    private BigDecimal totalExento = BigDecimal.ZERO, totalGravado = BigDecimal.ZERO, totalSueldos = BigDecimal.ZERO;
     private utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
     private utils.Utils util = new utils.Utils(Elemento.log);
     private Integer idEmpleado;
@@ -31,7 +31,7 @@ public class Percepciones extends javax.swing.JFrame {
     public boolean nuevo;
     private Integer tipoNomina = null;
     private boolean isPtu = false;
-    private Double importePtu = 0.0;
+    private BigDecimal importePtu = BigDecimal.ZERO;
     
 
     public Percepciones(int idEmpleado, boolean callNomina) {
@@ -44,7 +44,7 @@ public class Percepciones extends javax.swing.JFrame {
         calcular();
     }
     
-    public Percepciones(int idEmpleado, boolean callNomina, boolean isPtu, Double importePtu) {
+    public Percepciones(int idEmpleado, boolean callNomina, boolean isPtu, BigDecimal importePtu) {
         this.idEmpleado = idEmpleado;
         this.callNomina = callNomina;
         this.isPtu = isPtu;
@@ -56,15 +56,15 @@ public class Percepciones extends javax.swing.JFrame {
         calcular();
     }
 
-    public Double getTotalExento() {
+    public BigDecimal getTotalExento() {
         return totalExento;
     }
 
-    public Double getTotalGravado() {
+    public BigDecimal getTotalGravado() {
         return totalGravado;
     }
     
-    public Double getTotalSueldos(){
+    public BigDecimal getTotalSueldos(){
         return totalSueldos;
     }
 
@@ -181,13 +181,23 @@ public class Percepciones extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
         });
+        DefaultTableModel model = (DefaultTableModel)tabla.getModel();
+        model.addTableModelListener(
+            new javax.swing.event.TableModelListener() 
+            {
+                public void tableChanged(javax.swing.event.TableModelEvent evt) 
+                {
+                    calcular();
+                }
+            }
+        );
         jScrollPane2.setViewportView(tabla);
 
         labelGravado.setText("Total Gravado:");
@@ -306,8 +316,8 @@ public class Percepciones extends javax.swing.JFrame {
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) tabla.getModel();
-        Double impG = new Double(importeGravado.getText());
-        Double impE = new Double(importeExento.getText());
+        BigDecimal impG = new BigDecimal(importeGravado.getText());
+        BigDecimal impE = new BigDecimal(importeExento.getText());
 
         String tipoPer = tipoPercepcion.getSelectedItem().toString().split(",")[0].trim();
         String cla = clave.getText().trim();
@@ -319,35 +329,35 @@ public class Percepciones extends javax.swing.JFrame {
             Object[] x = {tipoPer, cla, conce, impG, impE};
             model.addRow(x);
 
-            calcular();
+            //calcular();
             limpiar();
         }
     }//GEN-LAST:event_agregarActionPerformed
 
     private void calcular() {
         DefaultTableModel model = (DefaultTableModel) tabla.getModel();
-        Double impG, impE;
-        totalGravado = 0.0;
-        totalExento = 0.0;
+        BigDecimal impG, impE;
+        totalGravado = BigDecimal.ZERO;
+        totalExento = BigDecimal.ZERO;
         String tipo;
 
         for (int i = 0; i < model.getRowCount(); i++) {
             tipo = model.getValueAt(i, 0).toString();
             if (tipo.equals("007")) {
-                impG = 0.0;
-                impE = 0.0;
+                impG = BigDecimal.ZERO;
+                impE = BigDecimal.ZERO;
             } else {
-                impG = (Double) model.getValueAt(i, 3);
-                impE = (Double) model.getValueAt(i, 4);
+                impG = new BigDecimal (model.getValueAt(i, 3).toString());
+                impE = new BigDecimal (model.getValueAt(i, 4).toString());
             }
-            totalGravado = util.redondear(totalGravado + impG);
-            totalExento = util.redondear(totalExento + impE);
+            totalGravado = util.redondear(totalGravado.add(impG));
+            totalExento = util.redondear(totalExento.add(impE));
         }
         
-        totalSueldos = totalGravado + totalExento;
-
-        labelGravado.setText("Total Gravado: " + totalGravado);
-        labelExento.setText("Total Exento: " + totalExento);
+        totalSueldos = totalGravado.add(totalExento);
+        
+        labelGravado.setText("Total Gravado: " + totalGravado.toString());
+        labelExento.setText("Total Exento: " + totalExento.toString());
     }
     
     public void setTipoNomina(int tipoNomina){
@@ -395,7 +405,7 @@ public class Percepciones extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) tabla.getModel();
         int row = tabla.getSelectedRow();
         model.removeRow(row);
-        calcular();
+        //calcular();
     }//GEN-LAST:event_eliminarActionPerformed
 
     private void claveFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_claveFocusLost
@@ -459,12 +469,12 @@ public class Percepciones extends javax.swing.JFrame {
         try {
 
             for (int i = 0; i < model.getRowCount(); i++) {
-                Double ig = (Double) model.getValueAt(i, 3);
-                Double ie = (Double) model.getValueAt(i, 4);
+                BigDecimal ig = new BigDecimal (model.getValueAt(i, 3).toString());
+                BigDecimal ie = new BigDecimal (model.getValueAt(i, 4).toString());
 
                 String query = "INSERT INTO ImportesPercepciones (clave,idEmpleado,importeGravado,importeExento) "
                         + "VALUES (\'" + model.getValueAt(i, 1).toString() + "\'," + idEmpleado + ","
-                        + ig.doubleValue() + "," + ie.doubleValue() + ")";
+                        + ig.toString() + "," + ie.toString() + ")";
                 stmt.executeUpdate(query);
             }
             stmt.close();
@@ -552,8 +562,8 @@ public class Percepciones extends javax.swing.JFrame {
                         row[0] = rs2.getString("tipo");
                         row[1] = claveD;
                         row[2] = rs2.getString("concepto");
-                        row[3] = rs.getDouble("importeGravado");
-                        row[4] = rs.getDouble("importeExento");
+                        row[3] = rs.getString("importeGravado");
+                        row[4] = rs.getString("importeExento");
                         model.addRow(row);
                     }
                 }
@@ -570,7 +580,7 @@ public class Percepciones extends javax.swing.JFrame {
             row[1] = "PTU";
             row[2] = "Pago de utilidades";
             row[3] = importePtu;
-            row[4] = 0.0;
+            row[4] = BigDecimal.ZERO;
             model.addRow(row);
         }
         

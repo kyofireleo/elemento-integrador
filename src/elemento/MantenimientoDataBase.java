@@ -14,7 +14,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javax.swing.JOptionPane;
 
 /**
  * 
@@ -49,15 +48,26 @@ public class MantenimientoDataBase {
         
         /******cambios en tabla de EmisoresBancos******/
         verificarEmisoresBancos();
+        
+        /******cambios en tabla de EmpleadosRec******/
+        verificarEmpleados();
     }
     
     private void verificarCBancos(){
         Connection con = Elemento.odbc();
         Statement stmt = null;
-        ResultSet rs;
+        ResultSet rs, rs2;
         try{
             stmt = factory.stmtEscritura(con);
             rs = stmt.executeQuery("select top 1 1 from c_bancos");
+            
+            if(rs.next()){
+                rs2 = stmt.executeQuery("select top 1 1 from c_bancos where rfc = 'XEXX010101000'");
+                if(!rs2.next()){
+                    stmt.executeUpdate("insert into c_bancos (nombre, rfc) values ('BANCO EXTRANJERO', 'XEXX010101000')");
+                }
+                rs2.close();
+            }
             
             rs.close();
             stmt.close();
@@ -206,6 +216,7 @@ public class MantenimientoDataBase {
                 ps.setString(1,"TRABAJADORES ELECTRICISTAS RIO COLORADO, SC DE RL DE CV"); ps.setString(2,"TER0902249W7"); ps.addBatch();
                 ps.setString(1,"UNION DE CREDITO GANADERO DE TABASCO, SA DE CV"); ps.setString(2,"UCG470616988"); ps.addBatch();
                 ps.setString(1,"UNION DE CREDITO INDUSTRIAL Y AGROPECUARIA DE TABASCO, SA DE CV"); ps.setString(2,"UCI921211QH3"); ps.addBatch();
+                ps.setString(1,"BANCO EXTRANJERO"); ps.setString(2,"XEXX010101000"); ps.addBatch();
                 
                 ps.executeBatch();
                 
@@ -456,9 +467,8 @@ public class MantenimientoDataBase {
             try{
                 crearTabla = true;
                 if(ex.getMessage().toUpperCase().contains("REGIMENFISCALRECEPTOR")){
-                    if(stmt != null){
-                        stmt.executeUpdate("drop table c_usocfdi");
-                    }
+                    stmt = stmt == null ? factory.stmtEscritura(con) : stmt;
+                    stmt.executeUpdate("drop table c_usocfdi");
                 }else if(!ex.getMessage().toUpperCase().contains("C_USOCFDI")){
                     ex.printStackTrace();
                 }
@@ -596,6 +606,73 @@ public class MantenimientoDataBase {
                     pw.println("conn.Execute \"ALTER TABLE Clientes ADD COLUMN regimenfiscal VARCHAR(10)\"");
                     pw.println("conn.Execute \"ALTER TABLE Clientes ADD COLUMN tipoPersona VARCHAR(1)\"");
                     pw.println("conn.Execute \"UPDATE Clientes SET regimenfiscal = '', tipoPersona = IIF(LEN(TRIM(rfc)) = 12, 'M', 'F')\"");
+                    pw.println("conn.Close");
+                    pw.println("Set conn = Nothing");
+                    pw.close();
+                    
+                    // ... and execute it
+                    Process p = Runtime.getRuntime().exec("CSCRIPT.EXE \"" + vbsFile.getAbsolutePath() + "\"");
+                    p.waitFor();
+                    BufferedReader rdr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                    int errorLines = 0;
+                    String line = rdr.readLine();
+                    while (line != null) {
+                        errorLines++;
+                        System.out.println(line);  // display error line(s), if any
+                        line = rdr.readLine();
+                    }
+                    if (errorLines == 0) {
+                        System.out.println("La estructura de la base de datos se cambio exitosamente");
+                        log.info("La estructura de la base de datos se cambio exitosamente");
+                    }else{
+                        System.out.println(line);
+                        log.error("Error al reestructurar la base de datos: \r\n" + line);
+                    }
+
+                    stmt.close();
+                }
+                
+                con.close();
+            }catch(Exception e){
+                e.printStackTrace();
+                String error = "Error al actualizar la estructura de la base de datos a la tabla Clientes";
+                log.error(error, e);
+                try{
+                    con.close();
+                }catch(SQLException sex){
+                    sex.printStackTrace();
+                    log.error("Error al cerrar la conexion despues de intentar actualizar estructura de la tabla Clientes: ", sex);
+                }
+                util.printError(error);
+            }
+        }
+    }
+    
+    private void verificarEmpleados(){
+        Connection con = Elemento.odbc();
+        Statement stmt = null;
+        ResultSet rs;
+        
+        try{
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("Select top 1 regimenfiscal from EmpleadosRec");
+            rs.close();
+            
+            stmt.close();
+            con.close();
+        }catch(SQLException ex){
+            log.warn("No existen los campos, se crearan...");
+            try{
+                if(ex.getMessage().toUpperCase().contains("REGIMENFISCAL")){
+                    
+                    // write a temporary VBScript file ...
+                    File vbsFile = File.createTempFile("AlterTable", ".vbs");
+                    vbsFile.deleteOnExit();
+                    PrintWriter pw = new PrintWriter(vbsFile);
+                    pw.println("Set conn = CreateObject(\"ADODB.Connection\")");
+                    pw.println("conn.Open \"Driver={Microsoft Access Driver (*.mdb)};Dbq=" + this.dataBase + "; Pwd=" + this.password + ";\"");
+                    pw.println("conn.Execute \"ALTER TABLE EmpleadosRec ADD COLUMN regimenfiscal VARCHAR(10)\"");
+                    pw.println("conn.Execute \"UPDATE EmpleadosRec SET regimenfiscal = '605'\""); //Valor Default para todos los Empleados
                     pw.println("conn.Close");
                     pw.println("Set conn = Nothing");
                     pw.close();

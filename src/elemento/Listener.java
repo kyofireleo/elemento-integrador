@@ -270,15 +270,12 @@ public class Listener {
                                 fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
                                 print(con.getMensajeError());
                                 Elemento.log.info("Se agrega el folio no timbrado " + folio + " en la base de datos");
-                                
-                                util.fileMove(rootPath + name, Elemento.pathLayoutError + name);
-                                String text = "Archivo " + name + " movido a error.";
-                                System.out.println(text);
-                                log.info(text);
+                                moveLayoutError(rootPath, name);
                             }
                         } else {
                             this.print("No cuenta con creditos, favor de comunicarse\nal 6672802966 o al 6672804444");
                             Elemento.log.warn("No cuenta con creditos");
+                            moveLayoutError(rootPath, name);
                         }
                     }
                 }
@@ -287,11 +284,20 @@ public class Listener {
                 System.out.println("Error: " + err.getMessage());
                 Elemento.log.error("Error al analizar el Layout: " + err.getMessage(), err);
                 err.printStackTrace();
+                moveLayoutError(rootPath, name);
             } catch (Exception ex) {
                 Elemento.log.error("Excepcion al crear la factura: " + ex.getMessage(), ex);
                 ex.printStackTrace();
+                moveLayoutError(rootPath, name);
             }
         }
+    }
+    
+    void moveLayoutError(String rootPath, String name){
+        util.fileMove(rootPath + name, Elemento.pathLayoutError + name);
+        String text = "Archivo " + name + " movido a error.";
+        System.out.println(text);
+        log.info(text);
     }
 
     void print(String msg) {

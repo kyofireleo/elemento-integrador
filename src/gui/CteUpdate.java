@@ -35,6 +35,7 @@ public class CteUpdate extends javax.swing.JFrame {
     TextAutoCompleter texter;
     private boolean isNew = false;
     private String regimen;
+    private Factura_View fv;
 
     public CteUpdate() {
         initComponents();
@@ -57,7 +58,7 @@ public class CteUpdate extends javax.swing.JFrame {
 
     }
 
-    public CteUpdate(String idCliente) {
+    public CteUpdate(String idCliente, Factura_View fv) {
         initComponents();
         setLocationRelativeTo(null);
         this.consulCtes(idCliente);
@@ -65,6 +66,7 @@ public class CteUpdate extends javax.swing.JFrame {
         this.nombreCte.setVisible(false);
         this.jLabel1.setVisible(false);
         this.nuevoCliente.setVisible(false);
+        this.fv = fv;
     }
 
     private String[] consultarCtes() {
@@ -476,7 +478,7 @@ public class CteUpdate extends javax.swing.JFrame {
         String msg;
         String query;
         try {
-            String country = pais.getSelectedItem().toString().trim().split(",")[0];
+            String country = pais.getSelectedItem().toString().trim().split(",")[0].trim();
             String tp = "" + radioGroup.getSelection().getActionCommand().toUpperCase().charAt(0);
             String reg = comboRegimen.getSelectedItem().toString().split(",")[0];
             
@@ -515,9 +517,15 @@ public class CteUpdate extends javax.swing.JFrame {
             stmt.close();
             con.close();
             
+            if(texter != null){
+                ctes = consultarCtes();
+                texter.setItems(ctes);
+            }else{
+                this.fv.resetCliente(new Integer(this.idCliente));
+                this.dispose();
+            }
+            
             this.borrarTodo();
-            ctes = consultarCtes();
-            texter.setItems(ctes);
         } catch (SQLException e) {
             e.printStackTrace();
             msg = "Excepcion: No se pudo actualizar al cliente a la base de datos: " + e.getLocalizedMessage();
@@ -795,7 +803,8 @@ public class CteUpdate extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (!(idCliente == null || idCliente.isEmpty())) {
             Factura_View fw = new Factura_View(Integer.parseInt(idCliente));
-            fw.setVisible(true);
+            //fw.setVisible(true);
+            this.dispose();
         } else {
             JOptionPane.showMessageDialog(null, "Debe consultar un cliente primero");
         }

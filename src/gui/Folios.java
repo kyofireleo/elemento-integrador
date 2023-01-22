@@ -39,6 +39,8 @@ import pagos.Documento;
 import pagos.Pago;
 import pagos.RecibosPagos;
 import utils.cfdi.Comprobante;
+import utils.cfdi.Retenciones;
+import utils.cfdi.Traslados;
 
 /**
  *
@@ -1020,6 +1022,10 @@ public class Folios extends javax.swing.JFrame {
             Documento doc;
             Comprobante comp;
             int select[] = folios.getSelectedRows();
+            BigDecimal monto = p != null ? p.getMonto() : null;
+            BigDecimal total;
+            BigDecimal importePagado = BigDecimal.ZERO;
+            
             if(select.length > 0){
                 for (int i = 0; i < select.length; i++) {
                     try {
@@ -1034,19 +1040,143 @@ public class Folios extends javax.swing.JFrame {
                         }
                         
                         comp = util.analizarXml(Elemento.pathXml+nameXml);
+                        
+                        total = new BigDecimal(comp.getTotal());
+                        if(p != null){
+                            importePagado = monto.compareTo(total) >= 0 ? total : monto;
+                            if(monto.compareTo(BigDecimal.ZERO) == 1)
+                                monto = monto.subtract(importePagado);
+                            
+                            /****** Codigo pendiente ******/
+                            /*
+                            if(p.getMoneda().equals(doc.getMoneda() == null ? "MXN" : doc.getMoneda())){
+                                doc.setEquivalencia(BigDecimal.ONE);
+                            }else if(p.getMoneda().equals("MXN")){
+                                doc.setEquivalencia(util.redondear(p.getMonto().divide(doc.getTipoCambio())));   
+                            }else{
+                                if(p.getTipoCambio().compareTo(doc.getTipoCambio()) == 1){
+                                    doc.setEquivalencia(util.redondear(doc.getTipoCambio() * p.getMonto()));
+                                }
+                                doc.setEquivalencia(util.redondear(monto));
+                            }
+                            */
+                            doc.setEquivalencia(BigDecimal.ONE);
+                        }
+                        
                         doc.setRfcEmisor(comp.getEmisor().getRfc());
                         doc.setRfcReceptor(comp.getReceptor().getRfc());
                         doc.setFolio(comp.getFolio());
                         doc.setSerie(comp.getSerie());
-                        doc.setImpPagado(new BigDecimal(comp.getTotal()));
-                        doc.setImpSaldoAnterior(new BigDecimal(comp.getTotal()));
-                        doc.setImpSaldoInsoluto(BigDecimal.ZERO);
+                        doc.setImpPagado(importePagado);
+                        doc.setImpSaldoAnterior(total);
+                        doc.setImpSaldoInsoluto(total.subtract(importePagado));
                         doc.setMoneda(comp.getMoneda());
                         doc.setNumParcialidad(1);
                         doc.setTipoCambio(comp.getTipoCambio() == null || comp.getTipoCambio().isEmpty() ? null : new BigDecimal(comp.getTipoCambio()));
                         doc.setMetodoPago(comp.getMetodoPago());
                         doc.setUuid(uuid.get(pos));
+                        
+                        //Pagos 2.0
+                        if(comp.getImpuestos() != null){
+                            doc.setObjImp("02");
+                            
+                            //List<Documento.Impuesto> impuestos = new ArrayList();
+                            //Retenciones
+                            if(comp.getImpuestos().getImpuestosRetenidos() != null && !comp.getImpuestos().getImpuestosRetenidos().isEmpty()){
+                                for(Retenciones r : comp.getImpuestos().getImpuestosRetenidos()){
+                                    switch(r.getNombre().toUpperCase()){
+                                        case "IVA":
+                                            doc.setRetencionIVA(r.getImporte());
+                                            //impuestos.add(new Documento.Impuesto('R',r.getNombre(), "002", "Tasa", r.get, total, monto));
+                                        break;
+                                        
+                                        case "ISR":
+                                            doc.setRetensionISR(r.getImporte());
+                                        break;
+                                        
+                                        case "IEPS":
+                                            doc.setRetensionIEPS(r.getImporte());
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if(comp.getImpuestos().getImpuestosTrasladados() != null && !comp.getImpuestos().getImpuestosTrasladados().isEmpty()){
+                                for(Traslados t: comp.getImpuestos().getImpuestosTrasladados()){
+                                    if(t.getNombre().equalsIgnoreCase("IVA")){
+                                        if(t.getTasa().compareTo(new BigDecimal("0.160000")) == 0){
+                                            doc.setTrasladoBaseIVA16(t.getBase());
+                                            doc.setTrasladoImpuestoIVA16(t.getImporte());
+                                        }
+                                        if(t.getTasa().compareTo(new BigDecimal("0.080000")) == 0){
+                                            doc.setTrasladoBaseIVA8(t.getBase());
+                                            doc.setTrasladoImpuestoIVA8(t.getImporte());
+                                        }
+                                        if(t.getTasa().compareTo(BigDecimal.ZERO) == 0){
+                                            doc.setTrasladoBaseIVA0(t.getBase());
+                                            doc.setTrasladoImpuestoIVA0(t.getImporte());
+                                        }
+                                    }
+                                }
+                            }
+                        }else{
+                            doc.setObjImp("01");
+                        }
+                        
                         docsPagar.add(doc);
+                        
+                        //suma
+                        if(p != null){
+                            if(doc.getRetencionIVA() != null){
+                                rp.totalRetencionesIVA = rp.totalRetencionesIVA.add(doc.getRetencionIVA());
+                                rp.pagoRetencionesIVA = rp.pagoRetencionesIVA.add(doc.getRetencionIVA());
+                            }
+
+                            if(doc.getRetensionISR() != null){
+                                rp.totalRetensionesISR = rp.totalRetensionesISR.add(doc.getRetensionISR());
+                                rp.pagoRetensionesISR = rp.pagoRetensionesISR.add(doc.getRetensionISR());
+                            }
+
+                            if(doc.getRetensionIEPS() != null){
+                                rp.totalRetensionesIEPS = rp.totalRetensionesIEPS.add(doc.getRetensionIEPS());
+                                rp.pagoRetensionesIEPS = rp.pagoRetensionesIEPS.add(doc.getRetensionIEPS());
+                            }
+
+                            if(doc.getTrasladoBaseIVA16() != null){
+                                rp.totalTrasladosBaseIVA16 = rp.totalTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16());
+                                rp.pagoTrasladosBaseIVA16 = rp.pagoTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16());
+                            }
+
+                            if(doc.getTrasladoImpuestoIVA16() != null){
+                                rp.totalTrasladosImpuestoIVA16 = rp.totalTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16());
+                                rp.pagoTrasladosImpuestoIVA16 = rp.pagoTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16());
+                            }
+
+                            if(doc.getTrasladoBaseIVA8() != null){
+                                rp.totalTrasladosBaseIVA8 = rp.totalTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8());
+                                rp.pagoTrasladosBaseIVA8 = rp.pagoTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8());
+                            }
+
+                            if(doc.getTrasladoImpuestoIVA8() != null){
+                                rp.totalTrasladosImpuestoIVA8 = rp.totalTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8());
+                                rp.pagoTrasladosImpuestoIVA8 = rp.pagoTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8());
+                            }
+
+                            if(doc.getTrasladoBaseIVA0() != null){
+                                rp.totalTrasladosBaseIVA0 = rp.totalTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0());
+                                rp.pagoTrasladosBaseIVA0 = rp.pagoTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0());
+                            }
+
+                            if(doc.getTrasladoImpuestoIVA0() != null){
+                                rp.totalTrasladosImpuestoIVA0 = rp.totalTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0());
+                                rp.pagoTrasladosImpuestoIVA0 = rp.pagoTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0());
+                            }
+
+                            if(doc.getTrasladoBaseIVAExento() != null){
+                                rp.totalTrasladosBaseIVAExento = rp.totalTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento());
+                                rp.pagoTrasladosBaseIVAExento = rp.pagoTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento());
+                            }
+                        }
                         
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -1103,7 +1233,7 @@ public class Folios extends javax.swing.JFrame {
                 idReceptor = respuesta[1];
 
                 Factura_View fv = new Factura_View(idEmisor, idReceptor, fact_uuid, descuento, tieneIva);
-                fv.setVisible(true);
+                //fv.setVisible(true);
             }
             
         }else{
@@ -1247,7 +1377,7 @@ public class Folios extends javax.swing.JFrame {
         ResultSet rs;
         String xml = null;
         try {
-            rs = stmt.executeQuery("SELECT xml FROM Facturas WHERE serie like \'" + serie + "\' AND folio = " + folio + " AND rfcEmisor like \'" + rfcEmi + "\' AND rfc like \'" + rfcRec + "\'");
+            rs = stmt.executeQuery("SELECT xml FROM Facturas WHERE serie = \'" + serie + "\' AND folio = " + folio + " AND rfcEmisor = \'" + rfcEmi + "\' AND rfc = \'" + rfcRec + "\'");
             if (rs.next()) {
                 xml = rs.getString("xml");
             }

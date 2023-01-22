@@ -153,46 +153,6 @@ public class EmpleadoAdd extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3))
-                                .addGap(39, 39, 39)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(calle, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(rfc, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel6)
-                                    .addComponent(jLabel7)
-                                    .addComponent(jLabel8)
-                                    .addComponent(jLabel10)
-                                    .addComponent(jLabel11)
-                                    .addComponent(jLabel12)
-                                    .addComponent(jLabel9))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                                .addComponent(noExterior, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(jLabel5))
-                                            .addComponent(colonia, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(localidad, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(municipio, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(cp, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(18, 18, 18)
-                                        .addComponent(noInterior, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(pais, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(estado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(guardar)
@@ -200,7 +160,41 @@ public class EmpleadoAdd extends javax.swing.JFrame {
                         .addComponent(borrar)
                         .addGap(31, 31, 31)
                         .addComponent(cancelar)
-                        .addGap(19, 19, 19))))
+                        .addGap(19, 19, 19))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel12)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(calle, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(rfc, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(email, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addComponent(noExterior, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel5))
+                                    .addComponent(colonia, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(localidad, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(municipio, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cp, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addComponent(noInterior, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(pais, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(estado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(9, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -269,8 +263,21 @@ public class EmpleadoAdd extends javax.swing.JFrame {
         String country = pais.getSelectedItem().toString().trim();
         
         try{
-            stmt.execute("INSERT INTO EmpleadosRec (idEmisor,nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,email) "
-                    + "VALUES ("+nomi.idEmisor+",\'"+nombre.getText().trim()+"\',\'"+rfc.getText().trim()+"\',\'"+calle.getText().trim()+"\',\'"+noExterior.getText().trim()+"\',\'"+noInterior.getText().trim()+"\',\'"+colonia.getText().trim()+"\',\'"+localidad.getText().trim()+"\',\'"+municipio.getText().trim()+"\',\'"+estado.getSelectedItem().toString()+"\',\'"+country+"\',\'"+cp.getText().trim()+"\',\'"+ email.getText().trim() +"\')");
+            stmt.execute("INSERT INTO EmpleadosRec (idEmisor,nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,email,regimenFiscal) "
+                    + "VALUES ("+nomi.idEmisor+","
+                            + "\'"+nombre.getText().trim()+"\',"
+                            + "\'"+rfc.getText().trim()+"\',"
+                            + "\'"+calle.getText().trim()+"\',"
+                            + "\'"+noExterior.getText().trim()+"\',"
+                            + "\'"+noInterior.getText().trim()+"\',"
+                            + "\'"+colonia.getText().trim()+"\',"
+                            + "\'"+localidad.getText().trim()+"\',"
+                            + "\'"+municipio.getText().trim()+"\',"
+                            + "\'"+estado.getSelectedItem().toString()+"\',"
+                            + "\'"+country+"\',"
+                            + "\'"+cp.getText().trim()+"\',"
+                            + "\'"+email.getText().trim() +"\',"
+                            + "\'"+605+"\')");
             JOptionPane.showMessageDialog(null, "El empleado " + nombre.getText() + " fue agregado correctamente");
             Elemento.log.info("El empleado " + nombre.getText() + " fue agregado correctamente");
             

@@ -10,6 +10,8 @@
  */
 package gui;
 
+import com.mxrck.autocompleter.AutoCompleterCallback;
+import com.mxrck.autocompleter.TextAutoCompleter;
 import elemento.ConnectionFactory;
 import elemento.Donataria;
 import elemento.Elemento;
@@ -20,6 +22,9 @@ import elemento.Factura;
 import elemento.Factura.ConceptoTraslado;
 import elemento.Factura.ConceptoRetencion;
 import elemento.Layout;
+import java.awt.AWTException;
+import java.awt.KeyboardFocusManager;
+import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.math.BigDecimal;
@@ -55,7 +60,7 @@ public class Factura_View extends javax.swing.JFrame {
     String leyenda = "";
     String mensaje = "";
     static String plantilla = null;
-    public double porcentaje = 0.16;
+    public BigDecimal porcentaje = new BigDecimal("0.16");
     public boolean modificar;
     static utils.Utils util = new utils.Utils(Elemento.log);
     ConnectionFactory factory = new ConnectionFactory();
@@ -66,10 +71,10 @@ public class Factura_View extends javax.swing.JFrame {
     int creditosRestantes = 0;
     int idEmpleado;
     BigDecimal porcentajeIeps, importeIeps, porcentajeIsr, importeIsr, porcentajeIvaRet, importeIvaRet;
-    List<Double> tasaIva = new ArrayList();
-    List<Double> tasaIeps = new ArrayList();
-    List<Double> tasaIsr = new ArrayList();
-    List<Double> tasaIvaRet = new ArrayList();
+    List<BigDecimal> tasaIva = new ArrayList();
+    List<BigDecimal> tasaIeps = new ArrayList();
+    List<BigDecimal> tasaIsr = new ArrayList();
+    List<BigDecimal> tasaIvaRet = new ArrayList();
     Empleado emp = null;
     List<Boolean> bancarizado;
     List<String> cfdisAsoc;
@@ -78,7 +83,11 @@ public class Factura_View extends javax.swing.JFrame {
     boolean entroEvento = false;
     List<String> formasPagoLista;
     List<String> arrayTipoRel;
+    List<String> listaClientes;
     public boolean fromFolios = false;
+    public boolean isNotaCredito = false;
+    private TextAutoCompleter texter;
+    public boolean esperaCliente = true;
 
     /**
      * Creates new form Factura_View
@@ -105,14 +114,8 @@ public class Factura_View extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         iniciar();
-        for (int i = 1; i < listaClientes.getItemCount(); i++) {
-            int id = Integer.parseInt(listaClientes.getItemAt(i).toString().split(",")[0].trim());
-
-            if (idCliente == id) {
-                listaClientes.setSelectedIndex(i);
-                break;
-            }
-        }
+        this.setVisible(true);
+        setCliente(idCliente);
 
     }
 
@@ -120,61 +123,17 @@ public class Factura_View extends javax.swing.JFrame {
     public Factura_View(int idEmisor, int idReceptor, String fact_uuid, double descuento, boolean tieneIva) {
         initComponents();
         setLocationRelativeTo(null);
-        iniciar();
-
         this.fromFolios = true;
-        //Seteamos Emisor
-        for (int i = 1; i < listaEmisores.getItemCount(); i++) {
-            int id = Integer.parseInt(listaEmisores.getItemAt(i).toString().split(",")[0].trim());
-
-            if (idEmisor == id) {
-                listaEmisores.setSelectedIndex(i);
-                break;
-            }
-        }
-
-        //Seteamos Receptor
-        for (int i = 1; i < listaClientes.getItemCount(); i++) {
-            int id = Integer.parseInt(listaClientes.getItemAt(i).toString().split(",")[0].trim());
-
-            if (idReceptor == id) {
-                listaClientes.setSelectedIndex(i);
-                break;
-            }
-        }
-
-        //Setamos datos de CFD
-        metodoCombo.setSelectedItem("PUE,Pago en una sola exhibición");
-        tipocfd.setSelectedItem("E,Egreso");
-        usocfdi.setSelectedItem("G02,Devoluciones, descuentos o bonificaciones");
-        formasPagoCombo.setSelectedItem("99,Por definir");
-        tipoRelacion.setSelectedItem("01,Nota de crédito de los documentos relacionados");
-
-        //Seteamos concepto
-        if (tieneIva) {
-            descuento = util.redondear(descuento / 1.16);
-        }
-        noIdentificacion.setText("00001");
-        claveProdSat.setText("84111506");
-        cantidad.setText("1");
-        claveUnidad.setText("E48");
-        unidad.setText("SERVICIO");
-        descripcion.setText("Servicios de Facturación");
-        precio.setText("" + descuento);
-        aplicaIva.setSelected(tieneIva);
-
-        agregarConceptoActionPerformed(null);
-
-        //Seteamos factura asociada
-        cfdisAsoc = new ArrayList();
-        cfdisAsoc.add(fact_uuid);
-        setUuids(null);
+        this.isNotaCredito = true;
+        iniciar();
+        this.setVisible(true);
+        
+        setNotaDeCredito(idEmisor, idReceptor, fact_uuid, descuento, tieneIva);
     }
 
     private void iniciar() {
-        combo = (DefaultComboBoxModel) listaClientes.getModel();
         comboE = (DefaultComboBoxModel) listaEmisores.getModel();
-        listaClientes.setModel(combo);
+        listaClientes = new ArrayList();
         listaEmisores.setModel(comboE);
         model = (DefaultTableModel) conceptos.getModel();
         bancarizado = new ArrayList();
@@ -184,10 +143,24 @@ public class Factura_View extends javax.swing.JFrame {
         consultar("ComboM", "SELECT metodopago, descripcion FROM c_metodopago");
         consultar("ComboF", "SELECT formapago, descripcion, bancarizado FROM c_formapago");
         //consultar("ComboTC", "SELECT tiposcomprobante, descripcion FROM c_tiposcomprobante");
-        consultar("ComboU", "SELECT usocfdi, descripcion FROM c_usocfdi");
+        if(!this.fromFolios)
+            consultar("ComboU", "SELECT usocfdi, descripcion FROM c_usocfdi");
         consultar("ComboE", "SELECT * FROM Emisores");
         consultar("ComboT", "SELECT tiporelacion, descripcion FROM c_tiporelacion");
         listaEmisores.setSelectedIndex(0);
+        
+        texter = new TextAutoCompleter(txtCliente, new AutoCompleterCallback() {
+            @Override
+            public void callback(Object selectedItem) {
+                System.out.println("El usuario seleccionó: " + selectedItem);
+                consultar("Campos", "SELECT * FROM Clientes WHERE id = " + selectedItem.toString().split(",")[0]);
+            }
+        });
+
+        texter.setCaseSensitive(false);
+        texter.setItems(listaClientes.toArray());
+        texter.setMode(0);
+        
         //consultar("Folio", "SELECT * FROM Folios WHERE idComprobante = " + getIdComprobante(tipocfd.getSelectedItem().toString().split(",")[0]) + " AND rfc like \'" + rfcE + "\'");
     }
 
@@ -247,7 +220,6 @@ public class Factura_View extends javax.swing.JFrame {
         preFactura = new javax.swing.JButton();
         metodoCombo = new javax.swing.JComboBox();
         aplicaIva = new javax.swing.JCheckBox();
-        listaClientes = new javax.swing.JComboBox();
         tipocfd = new javax.swing.JComboBox();
         jLabel24 = new javax.swing.JLabel();
         listaEmisores = new javax.swing.JComboBox();
@@ -294,6 +266,8 @@ public class Factura_View extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         cfdisAsociados = new javax.swing.JTextPane();
         tipoRelacion = new javax.swing.JComboBox<>();
+        txtCliente = new javax.swing.JTextField();
+        jLabel15 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Crear CFDI");
@@ -434,15 +408,6 @@ public class Factura_View extends javax.swing.JFrame {
 
         aplicaIva.setSelected(true);
         aplicaIva.setText("IVA");
-
-        listaClientes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Seleccione un cliente" }));
-        listaClientes.setMaximumSize(new java.awt.Dimension(124, 20));
-        listaClientes.setName(""); // NOI18N
-        listaClientes.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                listaClientesActionPerformed(evt);
-            }
-        });
 
         tipocfd.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Seleccione un Tipo de Comprobante" }));
         tipocfd.setMaximumSize(new java.awt.Dimension(196, 20));
@@ -668,6 +633,8 @@ public class Factura_View extends javax.swing.JFrame {
             }
         });
 
+        jLabel15.setText("Cliente");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -688,7 +655,7 @@ public class Factura_View extends javax.swing.JFrame {
                             .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel14)
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(244, 246, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -723,49 +690,6 @@ public class Factura_View extends javax.swing.JFrame {
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel24)
-                                .addGap(18, 18, 18)
-                                .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(49, 49, 49)
-                                .addComponent(listaClientes, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(verCte)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel27)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(serieText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel26)
-                                .addGap(12, 12, 12)
-                                .addComponent(folioText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(metodoCombo, 0, 236, Short.MAX_VALUE)
-                                    .addComponent(formasPagoCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel12)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(condicionPago, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(tipocfd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(asociarCfdi)))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel28)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(moneda, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(tipoCambio, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(usocfdi, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
@@ -814,7 +738,53 @@ public class Factura_View extends javax.swing.JFrame {
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                         .addComponent(editarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                                         .addComponent(agregarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(quitar, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                        .addComponent(quitar, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(jLabel24)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(44, 44, 44)
+                                    .addComponent(jLabel15)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(txtCliente)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(verCte)
+                                    .addGap(27, 27, 27)
+                                    .addComponent(jLabel27)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(serieText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(jLabel26)
+                                    .addGap(12, 12, 12)
+                                    .addComponent(folioText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(metodoCombo, 0, 236, Short.MAX_VALUE)
+                                        .addComponent(formasPagoCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(jLabel12)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(condicionPago, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(tipocfd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(asociarCfdi)))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(jLabel28)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(moneda, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(tipoCambio, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(usocfdi, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -825,8 +795,7 @@ public class Factura_View extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel24)
-                            .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(listaClientes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(formasPagoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -842,6 +811,9 @@ public class Factura_View extends javax.swing.JFrame {
                                 .addComponent(jLabel26, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(folioText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(txtCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel15))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel27)
                                 .addComponent(serieText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(verCte)))
@@ -856,7 +828,7 @@ public class Factura_View extends javax.swing.JFrame {
                                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 3, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -965,35 +937,55 @@ public class Factura_View extends javax.swing.JFrame {
 
     private void emitirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emitirActionPerformed
         if (validar()) {
-            String nom = listaClientes.getSelectedItem().toString();
-            int indice = nom.indexOf(",");
-            nombre = nom.substring(indice + 1);
-
-            if (tipocfd.getSelectedItem().toString().equalsIgnoreCase("N,Nómina")) {
-                try {
-                    emp = getEmpleado(idEmpleado);
-                    Elemento.leerConfig(emisor.getRfc());
-                    Factura fact = setearFactura("");
-                    nominas.Nominas nomi = new nominas.Nominas(fact, emp, nombre, rfc);
-                    nomi.setVisible(true);
-                    int folioNext = Integer.parseInt(folio) + 1;
-                    this.folioText.setText("" + folioNext);
-                } catch (SQLException | NumberFormatException ex) {
-                    ex.printStackTrace();
-                    Elemento.log.error("Excepcion al consultar el empelado", ex);
-                } catch (Error err) {
-                    err.printStackTrace();
-                }
-            } else {
-                crearLayout("");
-            }
+            crearLayout("");
         } else {
             JOptionPane.showMessageDialog(null, mensaje, "Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_emitirActionPerformed
 
+    private void setNotaDeCredito(int idEmisor, int idReceptor, String fact_uuid, double descuento, boolean tieneIva){
+        //Seteamos Emisor
+        for (int i = 1; i < listaEmisores.getItemCount(); i++) {
+            int id = Integer.parseInt(listaEmisores.getItemAt(i).toString().split(",")[0].trim());
+
+            if (idEmisor == id) {
+                listaEmisores.setSelectedIndex(i);
+                break;
+            }
+        }
+        
+        //Seteamos Receptor
+        setCliente(idReceptor);
+             
+        //Setamos datos de CFD
+        metodoCombo.setSelectedItem("PUE,Pago en una sola exhibición");
+        tipocfd.setSelectedItem("E,Egreso");
+        formasPagoCombo.setSelectedItem("99,Por definir");
+        tipoRelacion.setSelectedItem("01,Nota de crédito de los documentos relacionados");
+
+        //Seteamos concepto
+        if (tieneIva) {
+            descuento = util.redondear(descuento / 1.16);
+        }
+        noIdentificacion.setText("00001");
+        claveProdSat.setText("84111506");
+        cantidad.setText("1");
+        claveUnidad.setText("ACT");
+        unidad.setText("Actividad");
+        descripcion.setText("Servicios de Facturación");
+        precio.setText("" + descuento);
+        aplicaIva.setSelected(tieneIva);
+
+        agregarConceptoActionPerformed(null);
+
+        //Seteamos factura asociada
+        cfdisAsoc = new ArrayList();
+        cfdisAsoc.add(fact_uuid);
+        setUuids(null);
+    }
+    
     private boolean validar() {
-        if (listaClientes.getSelectedIndex() == 0) {
+        if (txtCliente.getText().trim().isEmpty()) {
             mensaje = "No se ha seleccionado ningun cliente, seleccione e intentelo de nuevo.";
             return false;
         }
@@ -1067,6 +1059,50 @@ public class Factura_View extends javax.swing.JFrame {
             return null;
         }
     }
+    
+    public void resetCliente(int idCliente){
+        if(idCliente > 0){
+            listaClientes.clear();
+            texter.removeAllItems();
+            consultar("Combo", "SELECT * FROM Clientes");
+            texter.setItems(listaClientes.toArray());
+            
+            for (int i = 0; i < listaClientes.size(); i++) {
+                int id = Integer.parseInt(listaClientes.get(i).split(",")[0].trim());
+
+                if (idCliente == id) {
+                    txtCliente.transferFocus();
+                    String nom = listaClientes.get(i);
+                    txtCliente.setText(nom.substring(0, nom.length() -2));
+                    
+                    KeyEvent ke = new KeyEvent(this.txtCliente, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, '\n');
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(this.txtCliente, ke);
+                    
+                    break;
+                }
+            }
+        }else{
+            txtCliente.setText("");
+            verCte.setEnabled(false);
+        }
+    }
+    
+    public void setCliente(int idCliente){
+        for (int i = 0; i < listaClientes.size(); i++) {
+            int id = Integer.parseInt(listaClientes.get(i).split(",")[0].trim());
+
+            if (idCliente == id) {
+                txtCliente.transferFocus();
+                String nom = listaClientes.get(i);
+                txtCliente.setText(nom.substring(0, nom.length() -2));
+
+                KeyEvent ke = new KeyEvent(this.txtCliente, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, '\n');
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(this.txtCliente, ke);
+
+                break;
+            }
+        }
+    }
 
     private void crearLayout(String condicion) {
         Elemento.leerConfig(emisor.getRfc());
@@ -1082,7 +1118,7 @@ public class Factura_View extends javax.swing.JFrame {
         }
 
         if (condicion.equals("")) {
-            listaClientes.setSelectedIndex(0);
+            resetCliente(0);
             rfc = "";
             this.formasPagoCombo.setSelectedIndex(0);
             this.usocfdi.setSelectedIndex(0);
@@ -1108,6 +1144,7 @@ public class Factura_View extends javax.swing.JFrame {
             this.tipoRelacion.setSelectedIndex(0);
             this.cfdisAsociados.setText("");
             model.setRowCount(0);
+            iniciar();
         }
 
     }
@@ -1190,10 +1227,10 @@ public class Factura_View extends javax.swing.JFrame {
 
                 ct = fact.new ConceptoTraslado();
                 ct.setBase(base);
-                ct.setImporte(base.multiply(new BigDecimal(tasaIva.get(i))).setScale(2, RoundingMode.HALF_UP));
+                ct.setImporte(base.multiply(tasaIva.get(i)));
                 ct.setImpuesto("002");
                 ct.setNumConcepto(i + 1);
-                ct.setTasa(new BigDecimal(tasaIva.get(i)).setScale(6, RoundingMode.HALF_UP));
+                ct.setTasa(redondear(tasaIva.get(i), 6));
                 ct.setTipoFactor("Tasa");
 
                 tr.add(ct);
@@ -1201,10 +1238,10 @@ public class Factura_View extends javax.swing.JFrame {
                 if ((Boolean) model.getValueAt(i, 10)) {
                     ct = fact.new ConceptoTraslado();
                     ct.setBase(base);
-                    ct.setImporte(base.multiply(new BigDecimal(tasaIeps.get(i))).setScale(2, RoundingMode.HALF_UP));
+                    ct.setImporte(base.multiply(tasaIeps.get(i)));
                     ct.setImpuesto("003");
                     ct.setNumConcepto(i + 1);
-                    ct.setTasa(new BigDecimal(tasaIeps.get(i)).setScale(6, RoundingMode.HALF_UP));
+                    ct.setTasa(redondear(tasaIeps.get(i), 6));
                     ct.setTipoFactor("Tasa");
 
                     tr.add(ct);
@@ -1213,18 +1250,18 @@ public class Factura_View extends javax.swing.JFrame {
                 if ((Boolean) model.getValueAt(i, 11)) {
                     cr = fact.new ConceptoRetencion();
                     cr.setBase(base);
-                    cr.setImporte(base.multiply(new BigDecimal(tasaIsr.get(i))).setScale(2, RoundingMode.HALF_UP));
+                    cr.setImporte(redondear(base.multiply(tasaIsr.get(i)), 2));
                     cr.setImpuesto("001");
                     cr.setNumConcepto(i + 1);
-                    cr.setTasa(new BigDecimal(tasaIsr.get(i)).setScale(6, RoundingMode.HALF_UP));
+                    cr.setTasa(redondear(tasaIsr.get(i), 6));
                     cr.setTipoFactor("Tasa");
 
                     re.add(cr);
                 }
 
                 if ((Boolean) model.getValueAt(i, 12)) {
-                    BigDecimal tas = new BigDecimal(tasaIvaRet.get(i)).setScale(6, RoundingMode.HALF_UP);
-                    BigDecimal imp = base.multiply(tas).setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal tas = redondear(tasaIvaRet.get(i), 6);
+                    BigDecimal imp = redondear(base.multiply(tas), 2);
                     cr = fact.new ConceptoRetencion();
                     cr.setBase(base);
                     cr.setImporte(imp);
@@ -1246,11 +1283,11 @@ public class Factura_View extends javax.swing.JFrame {
             folio = folioText.getText().trim();
             serie = serieText.getText().trim();
 
-            double ivR = Double.parseDouble(ivaRetenido.getText().trim());
-            double isr = Double.parseDouble(isrRetenido.getText().trim());
-            double ivaT = Double.parseDouble(iv);
-            double iepsT = Double.parseDouble(ieps.getText().trim());
-            double desTot = Double.parseDouble(descuentoTotal.getText().trim());
+            BigDecimal ivR = new BigDecimal(ivaRetenido.getText().trim());
+            BigDecimal isr = new BigDecimal(isrRetenido.getText().trim());
+            BigDecimal ivaT = new BigDecimal(iv);
+            BigDecimal iepsT = new BigDecimal(ieps.getText().trim());
+            BigDecimal desTot = new BigDecimal(descuentoTotal.getText().trim());
 
             //Asginamos valores de la factura
             fact.emisor = emisor;
@@ -1269,14 +1306,14 @@ public class Factura_View extends javax.swing.JFrame {
             fact.cp = cp;
             fact.municipio = municipio;
             fact.estado = estado;*/
-            fact.pais = "";
+            fact.pais = pais;
             fact.conceptos = conc;
-            fact.subtotal = Double.parseDouble(sub);
+            fact.subtotal = new BigDecimal(sub);
             fact.descuento = desTot;
             fact.motivoDescuento = "_";
             fact.iva = ivaT;
             fact.ivaRetenido = ivR;
-            fact.total = Double.parseDouble(tot);
+            fact.total = new BigDecimal(tot);
             fact.usoCfdi = usocfdi.getSelectedItem().toString().split(",")[0];
             fact.formaPago = formasPagoCombo.getSelectedItem().toString().split(",")[0];
             fact.tipoCfd = tipocfd.getSelectedItem().toString().split(",")[0];
@@ -1292,12 +1329,12 @@ public class Factura_View extends javax.swing.JFrame {
             fact.setDonataria(donat);
 
             if (tasaIeps.size() > 0) {
-                fact.porIeps = redondear(tasaIeps.get(0) * 100);
+                fact.porIeps = redondear(tasaIeps.get(0).multiply(new BigDecimal("100")), 6);
                 fact.totalIeps = iepsT;
             }
 
-            fact.totalRetenidos = redondear(ivR + isr);
-            fact.totalTraslados = ivaT + iepsT;
+            fact.totalRetenidos = redondear(ivR.add(isr), 2);
+            fact.totalTraslados = redondear(ivaT.add(iepsT), 2);
             fact.leyenda = leyenda;
             fact.prefactura = condicion;
 
@@ -1368,13 +1405,13 @@ public class Factura_View extends javax.swing.JFrame {
                     }
 
                     if (resp == JOptionPane.YES_OPTION) {
-                        porcentaje = -1;
+                        porcentaje = new BigDecimal("-1");
                     } else {
-                        porcentaje = 0.0;
+                        porcentaje = BigDecimal.ZERO;
                     }
                     tasaIva.add(porcentaje);
                 } else {
-                    porcentaje = 0.16;
+                    porcentaje = new BigDecimal("0.16");
                     tasaIva.add(porcentaje);
                 }
 
@@ -1382,9 +1419,9 @@ public class Factura_View extends javax.swing.JFrame {
                     porcentajeIeps = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IEPS a aplicar:", 8.0));
 
                     if (porcentajeIeps.doubleValue() < 1) {
-                        tasaIeps.add(porcentajeIeps.doubleValue());
+                        tasaIeps.add(porcentajeIeps);
                     } else {
-                        tasaIeps.add(porcentajeIeps.divide(new BigDecimal(100)).setScale(8, RoundingMode.HALF_UP).doubleValue());
+                        tasaIeps.add(redondear(porcentajeIeps.divide(new BigDecimal(100)), 6));
                     }
                 }
 
@@ -1392,9 +1429,9 @@ public class Factura_View extends javax.swing.JFrame {
                     porcentajeIsr = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de ISR a aplicar:", 0.0));
 
                     if (porcentajeIsr.doubleValue() < 1) {
-                        tasaIsr.add(porcentajeIsr.doubleValue());
+                        tasaIsr.add(porcentajeIsr);
                     } else {
-                        tasaIsr.add(porcentajeIsr.divide(new BigDecimal(100)).setScale(8, RoundingMode.HALF_UP).doubleValue());
+                        tasaIsr.add(redondear(porcentajeIsr.divide(new BigDecimal(100)), 6));
                     }
                 }
 
@@ -1402,9 +1439,9 @@ public class Factura_View extends javax.swing.JFrame {
                     porcentajeIvaRet = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IVA a retener:", 4.0));
 
                     if (porcentajeIvaRet.doubleValue() < 1) {
-                        tasaIvaRet.add(porcentajeIvaRet.doubleValue());
+                        tasaIvaRet.add(porcentajeIvaRet);
                     } else {
-                        tasaIvaRet.add(porcentajeIvaRet.divide(new BigDecimal(100)).setScale(8, RoundingMode.HALF_UP).doubleValue());
+                        tasaIvaRet.add(redondear(porcentajeIvaRet.divide(new BigDecimal(100)), 6));
                     }
                 }
 
@@ -1500,7 +1537,7 @@ public class Factura_View extends javax.swing.JFrame {
                             }
                             break;
                         case "Combo":
-                            listaClientes.addItem(rs.getInt("id") + "," + rs.getString("nombre"));
+                            listaClientes.add(rs.getInt("id") + "," + rs.getString("nombre"));
                             break;
                         case "ComboM":
                             metodoCombo.addItem(rs.getString("metodopago") + "," + rs.getString("descripcion"));
@@ -1524,17 +1561,6 @@ public class Factura_View extends javax.swing.JFrame {
                             break;
                         case "Campos":
                             int idCliente = rs.getInt("id");
-                            if(tipocfd.getSelectedItem().toString().equalsIgnoreCase("N,Nómina")){
-                                Statement stmtE = factory.stmtLectura(con);
-                                ResultSet rsE = stmtE.executeQuery("SELECT id FROM Empleados WHERE idEmpleado = " + idCliente);
-                                boolean cont = false;
-                                if (rsE.next()) {
-                                    idEmpleado = rsE.getInt("id");
-                                }
-
-                                rsE.close();
-                                stmtE.close();
-                            }
 
                             rfc = rs.getString("rfc");
                             nombre = rs.getString("nombre");
@@ -1551,18 +1577,25 @@ public class Factura_View extends javax.swing.JFrame {
                             regimenFiscalReceptor = rs.getString("regimenfiscal");
 
                             receptor = new Receptor();
+                            receptor.setId(idCliente);
                             receptor.setNombre(nombre);
                             receptor.setRfc(rfc);
                             receptor.setPais(pais);
                             receptor.setCp(cp);
                             receptor.setRegimenFiscal(regimenFiscalReceptor);
                             
+                            verCte.setEnabled(true);
+                            
                             String campo = tipoPersona.equals("F") ? "aplicaFisica" : "aplicaMoral";
-                            String consulta = "SELECT * FROM c_usocfdi WHERE " + campo + " = " + Boolean.TRUE + (regimenFiscalReceptor.trim().isEmpty() ? "" : " AND (regimenFiscalReceptor LIKE '*,"+ regimenFiscalReceptor +",*' OR regimenFiscalReceptor = '" + regimenFiscalReceptor + "')");
+                            String consulta = "SELECT * FROM c_usocfdi WHERE " + campo + " = " + Boolean.TRUE + (regimenFiscalReceptor.trim().isEmpty() ? "" : " AND (regimenFiscalReceptor LIKE '*"+ regimenFiscalReceptor +"*' OR regimenFiscalReceptor = '" + regimenFiscalReceptor + "')");
                             
                             this.usocfdi.removeAllItems();
                             this.usocfdi.addItem("Seleccione un Uso de CFDi");
                             consultar("ComboU", consulta);
+                            
+                            if(this.fromFolios && this.isNotaCredito){
+                                usocfdi.setSelectedItem("G02,Devoluciones, descuentos o bonificaciones.");
+                            }
                             break;
                         case "ComboE":
                             listaEmisores.addItem(rs.getInt("id") + ", " + rs.getString("nombre"));
@@ -1615,7 +1648,8 @@ public class Factura_View extends javax.swing.JFrame {
 
                 consultar("ComboTC", "SELECT tc.tiposcomprobante, tc.descripcion "
                         + "FROM Folios f INNER JOIN c_tiposcomprobante tc ON f.idComprobante = tc.c_tiposcomprobante_id "
-                        + "WHERE rfc = \'" + rfcE + "\' "
+                        + "WHERE f.rfc = \'" + rfcE + "\' "
+                        + "AND f.idComprobante <> 4 "
                         + "ORDER BY tc.c_tiposcomprobante_id ASC");
 
             }
@@ -1663,32 +1697,12 @@ public class Factura_View extends javax.swing.JFrame {
         estado = "";
         pais = "";
         cp = "";
-        if (listaClientes != null) {
-            listaClientes.setSelectedIndex(0);
-        }
+        resetCliente(0);
 
         if (model != null) {
             model.setRowCount(0);
         }
     }
-
-    private void listaClientesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_listaClientesActionPerformed
-        // TODO add your handling code here:
-        if (combo.getSize() > 0) {
-            String cond = combo.getSelectedItem().toString();
-            if (!cond.contains("Seleccione un")) {
-                verCte.setEnabled(true);
-                String id = cond.split(",")[0];
-                if (emisor.getEmitirNominas() && tipocfd.getSelectedItem().toString().equalsIgnoreCase("N,Nómina")) {
-                    consultar("Campos", "SELECT * FROM EmpleadosRec WHERE id = " + id);
-                } else {
-                    consultar("Campos", "SELECT * FROM Clientes WHERE id = " + id);
-                }
-            } else {
-                verCte.setEnabled(false);
-            }
-        }
-    }//GEN-LAST:event_listaClientesActionPerformed
 
     private void metodoComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metodoComboActionPerformed
         // TODO add your handling code here:
@@ -1822,11 +1836,13 @@ public class Factura_View extends javax.swing.JFrame {
 
     private void verCteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verCteActionPerformed
         // TODO add your handling code here:
-        CteUpdate cte = new CteUpdate(listaClientes.getSelectedItem().toString().split(",")[0]);
-        cte.setVisible(true);
-        cte.crearComprobante.setEnabled(false);
-        listaClientes.setSelectedIndex(0);
-        verCte.setEnabled(false);
+        if(txtCliente.getText().trim().isEmpty()){
+            util.printError("No hay ningún cliente seleccionado");
+        }else{
+            CteUpdate cte = new CteUpdate(""+receptor.getId(), this);
+            cte.setVisible(true);
+            cte.crearComprobante.setEnabled(false);
+        }
     }//GEN-LAST:event_verCteActionPerformed
 
     private void cantidadFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cantidadFocusGained
@@ -1896,15 +1912,9 @@ public class Factura_View extends javax.swing.JFrame {
         String tipo = tipocfd.getSelectedItem() != null ? tipocfd.getSelectedItem().toString().split(",")[0] : "";
 
         if (tipocfd.getSelectedIndex() > 0) {
-            if (listaClientes.getSelectedIndex() > 0 || tipo.equalsIgnoreCase("N")) {
+            if (!txtCliente.getText().trim().isEmpty()) {
                 prepararFolio(rfcE);
                 String id = listaEmisores.getSelectedItem().toString().split(",")[0];
-
-                if (listaClientes.getItemAt(0).toString().equals("Seleccione un empleado") && !tipo.equalsIgnoreCase("N")) {
-                    listaClientes.removeAllItems();
-                    listaClientes.addItem("Seleccione un cliente");
-                    consultar("Combo", "SELECT * FROM Clientes");
-                }
 
                 switch (tipo) {
                     case "E":
@@ -1929,14 +1939,6 @@ public class Factura_View extends javax.swing.JFrame {
                         break;
                     case "I":
                         asociarCfdi.setEnabled(true);
-                        break;
-                    case "N":
-                        asociarCfdi.setEnabled(false);
-                        if (listaClientes.getItemAt(0).toString().equals("Seleccione un cliente")) {
-                            listaClientes.removeAllItems();
-                            listaClientes.addItem("Seleccione un empleado");
-                            consultar("Combo", "SELECT * FROM EmpleadosRec WHERE idEmisor = " + id);
-                        }
                         break;
                 }
 
@@ -2029,21 +2031,21 @@ public class Factura_View extends javax.swing.JFrame {
     }
 
     private void calcular() {
-        double iv = 0.0;
-        double ie = 0.0;
-        double is = 0.0;
-        double ir = 0.0;
+        BigDecimal iv  = BigDecimal.ZERO;
+        BigDecimal ie  = BigDecimal.ZERO;
+        BigDecimal is  = BigDecimal.ZERO;
+        BigDecimal ir  = BigDecimal.ZERO;
 
         BigDecimal subt, dcto, tota, ivaT;
 
-        Double aux, auxB;
+        BigDecimal aux, auxB;
         Boolean aplica, aplIeps, aplIsr, aplIvaRet;
-        List<Double> importesIva = new ArrayList();
-        List<Double> importesIeps = new ArrayList();
-        List<Double> importesIsr = new ArrayList();
-        List<Double> importesIvaRet = new ArrayList();
-        subt = new BigDecimal(0.0);
-        dcto = new BigDecimal(0.0);
+        List<BigDecimal> importesIva = new ArrayList();
+        List<BigDecimal> importesIeps = new ArrayList();
+        List<BigDecimal> importesIsr = new ArrayList();
+        List<BigDecimal> importesIvaRet = new ArrayList();
+        subt = BigDecimal.ZERO;
+        dcto = BigDecimal.ZERO;
 
         for (int i = 0; i < model.getRowCount(); i++) {
             aplica = (Boolean) model.getValueAt(i, 9);
@@ -2053,10 +2055,10 @@ public class Factura_View extends javax.swing.JFrame {
 
             dcto = dcto.add(new BigDecimal(model.getValueAt(i, 7).toString()));
 
-            aux = new Double(model.getValueAt(i, 8).toString());
-            auxB = aux - new Double(model.getValueAt(i, 7).toString());
+            aux = new BigDecimal(model.getValueAt(i, 8).toString());
+            auxB = aux.subtract(new BigDecimal(model.getValueAt(i, 7).toString()));
 
-            if (aplica || tasaIva.get(i) == 0.0) {
+            if (aplica || tasaIva.get(i).compareTo(BigDecimal.ZERO) == 0) {
                 importesIva.add(auxB);
             } else {
                 importesIva.add(null);
@@ -2074,33 +2076,48 @@ public class Factura_View extends javax.swing.JFrame {
                 importesIvaRet.add(auxB);
             }
 
-            subt = subt.add(new BigDecimal(aux));
+            subt = subt.add(aux);
         }
 
         for (int i = 0; i < importesIva.size(); i++) {
-            iv += redondear(importesIva.get(i) != null ? importesIva.get(i) * tasaIva.get(i) : 0);
+            iv = iv.add(importesIva.get(i) != null ? redondear(importesIva.get(i).multiply(tasaIva.get(i)), 2) : BigDecimal.ZERO);
+            
+            if(i == (importesIva.size() - 1)){
+                iv = redondear(iv, 2);
+            }
         }
 
         for (int i = 0; i < importesIeps.size(); i++) {
-            ie += redondear(importesIeps.get(i) * tasaIeps.get(i));
+            ie = ie.add(redondear(importesIeps.get(i).multiply(tasaIeps.get(i)), 2));
+            
+            if(i == (importesIeps.size() - 1)){
+                ie = redondear(ie, 2);
+            }
         }
 
         for (int i = 0; i < importesIsr.size(); i++) {
-            is += redondear(importesIsr.get(i) * tasaIsr.get(i));
+            is = is.add(redondear(importesIsr.get(i).multiply(tasaIsr.get(i)), 2));
+            
+            if(i == (importesIsr.size() - 1)){
+                is = redondear(is, 2);
+            }
         }
 
         for (int i = 0; i < importesIvaRet.size(); i++) {
-            ir += redondear(importesIvaRet.get(i) * tasaIvaRet.get(i));
+            ir = ir.add(redondear(importesIvaRet.get(i).multiply(tasaIvaRet.get(i)), 2));
+            
+            if(i == (importesIvaRet.size() - 1)){
+                ir = redondear(ir, 2);
+            }
         }
 
-        ivaT = new BigDecimal(iv).setScale(2, RoundingMode.HALF_UP);
-        tota = subt.subtract(dcto).add(ivaT).add(new BigDecimal(ie).setScale(2, RoundingMode.HALF_UP)).subtract(new BigDecimal(is).setScale(2, RoundingMode.HALF_UP)).subtract(new BigDecimal(ir).setScale(2, RoundingMode.HALF_UP));
-        tota = tota.setScale(2, RoundingMode.HALF_UP);
+        ivaT = iv;
+        tota = redondear(subt.subtract(dcto).add(ivaT).add(ie).subtract(is).subtract(ir), 2);
         descuentoTotal.setText(dcto.toString());
-        ieps.setText(new BigDecimal(ie).setScale(2, RoundingMode.HALF_UP).toString());
-        isrRetenido.setText(new BigDecimal(is).setScale(2, RoundingMode.HALF_UP).toString());
-        ivaRetenido.setText(new BigDecimal(ir).setScale(2, RoundingMode.HALF_UP).toString());
-        subtotal.setText(subt.setScale(2, RoundingMode.HALF_UP).toString());
+        ieps.setText(ie.toString());
+        isrRetenido.setText(is.toString());
+        ivaRetenido.setText(ir.toString());
+        subtotal.setText(redondear(subt, 2).toString());
         iva.setText(ivaT.toString());
         total.setText(tota.toString());
     }
@@ -2167,6 +2184,7 @@ public class Factura_View extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
@@ -2188,7 +2206,6 @@ public class Factura_View extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lbl_Restantes;
-    private javax.swing.JComboBox listaClientes;
     private javax.swing.JComboBox listaEmisores;
     private javax.swing.JComboBox metodoCombo;
     private javax.swing.JComboBox moneda;
@@ -2202,6 +2219,7 @@ public class Factura_View extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> tipoRelacion;
     private javax.swing.JComboBox tipocfd;
     private javax.swing.JTextField total;
+    private javax.swing.JTextField txtCliente;
     private javax.swing.JTextField unidad;
     private javax.swing.JComboBox<String> usocfdi;
     private javax.swing.JButton verCte;
@@ -2211,8 +2229,8 @@ public class Factura_View extends javax.swing.JFrame {
         return Math.rint(d * 100) / 100;
     }
 
-    private BigDecimal redondear(double number, int digits) {
-        return new BigDecimal(number).setScale(digits, RoundingMode.HALF_UP);
+    private BigDecimal redondear(BigDecimal number, int digits) {
+        return number.setScale(digits, RoundingMode.HALF_UP);
     }
 
     public void agregarFactura(String serie, String folio, String rfcEmi, String rfc, String nombre, String fecha, BigDecimal total, String datos, String layout, String xml, Boolean timbre, String fechaTimbrado, String uuid, Long transId, String tipoCfd) {
@@ -2317,9 +2335,9 @@ public class Factura_View extends javax.swing.JFrame {
 
     public void vistaModificar(String nombre, String rfc, String folio, String[][] conceptos) {
 
-        for (int i = 1; i < listaClientes.getItemCount(); i++) {
-            if (listaClientes.getItemAt(i).toString().contains(nombre)) {
-                listaClientes.setSelectedIndex(i);
+        for (int i = 1; i < listaClientes.size(); i++) {
+            if (listaClientes.get(i).contains(nombre)) {
+                resetCliente(new Integer(listaClientes.get(i).split(",")[0]));
                 break;
             }
         }

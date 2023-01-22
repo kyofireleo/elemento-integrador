@@ -12,8 +12,8 @@ public class Factura {
     public String nombre, rfc, calle, colonia, numExt, numInt, cp, localidad, municipio, estado, pais; //Datos cliente
 
     public String serie, folio, tipoCfd, formaPago, metodoPago, motivoDescuento, cuentaBancaria, lugarExpedicion;   //Datos CFDi
-    public double subtotal, descuento, iva = 0, total, totalIeps = 0, totalRetenidos, totalTraslados, porIva, porRetenidos, porTraslados;
-    public double ivaRetenido, isrRetenido, porIeps;
+    public BigDecimal subtotal, descuento, iva = BigDecimal.ZERO, total, totalIeps = BigDecimal.ZERO, totalRetenidos, totalTraslados, porIva, porRetenidos, porTraslados;
+    public BigDecimal ivaRetenido, isrRetenido, porIeps;
     public String moneda, tipoCambio, leyenda, condicionPago;
     public int idEmpleado;
     public String usoCfdi;
@@ -56,7 +56,7 @@ public class Factura {
         return retenciones;
     }
 
-    public double getPorIeps() {
+    public BigDecimal getPorIeps() {
         return porIeps;
     }
 
@@ -72,7 +72,7 @@ public class Factura {
         return leyenda;
     }
 
-    public double getIsrRetenido() {
+    public BigDecimal getIsrRetenido() {
         return isrRetenido;
     }
 
@@ -100,11 +100,11 @@ public class Factura {
         this.serie = serie;
     }
 
-    public double getIvaRetenido() {
+    public BigDecimal getIvaRetenido() {
         return ivaRetenido;
     }
 
-    public void setIvaRetenido(double ivaRetenido) {
+    public void setIvaRetenido(BigDecimal ivaRetenido) {
         this.ivaRetenido = ivaRetenido;
     }
 
@@ -136,7 +136,7 @@ public class Factura {
         return descripcion;
     }
 
-    public double getDescuento() {
+    public BigDecimal getDescuento() {
         return descuento;
     }
 
@@ -156,7 +156,7 @@ public class Factura {
         return importe;
     }
 
-    public double getIva() {
+    public BigDecimal getIva() {
         return iva;
     }
 
@@ -192,15 +192,15 @@ public class Factura {
         return pais;
     }
 
-    public double getPorIva() {
+    public BigDecimal getPorIva() {
         return porIva;
     }
 
-    public double getPorRetenidos() {
+    public BigDecimal getPorRetenidos() {
         return porRetenidos;
     }
 
-    public double getPorTraslados() {
+    public BigDecimal getPorTraslados() {
         return porTraslados;
     }
 
@@ -212,7 +212,7 @@ public class Factura {
         return rfc;
     }
 
-    public double getSubtotal() {
+    public BigDecimal getSubtotal() {
         return subtotal;
     }
 
@@ -220,19 +220,19 @@ public class Factura {
         return tipoCfd;
     }
 
-    public double getTotal() {
+    public BigDecimal getTotal() {
         return total;
     }
 
-    public double getTotalIeps() {
+    public BigDecimal getTotalIeps() {
         return totalIeps;
     }
 
-    public double getTotalRetenidos() {
+    public BigDecimal getTotalRetenidos() {
         return totalRetenidos;
     }
 
-    public double getTotalTraslados() {
+    public BigDecimal getTotalTraslados() {
         return totalTraslados;
     }
 
