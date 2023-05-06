@@ -89,7 +89,6 @@
                                       <Component id="examinar" min="-2" pref="113" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -404,11 +403,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="certificado">
-      <Properties>
-        <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="rfc">
       <Properties>

@@ -404,16 +404,16 @@ public class Layout {
         
         re.append("[INFO_PAGOS]\r\n");
         re.append("MontoTotalPagos: ").append(pagos.getTotalMontoPagos().toString()).append("\r\n");
-        re.append("TotalRetencionesIVA: ").append(pagos.getTotalRetencionesIVA().toString()).append("\r\n");
-        re.append("TotalRetensionesISR: ").append(pagos.getTotalRetensionesISR().toString()).append("\r\n");
-        re.append("TotalRetensionesIEPS: ").append(pagos.getTotalRetensionesIEPS().toString()).append("\r\n");
-        re.append("TotalTrasladosBaseIVA16: ").append(pagos.getTotalTrasladosBaseIVA16().toString()).append("\r\n");
-        re.append("TotalTrasladosImpuestoIVA16: ").append(pagos.getTotalTrasladosImpuestoIVA16().toString()).append("\r\n");
-        re.append("TotalTrasladosBaseIVA8: ").append(pagos.getTotalTrasladosBaseIVA8().toString()).append("\r\n");
-        re.append("TotalTrasladosImpuestoIVA8: ").append(pagos.getTotalTrasladosImpuestoIVA8().toString()).append("\r\n");
-        re.append("TotalTrasladosBaseIVA0: ").append(pagos.getTotalTrasladosBaseIVA0().toString()).append("\r\n");
-        re.append("TotalTrasladosImpuestoIVA0: ").append(pagos.getTotalTrasladosImpuestoIVA0().toString()).append("\r\n");
-        re.append("TotalTrasladosBaseIVAExento: ").append(pagos.getTotalTrasladosBaseIVAExento().toString()).append("\r\n");
+        re.append("TotalRetencionesIVA: ").append((pagos.getTotalRetencionesIVA() != null ? pagos.getTotalRetencionesIVA() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalRetensionesISR: ").append((pagos.getTotalRetensionesISR() != null ? pagos.getTotalRetensionesISR() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalRetensionesIEPS: ").append((pagos.getTotalRetensionesIEPS() != null ? pagos.getTotalRetensionesIEPS() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVA16: ").append((pagos.getTotalTrasladosBaseIVA16() != null ? pagos.getTotalTrasladosBaseIVA16() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosImpuestoIVA16: ").append((pagos.getTotalTrasladosImpuestoIVA16() != null ? pagos.getTotalTrasladosImpuestoIVA16() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVA8: ").append((pagos.getTotalTrasladosBaseIVA8() != null ? pagos.getTotalTrasladosBaseIVA8() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosImpuestoIVA8: ").append((pagos.getTotalTrasladosImpuestoIVA8() != null ? pagos.getTotalTrasladosImpuestoIVA8() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVA0: ").append((pagos.getTotalTrasladosBaseIVA0() != null ? pagos.getTotalTrasladosBaseIVA0() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosImpuestoIVA0: ").append((pagos.getTotalTrasladosImpuestoIVA0() != null ? pagos.getTotalTrasladosImpuestoIVA0() : BigDecimal.ZERO).toString()).append("\r\n");
+        re.append("TotalTrasladosBaseIVAExento: ").append((pagos.getTotalTrasladosBaseIVAExento() != null ? pagos.getTotalTrasladosBaseIVAExento() : BigDecimal.ZERO).toString()).append("\r\n");
         re.append("[/INFO_PAGOS]\r\n\r\n");
         
         re.append("[PAGOS]\r\n");
@@ -530,20 +530,20 @@ public class Layout {
                 cont = 0;
                 if(d.getTrasladoBaseIVA0() != null){
                     cont++;
-                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA0().toString()).append("@").append(d.getTrasladoImpuestoIVA0()).append("@Tasa@0.000000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA0().toString()).append("@").append(d.getTrasladoImpuestoIVA0()).append("@Tasa@0.000000").append("\r\n");
                 }
                 if(d.getTrasladoBaseIVA8() != null){
                     cont++;
-                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA8().toString()).append("@").append(d.getTrasladoImpuestoIVA8()).append("@Tasa@0.080000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA8().toString()).append("@").append(d.getTrasladoImpuestoIVA8()).append("@Tasa@0.080000").append("\r\n");
                 }
                 if(d.getTrasladoBaseIVA16() != null){
                     cont++;
-                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA16().toString()).append("@").append(d.getTrasladoImpuestoIVA16()).append("@Tasa@0.160000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA16().toString()).append("@").append(d.getTrasladoImpuestoIVA16()).append("@Tasa@0.160000").append("\r\n");
                 }
-                /*if(d.getTrasladoBaseIVAExento() != null){
+                if(d.getTrasladoBaseIVAExento() != null){
                     cont++;
-                    traDoc.append("PIT").append(cont).append(": DP").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVAExento().toString()).append("@").append("0.00").append("@Exento@0.000000").append("\r\n");
-                }*/
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVAExento().toString()).append("@").append("0.00").append("@Exento@0.000000").append("\r\n");
+                }
             }
         }
         re.append("[/DOCTOS_PAGOS]\r\n\r\n");
@@ -684,7 +684,8 @@ public class Layout {
 
                     re.append("TC" + (i + 1) + ": ").append("C" + tr.getNumConcepto()).append("@").append(tr.getBase().toString())
                             .append("@").append(tr.getImpuesto()).append("@").append(tr.getTipoFactor()).append("@").append(tr.getTasa().toString())
-                            .append("@").append(util.redondear(tr.getImporte()).toString()).append("\r\n");
+                            //.append("@").append(util.redondear(tr.getImporte()).toString()).append("\r\n");
+                            .append("@").append(tr.getImporte().toString()).append("\r\n");
                 }
             }
             re.append("[/TRASLADADOS_CONCEPTOS]\r\n\r\n");
@@ -696,7 +697,8 @@ public class Layout {
                 Factura.ConceptoRetencion rr = fact.retenciones.get(i);
                 re.append("RC" + (i + 1) + ": ").append("C" + rr.getNumConcepto()).append("@").append(rr.getBase().toString())
                         .append("@").append(rr.getImpuesto()).append("@").append(rr.getTipoFactor()).append("@").append(rr.getTasa().toString())
-                        .append("@").append(util.redondear(rr.getImporte()).toString()).append("\r\n");
+                        //.append("@").append(util.redondear(rr.getImporte()).toString()).append("\r\n");
+                        .append("@").append(rr.getImporte().toString()).append("\r\n");
             }
             re.append("[/RETENCIONES_CONCEPTOS]\r\n\r\n");
         }
@@ -751,8 +753,10 @@ public class Layout {
             if (it.getTasa().compareTo(BigDecimal.ZERO) == 1 || impuesto.equals("002")) {
                 re.append("IT").append(contTras).append(": " + impuesto + "@Tasa@")
                         .append(it.getTasa().toString())
-                        .append("@").append(util.redondear(it.getImporte()).toString())
-                        .append("@").append(util.redondear(it.getBase()).toString()).append("\r\n");
+                        //.append("@").append(util.redondear(it.getImporte()).toString())
+                        //.append("@").append(util.redondear(it.getBase()).toString()).append("\r\n");
+                        .append("@").append(it.getImporte().toString())
+                        .append("@").append(it.getBase().toString()).append("\r\n");
             }
         }
     }

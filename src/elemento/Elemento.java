@@ -15,7 +15,14 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.TimeZone;
 import javax.swing.JOptionPane;
 import log.Log;
 import org.apache.log4j.Logger;
@@ -39,7 +46,7 @@ public class Elemento {
     public static String user, pass;
     private static String tipoConexion, baseDatos;
     public static String estructuraNombre;
-    private static String tipoEnvioMail, pathOutlook;
+    private static String tipoEnvioMail, tipoMailAdjunto, pathOutlook;
 
     public Elemento() {
         new Thread() {
@@ -62,7 +69,10 @@ public class Elemento {
                 baseDatos = prop.getProperty("base_datos");
                 estructuraNombre = prop.getProperty("estructura_nombre");
                 String tipo = prop.getProperty("tipoEnvioMail");
+                String adjunto = prop.getProperty("tipoMailAdjunto");
                 tipoEnvioMail = tipo == null ? "1" : tipo;
+                tipoMailAdjunto = adjunto == null ? "2" : adjunto;
+                
                 if(tipo != null && tipo.equals("2")){
                     pathOutlook = prop.getProperty("pathOutlook");
                 }
@@ -74,11 +84,13 @@ public class Elemento {
                 baseDatos = unidad + ":\\Facturas\\config\\ElementoBD3.mdb";
                 estructuraNombre = "serie_folio_rfce_rfcr_uuid";
                 tipoEnvioMail = "1";
+                tipoMailAdjunto = "2";
                 
                 prop.setProperty("tipo_conexion", tipoConexion);
                 prop.setProperty("base_datos", baseDatos);
                 prop.setProperty("estructura_nombre", estructuraNombre);
                 prop.setProperty("tipoEnvioMail", tipoEnvioMail);
+                prop.setProperty("tipoMailAdjunto", tipoMailAdjunto);
                 prop.setProperty("pathOutlook", "C:\\Program Files (x86)\\Microsoft Office\\Root\\Office16\\OUTLOOK.EXE");
                 
                 prop.store(out, "En el tipo_conexion va \"archivo\" para cuando es un archivo .mdb o .accdb usando JDBC,\r\n"
@@ -94,7 +106,10 @@ public class Elemento {
                         + "\t1: Envio desde el Elemento por medio de JavaMail.\r\n"
                         + "\t2: Envio desde Outlook (previamente configurado).\r\n"
                         + "Cuando el tipo es 2, entonces debemos poner en pathOutlook la ruta del archivo exe de outlook, utilizando dobles diagonales (\\\\)\r\n"
-                        + "en lugar de una diagonal (\\).");
+                        + "en lugar de una diagonal (\\).\r\n\r\n"
+                        + "Para el tipoMailAdjunto serian 1 o 2, los cuales significan:\r\n"
+                        + "\t1: Envio de un solo archivo ZIP con todos los XMLs y PDFs\r\n"
+                        + "\t2: Envio de dos archivos (XML y PDF) por comprobante\r\n");
                 
                 out.close();
             }
@@ -183,6 +198,11 @@ public class Elemento {
         file14.mkdir();
         
         file15.mkdir();
+        
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT-7"));
+        LocalDateTime fechaHora = LocalDateTime.now();
+        System.out.println(fechaHora.toString());
+        System.out.println("TimeZone: " + TimeZone.getDefault().getDisplayName());
 
         try {
             logObject = new Log(unidad + ":/Facturas/");
@@ -248,8 +268,12 @@ public class Elemento {
         conf.dispose();
 
         if (produccion) {
+            /*
             user = "ZAG4";
             pass = "ZAG.2015";
+            */
+            user = "General";
+            pass = "2dtTlwJy";
         } else {
             user = "DEMOGon";
             pass = "cfdi";
@@ -290,7 +314,7 @@ public class Elemento {
         String ruta = Elemento.pathLayout;
         
         File f = new File(pathLayout);
-        
+        log.info("Buscando layout creado...");
         while(true){    
             if(f.listFiles().length > 0){
                 Listener l = new Listener();
@@ -457,7 +481,7 @@ public class Elemento {
             rs = stmt.executeQuery("SELECT TOP 1 smtp_server, port, tls FROM ConfiguracionMail WHERE proveedor = '" + prov + "'");
             
             if(rs.next()){
-                resp += rs.getString(1) + "|" + rs.getString(2) + "|" + rs.getBoolean(3) + "|" + tipoEnvioMail + "|" + pathOutlook;
+                resp += rs.getString(1) + "|" + rs.getString(2) + "|" + rs.getBoolean(3) + "|" + tipoEnvioMail + "|" + pathOutlook + "|" + tipoMailAdjunto;
                 
                 rs.close();
                 stmt.close();

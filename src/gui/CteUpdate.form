@@ -250,7 +250,7 @@
                           </Group>
                       </Group>
                   </Group>
-                  <EmptySpace type="unrelated" max="32767" attributes="0"/>
+                  <EmptySpace type="unrelated" pref="16" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="comboRegimen" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -419,6 +419,7 @@
         </Component>
         <Component class="javax.swing.JTextField" name="nombre">
           <Properties>
+            <Property name="horizontalAlignment" type="int" value="2"/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
         </Component>

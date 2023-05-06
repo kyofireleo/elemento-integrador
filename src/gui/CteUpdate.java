@@ -229,6 +229,7 @@ public class CteUpdate extends javax.swing.JFrame {
 
         cp.setEnabled(false);
 
+        nombre.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         nombre.setEnabled(false);
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -362,7 +363,7 @@ public class CteUpdate extends javax.swing.JFrame {
                             .addComponent(jLabel4)
                             .addComponent(radioFisica)
                             .addComponent(radioMoral))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 11, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 16, Short.MAX_VALUE)
                 .addGroup(panelControlesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
                     .addComponent(comboRegimen, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))

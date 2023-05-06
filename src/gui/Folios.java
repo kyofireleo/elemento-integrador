@@ -21,6 +21,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -57,7 +58,7 @@ public class Folios extends javax.swing.JFrame {
     ConnectionFactory factory = new ConnectionFactory();
     String nombreXml;
     List<String> rfcEmisor = new ArrayList(), uuid = new ArrayList();
-    List<Long> transId = new ArrayList();
+    List<Integer> idTiposComprobante = new ArrayList();
     boolean activar;
     public List<String> cfdisAsoc;
     public List<Documento> docsPagar;
@@ -85,7 +86,7 @@ public class Folios extends javax.swing.JFrame {
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
-                transId.clear();
+                idTiposComprobante.clear();
                 
                 activar = true;
                 
@@ -100,7 +101,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
                     rfcEmisor.add(rs.getString("rfcEmisor"));
-                    transId.add(rs.getLong("transId"));
+                    idTiposComprobante.add(rs.getInt("idComprobante"));
                     uuid.add(rs.getString("UUID"));
 
                     model.addRow(fila);
@@ -143,7 +144,7 @@ public class Folios extends javax.swing.JFrame {
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
-                transId.clear();
+                idTiposComprobante.clear();
 
                 //Deshabilitar los controles
                 activar = false;
@@ -168,7 +169,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
                     rfcEmisor.add(rs.getString("rfcEmisor"));
-                    transId.add(rs.getLong("transId"));
+                    idTiposComprobante.add(rs.getInt("idComprobante"));
                     uuid.add(rs.getString("UUID"));
 
                     model.addRow(fila);
@@ -201,7 +202,7 @@ public class Folios extends javax.swing.JFrame {
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
-                transId.clear();
+                idTiposComprobante.clear();
 
                 //Deshabilitar los controles
                 activar = false;
@@ -225,7 +226,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
                     rfcEmisor.add(rs.getString("rfcEmisor"));
-                    transId.add(rs.getLong("transId"));
+                    idTiposComprobante.add(rs.getInt("idComprobante"));
                     uuid.add(rs.getString("UUID"));
 
                     model.addRow(fila);
@@ -261,7 +262,7 @@ public class Folios extends javax.swing.JFrame {
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
-                transId.clear();
+                idTiposComprobante.clear();
 
                 //Deshabilitar los controles
                 activar = false;
@@ -286,7 +287,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
                     rfcEmisor.add(rs.getString("rfcEmisor"));
-                    transId.add(rs.getLong("transId"));
+                    idTiposComprobante.add(rs.getInt("idComprobante"));
                     uuid.add(rs.getString("UUID"));
 
                     model.addRow(fila);
@@ -641,7 +642,7 @@ public class Folios extends javax.swing.JFrame {
                 rs = stmt.executeQuery(query);
                 rfcEmisor.clear();
                 uuid.clear();
-                transId.clear();
+                idTiposComprobante.clear();
 
                 while (rs.next()) {
                     String rfcE = rs.getString("rfcEmisor");
@@ -654,7 +655,7 @@ public class Folios extends javax.swing.JFrame {
                     fila[6] = ((Boolean) rs.getBoolean("timbrado"));
 
                     rfcEmisor.add(rfcE);
-                    transId.add(0l);
+                    idTiposComprobante.add(rs.getInt("idComprobante"));
                     uuid.add(rs.getString("UUID"));
 
                     model.addRow(fila);
@@ -674,21 +675,24 @@ public class Folios extends javax.swing.JFrame {
     private void foliosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_foliosMouseClicked
         int row = folios.getSelectedRow();
         Boolean tim = (Boolean) model.getValueAt(row, 6);
+        crearNotaCre.setText("Crear Nota de Credito");
+        String estatus = model.getValueAt(row, 3).toString();
         if(activar){
-            if (!tim) {
+            if (!tim && estatus.equalsIgnoreCase("NO TIMBRADA")) {
                 enviar.setEnabled(false);
                 verPdf.setEnabled(false);
                 cancelar.setEnabled(false);
                 timbrar.setEnabled(true);
                 verificar.setEnabled(false);
                 crearNotaCre.setEnabled(false);
-            } else if (model.getValueAt(row, 3).toString().equalsIgnoreCase("PREFACTURA")) {
-                enviar.setEnabled(false);
+            } else if (!tim && estatus.equalsIgnoreCase("PREFACTURA")) {
+                enviar.setEnabled(true);
                 verPdf.setEnabled(true);
                 cancelar.setEnabled(false);
                 timbrar.setEnabled(true);
                 verificar.setEnabled(false);
-                crearNotaCre.setEnabled(false);
+                crearNotaCre.setEnabled(true);
+                crearNotaCre.setText("Editar");
             } else {
                 enviar.setEnabled(true);
                 verPdf.setEnabled(true);
@@ -718,10 +722,11 @@ public class Folios extends javax.swing.JFrame {
         String folio = folioSerie.split("_")[1];
         String serie = folioSerie.split("_")[0];
         String uid = uuid.get(row);
+        String estatus = model.getValueAt(row, 3).toString();
         Elemento.leerConfig(rfcEmi);
 
-        String name = folioSerie + "_" + rfcEmi + "_" + rfcRec + "_" + uid;
-        String pathXml = Elemento.pathXml;
+        String name = folioSerie + "_" + rfcEmi + "_" + rfcRec + (estatus.equals("PREFACTURA") ? "" :  ("_" + uid));
+        String pathXml = (estatus.equals("PREFACTURA") ? Elemento.pathXmlST : Elemento.pathXml);
         String path = "";
 
         if (!new File(pathXml + name + ".xml").exists()) {
@@ -748,14 +753,16 @@ public class Folios extends javax.swing.JFrame {
         try {
             // TODO add your handling code here:
             int row = folios.getSelectedRow();
+            String estatus = model.getValueAt(row, 3).toString();
 
             String name = obtenerNombreComprobante(row);
-            String pathXml = Elemento.pathXml;
+            String pathXml = estatus.equals("PREFACTURA") ? Elemento.pathXmlST : Elemento.pathXml;
             String pathPdf = Elemento.pathPdf;
             File pdf = new File(pathPdf + name + ".pdf");
             File pdfCancel = new File(pathPdf + name + "_CANCELADA" + ".pdf");
             String path;
-            isCancelado = model.getValueAt(row, 3).toString().equalsIgnoreCase("CANCELADA");
+            isCancelado = estatus.equalsIgnoreCase("CANCELADA");
+            int tipoComprobante = this.idTiposComprobante.get(row);
             
             if (pdf.exists()) {
                 path = pdf.getAbsolutePath();
@@ -769,7 +776,7 @@ public class Folios extends javax.swing.JFrame {
                     Elemento.log.error("Excepcion al tratar de visualizar un PDF ya existente: " + ex.getMessage(), ex);
                 }
             } else {
-                Factura_View.visualizar(pathXml, name, null);
+                Factura_View.visualizar(pathXml, name, null, tipoComprobante);
             }
         } catch (Exception ex) {
             Logger.getLogger(Folios.class.getName()).log(Level.SEVERE, null, ex);
@@ -793,6 +800,7 @@ public class Folios extends javax.swing.JFrame {
         StringBuilder xmls, pdfs, nameX, nameP;
         String serie = "";
         String nombre = "";
+        String estatus = "";
         char coma = ',';
 
         revisando:
@@ -905,6 +913,7 @@ public class Folios extends javax.swing.JFrame {
             row = selec[0];
             rfcEmi = model.getValueAt(row, 1).toString().trim();
             rfcRec = model.getValueAt(row, 2).toString().trim();
+            estatus = model.getValueAt(row, 3).toString().trim();
             
             nombre = this.obtenerNombreComprobante(row);
 
@@ -918,7 +927,7 @@ public class Folios extends javax.swing.JFrame {
             }
 
             String args[] = new String[8];
-            args[0] = Elemento.pathXml + nombre + ".xml";
+            args[0] = (estatus.equals("PREFACTURA") ? Elemento.pathXmlST : Elemento.pathXml) + nombre + ".xml";
             args[1] = Elemento.pathPdf + nombre + ".pdf";
             args[2] = nombre + ".xml";
             args[3] = nombre + ".pdf";
@@ -957,10 +966,10 @@ public class Folios extends javax.swing.JFrame {
         }
         logo = Elemento.logo;
         String uu = uuid.get(pos);
-        Long trans = transId.get(pos);
+        int tipoComprobante = idTiposComprobante.get(pos);
         Elemento.log.info("Se cancelara la factura del RFC Emisor: " + rfcE + " y con RFC Receptor: " + rfcR + " con UUID: " + uu);
         //String idIntegrador = "59548258-e908-48d3-9b07-6e9d3ff9c64f";
-        String args[] = {folio, xml, logo, uu, rfcE, rfcR, "" + trans, tot, serie};
+        String args[] = {folio, xml, logo, uu, rfcE, rfcR, "" + tipoComprobante, tot, serie};
         CancelarView.main(args);
     }//GEN-LAST:event_cancelarActionPerformed
 
@@ -1025,6 +1034,10 @@ public class Folios extends javax.swing.JFrame {
             BigDecimal monto = p != null ? p.getMonto() : null;
             BigDecimal total;
             BigDecimal importePagado = BigDecimal.ZERO;
+            
+            final BigDecimal TASA_IVA_16 = new BigDecimal("0.160000");
+            final BigDecimal TASA_IVA_8 = new BigDecimal("0.080000");
+            final BigDecimal TASA_IVA_0 = new BigDecimal("0.000000");
             
             if(select.length > 0){
                 for (int i = 0; i < select.length; i++) {
@@ -1104,17 +1117,22 @@ public class Folios extends javax.swing.JFrame {
                             if(comp.getImpuestos().getImpuestosTrasladados() != null && !comp.getImpuestos().getImpuestosTrasladados().isEmpty()){
                                 for(Traslados t: comp.getImpuestos().getImpuestosTrasladados()){
                                     if(t.getNombre().equalsIgnoreCase("IVA")){
-                                        if(t.getTasa().compareTo(new BigDecimal("0.160000")) == 0){
-                                            doc.setTrasladoBaseIVA16(t.getBase());
-                                            doc.setTrasladoImpuestoIVA16(t.getImporte());
+                                        if(t.getTasa().compareTo(TASA_IVA_16) == 0){
+                                            BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_16.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                                            doc.setTrasladoBaseIVA16(baseImportePagado);
+                                            doc.setTrasladoImpuestoIVA16(importePagado.subtract(baseImportePagado));
                                         }
-                                        if(t.getTasa().compareTo(new BigDecimal("0.080000")) == 0){
-                                            doc.setTrasladoBaseIVA8(t.getBase());
-                                            doc.setTrasladoImpuestoIVA8(t.getImporte());
+                                        if(t.getTasa().compareTo(TASA_IVA_8) == 0){
+                                            BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_8.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                                            doc.setTrasladoBaseIVA8(baseImportePagado);
+                                            doc.setTrasladoImpuestoIVA8(importePagado.subtract(baseImportePagado));
                                         }
-                                        if(t.getTasa().compareTo(BigDecimal.ZERO) == 0){
-                                            doc.setTrasladoBaseIVA0(t.getBase());
-                                            doc.setTrasladoImpuestoIVA0(t.getImporte());
+                                        if(t.getTasa().compareTo(TASA_IVA_0) == 0 && t.getTipoFactor().equalsIgnoreCase("Tasa")){
+                                            doc.setTrasladoBaseIVA0(importePagado);
+                                            doc.setTrasladoImpuestoIVA0(BigDecimal.ZERO);
+                                        }
+                                        if(t.getTipoFactor().equalsIgnoreCase("Exento")){
+                                            doc.setTrasladoBaseIVAExento(importePagado);
                                         }
                                     }
                                 }
@@ -1128,53 +1146,53 @@ public class Folios extends javax.swing.JFrame {
                         //suma
                         if(p != null){
                             if(doc.getRetencionIVA() != null){
-                                rp.totalRetencionesIVA = rp.totalRetencionesIVA.add(doc.getRetencionIVA());
-                                rp.pagoRetencionesIVA = rp.pagoRetencionesIVA.add(doc.getRetencionIVA());
+                                rp.totalRetencionesIVA = rp.totalRetencionesIVA != null ? rp.totalRetencionesIVA.add(doc.getRetencionIVA()) : doc.getRetencionIVA();
+                                rp.pagoRetencionesIVA = rp.pagoRetencionesIVA != null ? rp.pagoRetencionesIVA.add(doc.getRetencionIVA()) : doc.getRetencionIVA();
                             }
 
                             if(doc.getRetensionISR() != null){
-                                rp.totalRetensionesISR = rp.totalRetensionesISR.add(doc.getRetensionISR());
-                                rp.pagoRetensionesISR = rp.pagoRetensionesISR.add(doc.getRetensionISR());
+                                rp.totalRetensionesISR = rp.totalRetensionesISR != null ? rp.totalRetensionesISR.add(doc.getRetensionISR()) : doc.getRetensionISR();
+                                rp.pagoRetensionesISR = rp.pagoRetensionesISR != null ? rp.pagoRetensionesISR.add(doc.getRetensionISR()) : doc.getRetensionISR();
                             }
 
                             if(doc.getRetensionIEPS() != null){
-                                rp.totalRetensionesIEPS = rp.totalRetensionesIEPS.add(doc.getRetensionIEPS());
-                                rp.pagoRetensionesIEPS = rp.pagoRetensionesIEPS.add(doc.getRetensionIEPS());
+                                rp.totalRetensionesIEPS = rp.totalRetensionesIEPS != null ? rp.totalRetensionesIEPS.add(doc.getRetensionIEPS()) : doc.getRetensionIEPS();
+                                rp.pagoRetensionesIEPS = rp.pagoRetensionesIEPS != null ? rp.pagoRetensionesIEPS.add(doc.getRetensionIEPS()) : doc.getRetensionIEPS();
                             }
 
                             if(doc.getTrasladoBaseIVA16() != null){
-                                rp.totalTrasladosBaseIVA16 = rp.totalTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16());
-                                rp.pagoTrasladosBaseIVA16 = rp.pagoTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16());
+                                rp.totalTrasladosBaseIVA16 = rp.totalTrasladosBaseIVA16 != null ? rp.totalTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16()) : doc.getTrasladoBaseIVA16();
+                                rp.pagoTrasladosBaseIVA16 = rp.pagoTrasladosBaseIVA16 != null ? rp.pagoTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16()) : doc.getTrasladoBaseIVA16();
                             }
 
                             if(doc.getTrasladoImpuestoIVA16() != null){
-                                rp.totalTrasladosImpuestoIVA16 = rp.totalTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16());
-                                rp.pagoTrasladosImpuestoIVA16 = rp.pagoTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16());
+                                rp.totalTrasladosImpuestoIVA16 = rp.totalTrasladosImpuestoIVA16 != null ? rp.totalTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16()) : doc.getTrasladoImpuestoIVA16();
+                                rp.pagoTrasladosImpuestoIVA16 = rp.pagoTrasladosImpuestoIVA16 != null ? rp.pagoTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16()) : doc.getTrasladoImpuestoIVA16();
                             }
 
                             if(doc.getTrasladoBaseIVA8() != null){
-                                rp.totalTrasladosBaseIVA8 = rp.totalTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8());
-                                rp.pagoTrasladosBaseIVA8 = rp.pagoTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8());
+                                rp.totalTrasladosBaseIVA8 = rp.totalTrasladosBaseIVA8 != null ? rp.totalTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8()) : doc.getTrasladoBaseIVA8();
+                                rp.pagoTrasladosBaseIVA8 = rp.pagoTrasladosBaseIVA8 != null ? rp.pagoTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8()) : doc.getTrasladoBaseIVA8();
                             }
 
                             if(doc.getTrasladoImpuestoIVA8() != null){
-                                rp.totalTrasladosImpuestoIVA8 = rp.totalTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8());
-                                rp.pagoTrasladosImpuestoIVA8 = rp.pagoTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8());
+                                rp.totalTrasladosImpuestoIVA8 = rp.totalTrasladosImpuestoIVA8 != null ? rp.totalTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8()) : doc.getTrasladoImpuestoIVA8();
+                                rp.pagoTrasladosImpuestoIVA8 = rp.pagoTrasladosImpuestoIVA8 != null ? rp.pagoTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8()) : doc.getTrasladoImpuestoIVA8();
                             }
 
                             if(doc.getTrasladoBaseIVA0() != null){
-                                rp.totalTrasladosBaseIVA0 = rp.totalTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0());
-                                rp.pagoTrasladosBaseIVA0 = rp.pagoTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0());
+                                rp.totalTrasladosBaseIVA0 = rp.totalTrasladosBaseIVA0 != null ? rp.totalTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0()) : doc.getTrasladoBaseIVA0();
+                                rp.pagoTrasladosBaseIVA0 = rp.pagoTrasladosBaseIVA0 != null ? rp.pagoTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0()) : doc.getTrasladoBaseIVA0();
                             }
 
                             if(doc.getTrasladoImpuestoIVA0() != null){
-                                rp.totalTrasladosImpuestoIVA0 = rp.totalTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0());
-                                rp.pagoTrasladosImpuestoIVA0 = rp.pagoTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0());
+                                rp.totalTrasladosImpuestoIVA0 = rp.totalTrasladosImpuestoIVA0 != null ? rp.totalTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0()) : doc.getTrasladoImpuestoIVA0();
+                                rp.pagoTrasladosImpuestoIVA0 = rp.pagoTrasladosImpuestoIVA0 != null ? rp.pagoTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0()) : doc.getTrasladoImpuestoIVA0();
                             }
 
                             if(doc.getTrasladoBaseIVAExento() != null){
-                                rp.totalTrasladosBaseIVAExento = rp.totalTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento());
-                                rp.pagoTrasladosBaseIVAExento = rp.pagoTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento());
+                                rp.totalTrasladosBaseIVAExento = rp.totalTrasladosBaseIVAExento != null ? rp.totalTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
+                                rp.pagoTrasladosBaseIVAExento = rp.pagoTrasladosBaseIVAExento != null ? rp.pagoTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
                             }
                         }
                         
@@ -1205,39 +1223,52 @@ public class Folios extends javax.swing.JFrame {
 
     private void crearNotaCreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_crearNotaCreActionPerformed
         int row = folios.getSelectedRow();
+        String serieFolio = model.getValueAt(row, 0).toString().trim();
         String rfcEmi = model.getValueAt(row, 1).toString().trim();
         String rfcRec = model.getValueAt(row, 2).toString().trim();
         String fact_uuid = uuid.get(row);
+        String estatus = model.getValueAt(row, 3).toString().trim();
         int idEmisor, idReceptor;
         int respuesta[];
         double descuento = 0.0;
         boolean tieneIva = true;
         
-        if(verificarTipoComprobanteEgreso(rfcEmi)){
-            while(descuento <= 0.0){
-                try{
-                    descuento = new Double(JOptionPane.showInputDialog(null, "Ingrese el total de descuento para la nota de crédito", "0.00"));
-                    if(descuento <= 0) throw new NumberFormatException(); 
-                }catch(NumberFormatException e){
-                    util.printError("La cantidad que ingreso no es válida");
-                    descuento = 0.0;
+        if(!estatus.equals("PREFACTURA")){
+            if(verificarTipoComprobanteEgreso(rfcEmi)){
+                while(descuento <= 0.0){
+                    try{
+                        descuento = new Double(JOptionPane.showInputDialog(null, "Ingrese el total de descuento para la nota de crédito", "0.00"));
+                        if(descuento <= 0) throw new NumberFormatException(); 
+                    }catch(NumberFormatException e){
+                        util.printError("La cantidad que ingreso no es válida");
+                        descuento = 0.0;
+                    }
                 }
+
+                int confirma = JOptionPane.showConfirmDialog(null, "El descuento lleva IVA?", "Lleva IVA?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                tieneIva = (confirma == JOptionPane.YES_OPTION);
+
+                respuesta = obtenerEmiRecIDs(rfcEmi, rfcRec);
+                if(respuesta != null){
+                    idEmisor = respuesta[0];
+                    idReceptor = respuesta[1];
+
+                    Factura_View fv = new Factura_View(idEmisor, idReceptor, fact_uuid, descuento, tieneIva);
+                    //fv.setVisible(true);
+                }
+
+            }else{
+                util.print("El Emisor " + rfcEmi + " no cuenta con un tipo de comprobante de Egreso"); 
             }
-            
-            int confirma = JOptionPane.showConfirmDialog(null, "El descuento lleva IVA?", "Lleva IVA?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            tieneIva = (confirma == JOptionPane.YES_OPTION);
-            
+        }else{
             respuesta = obtenerEmiRecIDs(rfcEmi, rfcRec);
             if(respuesta != null){
                 idEmisor = respuesta[0];
                 idReceptor = respuesta[1];
 
-                Factura_View fv = new Factura_View(idEmisor, idReceptor, fact_uuid, descuento, tieneIva);
+                Factura_View fv = new Factura_View(idEmisor, idReceptor, (Elemento.pathXmlST + (serieFolio+"_"+rfcEmi+"_"+rfcRec+".xml")));
                 //fv.setVisible(true);
             }
-            
-        }else{
-            util.print("El Emisor " + rfcEmi + " no cuenta con un tipo de comprobante de Egreso"); 
         }
     }//GEN-LAST:event_crearNotaCreActionPerformed
     

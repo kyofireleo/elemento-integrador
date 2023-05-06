@@ -44,7 +44,7 @@ public class Listener {
     List<Boolean> timbrado = new ArrayList();
 
     public Listener() {
-        Elemento.log.info("Buscando layout creado...");
+        
     }
 
     
@@ -94,8 +94,10 @@ public class Listener {
 //
 //                Elemento.log.info("Se agrega el folio timbrado " + folio + " en la base de datos");
 //                Elemento.log.info("Se comienza la generación del PDF...");
+                  int idTipoComprobante = getIdComprobante(con.getObjXml().getTipoComprobanteLayout());
+                  
                 try {
-                    Factura_View.visualizar(pathXml, name, null);
+                    Factura_View.visualizar(pathXml, name, null, idTipoComprobante);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Elemento.log.error("Excepcion desde el Listener al generar el PDF", ex);
@@ -135,13 +137,17 @@ public class Listener {
                 String pathXml = Elemento.pathXml;
                 String destinoXml = Elemento.unidad + ":\\Facturas\\XmlModificados\\";
                 String pathXmlST = Elemento.pathXmlST;
+                
+                int idTipoComprobante = this.getIdComprobante(cons.getTipoComprobanteLayout());
 
                 if (lay.get(0).equalsIgnoreCase("PREFACTURA")) {
                     if (!leyenda.isEmpty()) {
                         Elemento.interpretarXML(pathXmlST, cons.getNameXml(), leyenda, destinoXml);
                         pathXmlST = destinoXml;
                     }
-                    Factura_View.visualizar(pathXmlST, cons.getNameXml(), cons.jsonDomicilios);
+                    
+                    this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
+                    Factura_View.visualizar(pathXmlST, cons.getNameXml(), cons.jsonDomicilios, idTipoComprobante);
                     String fechaT = "01/01/2000 00:00:00";
                     String uuid = "";
                     String xml = "";
@@ -149,6 +155,7 @@ public class Listener {
                     Boolean tim = Boolean.FALSE;
                     fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
                     Elemento.log.info("Se agrega PREFACTURA con el folio " + folio + " en la base de datos");
+                    openSendEmailWindow(new Folios(""), pathXmlST,cons.getNameXml(), cons);
                 } else {
                     String tipoComprobante = cons.getTipoComprobanteLayout();
 
@@ -217,44 +224,16 @@ public class Listener {
                                     Elemento.leerConfig(rfcEmi);
 
                                     if (leyenda.isEmpty()) {
-                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios);
+                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios, idTipoComprobante);
                                     } else {
                                         Elemento.interpretarXML(pathXml, nameXml, leyenda, destinoXml);
-                                        Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios);
+                                        Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios, idTipoComprobante);
                                     }
 
                                     this.crearQR(nameXml, "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid + "&fe=" + sello.substring(sello.length() - 8 , sello.length()));
                                     if (!tipoComprobante.equalsIgnoreCase("N")) {
-                                        int selec = JOptionPane.showConfirmDialog(null, "Desea enviar la factura por e-mail?", "Enviar", JOptionPane.YES_NO_OPTION);
-
-                                        String emailO = fol.getEmail("Emisores", rfcEmi);
-
-                                        String conf = Elemento.getMailConfiguration(emailO);
-
-                                        switch (selec) {
-                                            case JOptionPane.NO_OPTION:
-                                                break;
-                                            case JOptionPane.YES_OPTION:
-                                                String args[] = new String[8];
-                                                args[0] = pathXml + nameXml + ".xml";
-                                                args[1] = Elemento.pathPdf + nameXml + ".pdf";
-                                                args[2] = nameXml + ".xml";
-                                                args[3] = nameXml + ".pdf";
-                                                args[4] = fol.getEmail("Clientes", cons.getRfcReceptor());
-                                                args[5] = emailO;
-                                                args[6] = fol.getPass(rfcEmi);
-                                                args[7] = conf;
-                                                SendMail.main(args);
-                                                break;
-                                        }
-                                    } else {
-                                        /*NominaGeneral.contRecibos++;
-                                        if(NominaGeneral.contRecibos == NominaGeneral.totalRecibos){
-                                            NominaGeneral.contRecibos = 0;
-                                            
-                                            
-                                        }*/
-                                    }
+                                        openSendEmailWindow(fol, pathXml, nameXml, cons);
+                                    } 
 
                                 } catch (NumberFormatException | SQLException | HeadlessException ex) {
                                     ex.printStackTrace();
@@ -290,6 +269,32 @@ public class Listener {
                 ex.printStackTrace();
                 moveLayoutError(rootPath, name);
             }
+        }
+    }
+    
+    private void openSendEmailWindow(Folios fol, String pathXml, String nameXml, ConstruirXML cons) throws SQLException{
+        int selec = JOptionPane.showConfirmDialog(null, "Desea enviar la factura por e-mail?", "Enviar", JOptionPane.YES_NO_OPTION);
+        
+        String rfcEmi = cons.getRfcEmisor();
+        String emailO = fol.getEmail("Emisores", rfcEmi);
+
+        String conf = Elemento.getMailConfiguration(emailO);
+
+        switch (selec) {
+            case JOptionPane.NO_OPTION:
+                break;
+            case JOptionPane.YES_OPTION:
+                String args[] = new String[8];
+                args[0] = pathXml + nameXml + ".xml";
+                args[1] = Elemento.pathPdf + nameXml + ".pdf";
+                args[2] = nameXml + ".xml";
+                args[3] = nameXml + ".pdf";
+                args[4] = fol.getEmail("Clientes", cons.getRfcReceptor());
+                args[5] = emailO;
+                args[6] = fol.getPass(rfcEmi);
+                args[7] = conf;
+                SendMail.main(args);
+                break;
         }
     }
     

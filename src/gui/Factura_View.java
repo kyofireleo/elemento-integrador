@@ -39,12 +39,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import nominas.Empleado;
 import pagos.RecibosPagos;
 import reportes.Receptor;
+import utils.cfdi.Comprobante;
+import utils.cfdi.Concepto;
+import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosRetencion;
+import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosTraslado;
 
 /**
  *
@@ -88,6 +93,7 @@ public class Factura_View extends javax.swing.JFrame {
     public boolean isNotaCredito = false;
     private TextAutoCompleter texter;
     public boolean esperaCliente = true;
+    private ButtonGroup bg;
 
     /**
      * Creates new form Factura_View
@@ -130,6 +136,18 @@ public class Factura_View extends javax.swing.JFrame {
         
         setNotaDeCredito(idEmisor, idReceptor, fact_uuid, descuento, tieneIva);
     }
+    
+    //Constructor para reutilizar Comprobante
+    public Factura_View(int idEmisor, int idReceptor, String pathXml) {
+        initComponents();
+        setLocationRelativeTo(null);
+        this.fromFolios = true;
+        this.isNotaCredito = false;
+        iniciar();
+        this.setVisible(true);
+        
+        setComprobante(idEmisor, idReceptor, pathXml);
+    }
 
     private void iniciar() {
         comboE = (DefaultComboBoxModel) listaEmisores.getModel();
@@ -160,6 +178,10 @@ public class Factura_View extends javax.swing.JFrame {
         texter.setCaseSensitive(false);
         texter.setItems(listaClientes.toArray());
         texter.setMode(0);
+        
+        bg = new ButtonGroup();
+        bg.add(this.radBtnRoundingUp);
+        bg.add(this.radBtnRoundingDown);
         
         //consultar("Folio", "SELECT * FROM Folios WHERE idComprobante = " + getIdComprobante(tipocfd.getSelectedItem().toString().split(",")[0]) + " AND rfc like \'" + rfcE + "\'");
     }
@@ -199,6 +221,9 @@ public class Factura_View extends javax.swing.JFrame {
     private void initComponents() {
 
         jProgressBar1 = new javax.swing.JProgressBar();
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
+        buttonGroup3 = new javax.swing.ButtonGroup();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -268,6 +293,8 @@ public class Factura_View extends javax.swing.JFrame {
         tipoRelacion = new javax.swing.JComboBox<>();
         txtCliente = new javax.swing.JTextField();
         jLabel15 = new javax.swing.JLabel();
+        radBtnRoundingDown = new javax.swing.JRadioButton();
+        radBtnRoundingUp = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Crear CFDI");
@@ -605,10 +632,10 @@ public class Factura_View extends javax.swing.JFrame {
             }
         });
         descuento.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 descuentoInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
 
@@ -633,7 +660,14 @@ public class Factura_View extends javax.swing.JFrame {
             }
         });
 
+        txtCliente.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+
         jLabel15.setText("Cliente");
+
+        radBtnRoundingDown.setText("Redondeo hacia abajo");
+
+        radBtnRoundingUp.setSelected(true);
+        radBtnRoundingUp.setText("Redondeo hacia arriba");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -643,149 +677,158 @@ public class Factura_View extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(emitir)
-                                .addGap(35, 35, 35)
-                                .addComponent(preFactura)
-                                .addGap(31, 31, 31)
-                                .addComponent(agregarLeyenda)
-                                .addGap(31, 31, 31)
-                                .addComponent(cancelar))
-                            .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel14)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel24)
                                 .addGap(18, 18, 18)
-                                .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel6)
+                                .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(44, 44, 44)
+                                .addComponent(jLabel15)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtCliente, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(subtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(jLabel30)
-                                        .addGap(18, 18, 18))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel10)
-                                            .addComponent(jLabel29))
-                                        .addGap(18, 18, 18)))
+                                .addComponent(verCte)
+                                .addGap(27, 27, 27)
+                                .addComponent(jLabel27)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(serieText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel26)
+                                .addGap(12, 12, 12)
+                                .addComponent(folioText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(isrRetenido)
-                                    .addComponent(descuentoTotal, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
-                                    .addComponent(ieps)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel9)
+                                    .addComponent(metodoCombo, 0, 1, Short.MAX_VALUE)
+                                    .addComponent(formasPagoCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
-                                .addComponent(iva, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel23)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel12)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(condicionPago, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(tipocfd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(asociarCfdi)))
                                 .addGap(18, 18, 18)
-                                .addComponent(ivaRetenido, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel28)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(moneda, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(tipoCambio, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(usocfdi, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(noIdentificacion)
-                                        .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(claveProdSat)
-                                        .addComponent(jLabel13))
-                                    .addGap(14, 14, 14)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(cantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGap(13, 13, 13)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(claveUnidad, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(unidad, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jScrollPane1)
-                                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(precio, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addComponent(descuento)
-                                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(aplicaIva)
-                                                .addComponent(aplicaIeps))
-                                            .addGap(54, 54, 54)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(aplicaIsr)
-                                                .addComponent(aplicaIvaRet))))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(editarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                                        .addComponent(agregarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(quitar, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(jLabel24)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(44, 44, 44)
-                                    .addComponent(jLabel15)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(txtCliente)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(verCte)
-                                    .addGap(27, 27, 27)
-                                    .addComponent(jLabel27)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(serieText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(jLabel26)
-                                    .addGap(12, 12, 12)
-                                    .addComponent(folioText, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(metodoCombo, 0, 236, Short.MAX_VALUE)
-                                        .addComponent(formasPagoCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(jLabel12)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addComponent(condicionPago, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(tipocfd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGap(18, 18, 18)
-                                            .addComponent(asociarCfdi)))
-                                    .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(jLabel28)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addComponent(moneda, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addComponent(tipoCambio, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(usocfdi, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGap(18, 18, 18)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(jScrollPane2)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(emitir)
+                                        .addGap(35, 35, 35)
+                                        .addComponent(preFactura)
+                                        .addGap(31, 31, 31)
+                                        .addComponent(agregarLeyenda)
+                                        .addGap(31, 31, 31)
+                                        .addComponent(cancelar))
+                                    .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel14)
+                                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 542, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(jLabel9)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(iva, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(jLabel23)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(ivaRetenido, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(120, 120, 120)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(radBtnRoundingDown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(radBtnRoundingUp, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(52, 52, 52)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(jLabel6)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(subtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                        .addComponent(jLabel30)
+                                                        .addGap(18, 18, 18))
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                            .addComponent(jLabel10)
+                                                            .addComponent(jLabel29))
+                                                        .addGap(18, 18, 18)))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                    .addComponent(isrRetenido)
+                                                    .addComponent(descuentoTotal, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
+                                                    .addComponent(ieps)))))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(noIdentificacion)
+                                    .addComponent(jLabel25, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(claveProdSat)
+                                    .addComponent(jLabel13))
+                                .addGap(14, 14, 14)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(cantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(13, 13, 13)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(claveUnidad, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(unidad, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jScrollPane1)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(precio, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(descuento)
+                                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(aplicaIva)
+                                            .addComponent(aplicaIeps))
+                                        .addGap(54, 54, 54)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(aplicaIsr)
+                                            .addComponent(aplicaIvaRet))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(editarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                    .addComponent(agregarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(quitar, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -796,7 +839,7 @@ public class Factura_View extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel24)
                             .addComponent(listaEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(formasPagoCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel12)
@@ -828,7 +871,7 @@ public class Factura_View extends javax.swing.JFrame {
                                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 3, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -880,32 +923,38 @@ public class Factura_View extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(subtotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(descuentoTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel30))
+                            .addComponent(jLabel6)
+                            .addComponent(subtotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tipoRelacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel29)
-                            .addComponent(isrRetenido, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel10)
-                            .addComponent(ieps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel9)
-                            .addComponent(iva, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(descuentoTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel30))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel29)
+                                    .addComponent(isrRetenido, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel10)
+                                    .addComponent(ieps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel9)
+                                    .addComponent(iva, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel14)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane3))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel14)
+                        .addComponent(radBtnRoundingUp)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3)))
+                        .addComponent(radBtnRoundingDown)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -982,6 +1031,139 @@ public class Factura_View extends javax.swing.JFrame {
         cfdisAsoc = new ArrayList();
         cfdisAsoc.add(fact_uuid);
         setUuids(null);
+    }
+    
+    private void setComprobante(int idEmisor, int idReceptor, String pathXml){
+        //Seteamos Emisor
+        for (int i = 1; i < listaEmisores.getItemCount(); i++) {
+            int id = Integer.parseInt(listaEmisores.getItemAt(i).toString().split(",")[0].trim());
+
+            if (idEmisor == id) {
+                listaEmisores.setSelectedIndex(i);
+                break;
+            }
+        }
+        
+        //Seteamos Receptor
+        setCliente(idReceptor);
+             
+        try{
+            //Setamos datos de CFD
+            Comprobante c = util.analizarXml(pathXml);
+            
+            if(c.getMetodoPago().equals("PUE"))
+                metodoCombo.setSelectedItem("PUE,Pago en una sola exhibición");
+            else
+                metodoCombo.setSelectedItem("PPD,Pago en parcialidades o diferido");
+            
+            String tipoCfd = c.getTipoDeComprobante();
+            switch(tipoCfd){
+                case "E":
+                    tipocfd.setSelectedItem("E,Egreso");
+                    break;
+                
+                case "I":
+                    if(c.getDonataria() != null)
+                        tipocfd.setSelectedItem("D,Donatarias");
+                    else
+                        tipocfd.setSelectedItem("I,Ingreso");
+                    break;
+                
+                case "D":
+                    tipocfd.setSelectedItem("N,Nomina");
+                    break;
+            }
+            
+            serieText.setText(c.getSerie());
+            folioText.setText(c.getFolio());
+            
+            String formaPago = c.getFormaPago();
+            DefaultComboBoxModel modelFormas = (DefaultComboBoxModel) formasPagoCombo.getModel();
+            for (int i = 0; i < modelFormas.getSize(); i++) {
+                String fp = modelFormas.getElementAt(i).toString();
+                if(fp.contains(formaPago+",")){
+                    formasPagoCombo.setSelectedIndex(i);
+                    break;
+                }
+            }
+            
+            String uso = c.getReceptor().getUsoCFDI();
+            DefaultComboBoxModel modelUso = (DefaultComboBoxModel) usocfdi.getModel();
+            for (int i = 0; i < modelUso.getSize(); i++) {
+                String uc = modelUso.getElementAt(i).toString();
+                if(uc.contains(uso + ",")){
+                    usocfdi.setSelectedIndex(i);
+                    break;
+                }
+            }
+            
+            if(c.getRelacionCfdi() != null && !c.getRelacionCfdi().isEmpty()){
+                String [] relacion = c.getRelacionCfdi().split("\\r\\n");
+                String tipoRel = relacion[0].replace("Tipo de Relación: ", "");
+                String cfdisRel = relacion[1].replace("Cfdi(s) Relacionado(s): ", "");
+                
+                //Seteamos factura asociada
+                cfdisAsoc = new ArrayList();
+                String [] uui = cfdisRel.split(",");
+                for (int i = 0; i < uui.length; i++) {
+                    cfdisAsoc.add(uui[i]);
+                }
+                setUuids(null);
+                
+                DefaultComboBoxModel modelRelacion = (DefaultComboBoxModel) tipoRelacion.getModel();
+                for (int i = 0; i < modelRelacion.getSize(); i++) {
+                    String rel = modelRelacion.getElementAt(i).toString();
+                    if(rel.contains(tipoRel+",")){
+                        tipoRelacion.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+
+            List<Concepto> cons = c.getConceptos();
+            for (int i = 0; i < cons.size(); i++) {
+                Concepto con = cons.get(i);
+                
+                noIdentificacion.setText(con.getNoIdentificacion());
+                claveProdSat.setText(con.getClaveSat());
+                cantidad.setText(con.getCantidad().toString());
+                claveUnidad.setText(con.getClaveUnidad());
+                unidad.setText(con.getUnidad());
+                descripcion.setText(con.getDescripcion());
+                precio.setText(con.getPrecio().toString());
+                descuento.setText(util.redondear(con.getDescuento().divide(con.getPrecio()).multiply(new BigDecimal("100.00"))).toString());
+                
+                List<ConceptoImpuestosTraslado> tras = con.getImpuestos().getTraslados();
+                aplicaIva.setSelected(false);
+                for(ConceptoImpuestosTraslado cit : tras){
+                    if(cit.getClaveImpuesto().equals("002") && !cit.getTipoFactor().equals("Exento")){
+                        aplicaIva.setSelected(true);
+                    }
+                }
+                
+                /*
+                List<ConceptoImpuestosRetencion> ret = con.getImpuestos().getRetenciones();
+                for(ConceptoImpuestosRetencion cir : ret){
+                    if(cir.getClaveImpuesto().equals("002")){
+                        aplicaIvaRet.setSelected(true);
+                    }
+                    
+                    if(cir.getClaveImpuesto().equals("001")){
+                        aplicaIsr.setSelected(true);
+                    }
+                }
+                */
+                
+                agregarConceptoActionPerformed(null);
+            }
+            
+            
+        }catch(Exception e){
+            e.printStackTrace();
+            String msg = "Error al llenar la pantalla con la informacion del comprobante: " + pathXml;
+            Elemento.log.error(msg, e);
+            util.printError(msg);
+        }
     }
     
     private boolean validar() {
@@ -1360,20 +1542,21 @@ public class Factura_View extends javax.swing.JFrame {
     }//GEN-LAST:event_cancelarActionPerformed
 
     private void agregarConceptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarConceptoActionPerformed
+        RoundingMode redondeo = this.radBtnRoundingUp.isSelected() ? RoundingMode.HALF_UP : RoundingMode.FLOOR;
         Object[] concept = new Object[13];
         if (cantidad.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Debe introducir una cantidad", "Mensaje", JOptionPane.WARNING_MESSAGE);
         } else {
             BigDecimal cant = new BigDecimal(cantidad.getText().trim());
-            BigDecimal prec = new BigDecimal(precio.getText().trim()).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal desc = new BigDecimal(descuento.getText().trim()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal prec = new BigDecimal(precio.getText().trim()).setScale(2, redondeo);
+            BigDecimal desc = new BigDecimal(descuento.getText().trim()).setScale(2, redondeo);
             BigDecimal impDesc;
             if (desc.doubleValue() > 100 || desc.doubleValue() < 0) {
                 JOptionPane.showMessageDialog(null, "El descuento no puede ser mayor a 100 ni menor a 0", "Advertencia", JOptionPane.WARNING_MESSAGE);
             } else {
-                desc = desc.divide(new BigDecimal(100)).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal impor = cant.multiply(prec).setScale(2, RoundingMode.HALF_UP);
-                impDesc = impor.multiply(desc).setScale(2, RoundingMode.HALF_UP);
+                desc = desc.divide(new BigDecimal(100)).setScale(2, redondeo);
+                BigDecimal impor = cant.multiply(prec).setScale(2, redondeo);
+                impDesc = impor.multiply(desc).setScale(2, redondeo);
 
                 Boolean aplica = aplicaIva.isSelected();
                 Boolean aplIeps = aplicaIeps.isSelected();
@@ -1398,7 +1581,7 @@ public class Factura_View extends javax.swing.JFrame {
 
                 if (!aplica) {
                     int resp;
-                    if (this.fromFolios) {
+                    if (this.fromFolios && evt == null) {
                         resp = JOptionPane.YES_OPTION;
                     } else {
                         resp = JOptionPane.showConfirmDialog(null, "El producto está exento de IVA?", "IVA exento o IVA 0%", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -1966,7 +2149,7 @@ public class Factura_View extends javax.swing.JFrame {
         }
     }
 
-    public static void visualizar(String ruta, String name, String jsonDomicilios) throws Exception {
+    public static void visualizar(String ruta, String name, String jsonDomicilios, int idTipoComprobante) throws Exception {
         String xml;
 //        if(name.contains("_PREFACTURA")){
 //            xml = ruta+name.replace("_PREFACTURA", " ").trim()+".xml";
@@ -1975,6 +2158,9 @@ public class Factura_View extends javax.swing.JFrame {
 //        }
         xml = ruta + name + ".xml";
         String pdf = Elemento.pathPdf;
+        
+        plantilla = getPlantillaFromTipoComprobante(idTipoComprobante, name.split("_")[2]); //Serie_Folio_Emisor_Receptor_UUID
+        
         if (plantilla == null || plantilla.equalsIgnoreCase("")) {
             plantilla = Elemento.pathPlantillas + "FacturaE_V33.jasper";
         }
@@ -1994,10 +2180,13 @@ public class Factura_View extends javax.swing.JFrame {
     }
 
     //Se agrega nuevo parametro para el envio de los domicilios
-    public static void visualizar(String ruta, String name, String email, String jsonDomicilios) {
+    public static void visualizar(String ruta, String name, String email, String jsonDomicilios, int idTipoComprobante) {
         util.setJsonDomicilios(jsonDomicilios);
         String xml = ruta + name + ".xml";
         String pdf = Elemento.pathPdf;
+        
+        plantilla = getPlantillaFromTipoComprobante(idTipoComprobante, name.split("_")[2]); //Serie_Folio_Emisor_Receptor_UUID
+        
         if (plantilla == null || plantilla.equalsIgnoreCase("")) {
             plantilla = Elemento.pathPlantillas + "FacturaE_V33.jasper";
         }
@@ -2012,11 +2201,14 @@ public class Factura_View extends javax.swing.JFrame {
     }
 
     //Se agrega nuevo parametro para el envio de los domicilios
-    public static void visualizarInterpretado(String ruta, String rutaModificado, String name, String email, String jsonDomicilios) {
+    public static void visualizarInterpretado(String ruta, String rutaModificado, String name, String email, String jsonDomicilios, int idTipoComprobante) {
         util.setJsonDomicilios(jsonDomicilios);
         String xml = ruta + name + ".xml";
         String xmlModificado = rutaModificado + name + ".xml";
         String pdf = Elemento.pathPdf;
+        
+        plantilla = getPlantillaFromTipoComprobante(idTipoComprobante, name.split("_")[2]); //Serie_Folio_Emisor_Receptor_UUID
+        
         if (plantilla == null || plantilla.equalsIgnoreCase("")) {
             plantilla = Elemento.pathPlantillas + "FacturaE_V33.jasper";
         }
@@ -2160,6 +2352,9 @@ public class Factura_View extends javax.swing.JFrame {
     private javax.swing.JCheckBox aplicaIva;
     private javax.swing.JCheckBox aplicaIvaRet;
     private javax.swing.JButton asociarCfdi;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.ButtonGroup buttonGroup3;
     private javax.swing.JButton cancelar;
     private javax.swing.JTextField cantidad;
     private javax.swing.JTextPane cfdisAsociados;
@@ -2213,6 +2408,8 @@ public class Factura_View extends javax.swing.JFrame {
     private javax.swing.JButton preFactura;
     private javax.swing.JTextField precio;
     private javax.swing.JButton quitar;
+    private javax.swing.JRadioButton radBtnRoundingDown;
+    private javax.swing.JRadioButton radBtnRoundingUp;
     private javax.swing.JTextField serieText;
     private javax.swing.JTextField subtotal;
     private javax.swing.JTextField tipoCambio;
@@ -2230,7 +2427,8 @@ public class Factura_View extends javax.swing.JFrame {
     }
 
     private BigDecimal redondear(BigDecimal number, int digits) {
-        return number.setScale(digits, RoundingMode.HALF_UP);
+        RoundingMode redondeo = this.radBtnRoundingUp.isSelected() ? RoundingMode.HALF_UP : RoundingMode.FLOOR;
+        return number.setScale(digits, redondeo);
     }
 
     public void agregarFactura(String serie, String folio, String rfcEmi, String rfc, String nombre, String fecha, BigDecimal total, String datos, String layout, String xml, Boolean timbre, String fechaTimbrado, String uuid, Long transId, String tipoCfd) {
@@ -2478,5 +2676,35 @@ public class Factura_View extends javax.swing.JFrame {
             Elemento.log.error("Excepcion al obtener los datos de donatarias ", e);
             return null;
         }
+    }
+    
+    private static String getPlantillaFromTipoComprobante(int idTipoComprobante, String rfcEmisor) {
+        String plantilla = null;
+        try {
+            Connection con = Elemento.odbc();
+            PreparedStatement ps = con.prepareStatement(""
+                    + "select f.plantilla from Cuentas c "
+                    + "inner join Folios f on f.cuenta_id = c.cuenta_id and f.idComprobante = ? "
+                    + "where c.rfc = ?"
+            );
+            ps.setInt(1, idTipoComprobante);
+            ps.setString(2, rfcEmisor);
+            
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                plantilla = rs.getString("plantilla");
+            }
+            
+            rs.close();
+            ps.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            String msg = "Error al obtener la plantilla del tipo de comprobante: " + idTipoComprobante + ", para el RFC: " + rfcEmisor;
+            Elemento.log.error(msg, e);
+            util.printError(msg);
+        }
+        
+        return plantilla;
     }
 }

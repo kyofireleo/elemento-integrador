@@ -33,18 +33,18 @@ public class CancelarView extends javax.swing.JFrame {
     utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
     String rfcE, rfcR, uu, total;
     String folio, xml, logo, serie;
-    Long trans;
+    Integer idTipoComprobante;
     private Folios fol = null;
     private String uuidRelacionado = null;
 
-    public CancelarView(String folio, String xml, String logo, String uu, String rfcE, String rfcR, Long trans, String total, String serie) {
+    public CancelarView(String folio, String xml, String logo, String uu, String rfcE, String rfcR, Integer idTipoComprobante, String total, String serie) {
         this.rfcE = rfcE;
         this.rfcR = rfcR;
         this.folio = folio;
         this.xml = xml;
         this.logo = logo;
         this.uu = uu;
-        this.trans = trans;
+        this.idTipoComprobante = idTipoComprobante;
         this.total = total;
         this.serie = serie;
 
@@ -443,7 +443,7 @@ public class CancelarView extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        final Long tr = Long.parseLong(args[6]);
+        final Integer tr = Integer.parseInt(args[6]);
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new CancelarView(args[0], args[1], args[2], args[3], args[4], args[5], tr, args[7], args[8]).setVisible(true);

@@ -57,28 +57,28 @@ public class RecibosPagos extends javax.swing.JFrame {
     private String[] bene, orde;
     private utils.Utils util;
     
-    public BigDecimal pagoRetencionesIVA = BigDecimal.ZERO;
-    public BigDecimal pagoRetensionesISR = BigDecimal.ZERO;
-    public BigDecimal pagoRetensionesIEPS = BigDecimal.ZERO; 
-    public BigDecimal pagoTrasladosBaseIVA16 = BigDecimal.ZERO; 
-    public BigDecimal pagoTrasladosImpuestoIVA16 = BigDecimal.ZERO; 
-    public BigDecimal pagoTrasladosBaseIVA8 = BigDecimal.ZERO;
-    public BigDecimal pagoTrasladosImpuestoIVA8 = BigDecimal.ZERO; 
-    public BigDecimal pagoTrasladosBaseIVA0 = BigDecimal.ZERO;
-    public BigDecimal pagoTrasladosImpuestoIVA0 = BigDecimal.ZERO; 
-    public BigDecimal pagoTrasladosBaseIVAExento = BigDecimal.ZERO;  
+    public BigDecimal pagoRetencionesIVA = null;
+    public BigDecimal pagoRetensionesISR = null;
+    public BigDecimal pagoRetensionesIEPS = null; 
+    public BigDecimal pagoTrasladosBaseIVA16 = null; 
+    public BigDecimal pagoTrasladosImpuestoIVA16 = null; 
+    public BigDecimal pagoTrasladosBaseIVA8 = null;
+    public BigDecimal pagoTrasladosImpuestoIVA8 = null; 
+    public BigDecimal pagoTrasladosBaseIVA0 = null;
+    public BigDecimal pagoTrasladosImpuestoIVA0 = null; 
+    public BigDecimal pagoTrasladosBaseIVAExento = null;  
     
     public BigDecimal totalMontoPagos = BigDecimal.ZERO;
-    public BigDecimal totalRetencionesIVA = BigDecimal.ZERO;
-    public BigDecimal totalRetensionesISR = BigDecimal.ZERO;
-    public BigDecimal totalRetensionesIEPS = BigDecimal.ZERO; 
-    public BigDecimal totalTrasladosBaseIVA16 = BigDecimal.ZERO; 
-    public BigDecimal totalTrasladosImpuestoIVA16 = BigDecimal.ZERO; 
-    public BigDecimal totalTrasladosBaseIVA8 = BigDecimal.ZERO;
-    public BigDecimal totalTrasladosImpuestoIVA8 = BigDecimal.ZERO; 
-    public BigDecimal totalTrasladosBaseIVA0 = BigDecimal.ZERO;
-    public BigDecimal totalTrasladosImpuestoIVA0 = BigDecimal.ZERO; 
-    public BigDecimal totalTrasladosBaseIVAExento = BigDecimal.ZERO; 
+    public BigDecimal totalRetencionesIVA = null;
+    public BigDecimal totalRetensionesISR = null;
+    public BigDecimal totalRetensionesIEPS = null; 
+    public BigDecimal totalTrasladosBaseIVA16 = null; 
+    public BigDecimal totalTrasladosImpuestoIVA16 = null; 
+    public BigDecimal totalTrasladosBaseIVA8 = null;
+    public BigDecimal totalTrasladosImpuestoIVA8 = null; 
+    public BigDecimal totalTrasladosBaseIVA0 = null;
+    public BigDecimal totalTrasladosImpuestoIVA0 = null; 
+    public BigDecimal totalTrasladosBaseIVAExento = null; 
 
     public List<String> getArrayTipoRel() {
         return arrayTipoRel;
@@ -209,6 +209,7 @@ public class RecibosPagos extends javax.swing.JFrame {
     
     private void setCellListener(){
         tablaDocs.getModel().addTableModelListener(new TableModelListener(){
+            @Override
             public void tableChanged(TableModelEvent e){
                 if(e.getColumn() >= 0){
                     DefaultTableModel docus = (DefaultTableModel)tablaDocs.getModel();
@@ -217,12 +218,24 @@ public class RecibosPagos extends javax.swing.JFrame {
                     int posD = e.getFirstRow();
                     if(pos >= 0){
                         Pago p = listaPagos.get(pos);
-                        p.getDocumentos().get(posD).setImpSaldoAnterior((BigDecimal)docus.getValueAt(posD, 2));
-                        p.getDocumentos().get(posD).setImpPagado((BigDecimal)docus.getValueAt(posD, 3));
-                        p.getDocumentos().get(posD).setImpSaldoInsoluto((BigDecimal)docus.getValueAt(posD, 4));
-                        p.getDocumentos().get(posD).setNumParcialidad((Integer)docus.getValueAt(posD, 5));
+                        Documento d = p.getDocumentos().get(posD);
                         
-                        listaPagos.set(pos, p);
+                        BigDecimal saldoAnt = (BigDecimal)docus.getValueAt(posD, 2);
+                        BigDecimal importe = (BigDecimal)docus.getValueAt(posD, 3);
+                        BigDecimal saldoInso = (BigDecimal)docus.getValueAt(posD, 4);
+                        BigDecimal newSaldoInso = saldoAnt.subtract(importe);
+                        
+                        if(saldoInso.compareTo(newSaldoInso) != 0){
+                            docus.setValueAt(newSaldoInso, posD, 4);
+                        }else{
+                            d.setImpSaldoAnterior(saldoAnt);
+                            d.setImpPagado(importe);
+                            d.setImpSaldoInsoluto(saldoInso);
+                            d.setNumParcialidad((Integer)docus.getValueAt(posD, 5));
+                            
+                            listaPagos.set(pos, p);
+                            validarDatosDocumento((DefaultTableModel)tablaDocs.getModel());
+                        }
                     }
                 }
             }
@@ -830,6 +843,7 @@ public class RecibosPagos extends javax.swing.JFrame {
             totalMontoPagos = totalMontoPagos.add(p.getMonto());
             
             limpiarCampos(false);
+            tablaPagos.setRowSelectionInterval(model.getRowCount()-1, model.getRowCount()-1);
             buscarDocumentos(p);
         }
     }//GEN-LAST:event_btnAddActionPerformed
@@ -846,14 +860,14 @@ public class RecibosPagos extends javax.swing.JFrame {
     
     private int getIndexBanco(String rfc, char tipo){
         if(tipo == 'B')
-            for (int i = 0; i < bancosBene.size(); i++) {
+            for (int i = 1; i < bancosBene.size(); i++) {
                 String r = bancosBene.get(i).getRfc();
             if(rfc.equals(r)){
                 return i;
             }
         }
         else
-            for (int i = 0; i < bancosOrde.size(); i++) {
+            for (int i = 1; i < bancosOrde.size(); i++) {
                 String r = bancosOrde.get(i).getRfc();
                 if(rfc.equals(r)){
                     return i;
@@ -1241,16 +1255,16 @@ public class RecibosPagos extends javax.swing.JFrame {
         listaPagos.add(p);
         ultimoPago = p;
         
-        this.pagoRetencionesIVA = BigDecimal.ZERO;
-	this.pagoRetensionesISR = BigDecimal.ZERO;
-	this.pagoRetensionesIEPS = BigDecimal.ZERO; 
-	this.pagoTrasladosBaseIVA16 = BigDecimal.ZERO; 
-	this.pagoTrasladosImpuestoIVA16 = BigDecimal.ZERO; 
-	this.pagoTrasladosBaseIVA8 = BigDecimal.ZERO;
-	this.pagoTrasladosImpuestoIVA8 = BigDecimal.ZERO; 
-	this.pagoTrasladosBaseIVA0 = BigDecimal.ZERO;
-	this.pagoTrasladosImpuestoIVA0 = BigDecimal.ZERO; 
-	this.pagoTrasladosBaseIVAExento = BigDecimal.ZERO; 
+        this.pagoRetencionesIVA = null;
+	this.pagoRetensionesISR = null;
+	this.pagoRetensionesIEPS = null; 
+	this.pagoTrasladosBaseIVA16 = null; 
+	this.pagoTrasladosImpuestoIVA16 = null; 
+	this.pagoTrasladosBaseIVA8 = null;
+	this.pagoTrasladosImpuestoIVA8 = null; 
+	this.pagoTrasladosBaseIVA0 = null;
+	this.pagoTrasladosImpuestoIVA0 = null; 
+	this.pagoTrasladosBaseIVAExento = null; 
         
         if(!p.getDocumentos().isEmpty()){
             
