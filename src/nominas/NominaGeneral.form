@@ -50,6 +50,8 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="generarNomina" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btnAsociar" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
@@ -98,7 +100,10 @@
               <Component id="jScrollPane1" min="-2" pref="341" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="generarNomina" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="generarNomina" alignment="3" max="32767" attributes="0"/>
+                      <Component id="btnAsociar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
                   <Component id="totalPer" alignment="0" max="32767" attributes="0"/>
                   <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
@@ -167,7 +172,7 @@
                 <Column editable="false" title="Numero" type="java.lang.Integer"/>
                 <Column editable="false" title="Empleado" type="java.lang.String"/>
                 <Column editable="false" title="Antiguedad" type="java.lang.Long"/>
-                <Column editable="false" title="Dias Pagados" type="java.lang.Integer"/>
+                <Column editable="true" title="Dias Pagados" type="java.lang.Integer"/>
                 <Column editable="false" title="Percepciones" type="java.lang.String"/>
                 <Column editable="false" title="Otros Pagos" type="java.lang.String"/>
                 <Column editable="false" title="Deducciones" type="java.lang.String"/>
@@ -262,6 +267,14 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="N&#xfa;mero de Recibos: "/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnAsociar">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Asociar"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAsociarActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

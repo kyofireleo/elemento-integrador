@@ -246,6 +246,10 @@ public class Layout {
         re.append("SERIE: ").append(this.fact.getSerie()).append("\r\n");
         re.append("LUGAREXPEDICION: ").append(this.fact.getLugarExpedicion()).append("\r\n");
         re.append("TIPO_COMPROBANTE: ").append(tipoComprobante).append("\r\n");
+        if (this.fact.cfdisAsociados != null && !this.fact.cfdisAsociados.trim().isEmpty()) {
+            re.append("RELACIONCFDI: ").append(this.fact.cfdisAsociados).append("\r\n");
+            re.append("TIPORELACION: ").append(this.fact.tipoRelacion).append("\r\n");
+        }
         re.append("FORMAPAGO: ").append(fact.formaPago).append("\r\n");
         re.append("METODOPAGO: ").append(fact.metodoPago).append("\r\n");
         re.append("DESCUENTO: ").append(this.fact.descuento).append("\r\n");
@@ -289,7 +293,7 @@ public class Layout {
         re.append("FECHA_INICIAL_REL_LABORAL: ").append(this.emp.getFechaInicialRelLaboral()).append("\r\n");
         re.append("TIPO_CONTRATO: ").append(this.emp.getTipoContrato()).append("\r\n");
         re.append("TIPO_JORNADA: ").append(this.emp.getTipoJornada()).append("\r\n");
-        re.append("PERIODICIDAD_PAGO: ").append(this.emp.getPeriodicidadPago().split(",")[0]).append("\r\n");
+        re.append("PERIODICIDAD_PAGO: ").append(this.nomi.getTipoNomina().equalsIgnoreCase("E") ? "99" : this.emp.getPeriodicidadPago().split(",")[0]).append("\r\n");
         re.append("RIESGO_PUESTO: ").append(this.emp.getRiesgoPuesto()).append("\r\n");
         re.append("SUELDO_BASE: ").append(this.emp.getSalarioBaseCotApor()).append("\r\n");
         re.append("SALARIO_DIARIO_INT: ").append(this.emp.getSalarioDiarioInt()).append("\r\n");

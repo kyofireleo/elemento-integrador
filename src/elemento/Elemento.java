@@ -288,7 +288,7 @@ public class Elemento {
         boolean respuesta = false;
 
         try {
-            rs = stmt.executeQuery("SELECT creditosRestantes,creditosUsados FROM Cuentas WHERE rfc like\'" + rfc + "\'");
+            rs = stmt.executeQuery("SELECT creditosRestantes,creditosUsados FROM Cuentas WHERE rfc =\'" + rfc + "\'");
             if (rs.next()) {
                 int restantes = rs.getInt("creditosRestantes");
                 if (restantes == 0) {
@@ -313,9 +313,9 @@ public class Elemento {
         utils.Utils u = new utils.Utils(log);
         String ruta = Elemento.pathLayout;
         
-        File f = new File(pathLayout);
         log.info("Buscando layout creado...");
-        while(true){    
+        while(true){
+            File f = new File(pathLayout);
             if(f.listFiles().length > 0){
                 Listener l = new Listener();
                 for(File a : f.listFiles()){
@@ -325,7 +325,6 @@ public class Elemento {
                     }
                 }
             }
-            
             Thread.sleep(10000);
         }
         

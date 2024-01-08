@@ -554,7 +554,7 @@ public class ConfigNominas extends javax.swing.JFrame {
                 numEmpleados.add(model.getValueAt(row, 0).toString());
                 ids.add(idEmpleados.get(row));
             }
-            new NominaGeneral(numEmpleados,idEmisor,ids,true).setVisible(true);
+            new NominaGeneral(numEmpleados,idEmisor,ids,'P').setVisible(true);
         }
     }//GEN-LAST:event_utilidadesBotonActionPerformed
 

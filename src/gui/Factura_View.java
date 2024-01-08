@@ -22,9 +22,7 @@ import elemento.Factura;
 import elemento.Factura.ConceptoTraslado;
 import elemento.Factura.ConceptoRetencion;
 import elemento.Layout;
-import java.awt.AWTException;
 import java.awt.KeyboardFocusManager;
-import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.math.BigDecimal;
@@ -48,7 +46,6 @@ import pagos.RecibosPagos;
 import reportes.Receptor;
 import utils.cfdi.Comprobante;
 import utils.cfdi.Concepto;
-import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosRetencion;
 import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosTraslado;
 
 /**
@@ -80,6 +77,7 @@ public class Factura_View extends javax.swing.JFrame {
     List<BigDecimal> tasaIeps = new ArrayList();
     List<BigDecimal> tasaIsr = new ArrayList();
     List<BigDecimal> tasaIvaRet = new ArrayList();
+    List<String> cuentasPredial = new ArrayList();
     Empleado emp = null;
     List<Boolean> bancarizado;
     List<String> cfdisAsoc;
@@ -295,6 +293,7 @@ public class Factura_View extends javax.swing.JFrame {
         jLabel15 = new javax.swing.JLabel();
         radBtnRoundingDown = new javax.swing.JRadioButton();
         radBtnRoundingUp = new javax.swing.JRadioButton();
+        aplicaPredial = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Crear CFDI");
@@ -669,6 +668,8 @@ public class Factura_View extends javax.swing.JFrame {
         radBtnRoundingUp.setSelected(true);
         radBtnRoundingUp.setText("Redondeo hacia arriba");
 
+        aplicaPredial.setText("Predial");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -819,11 +820,14 @@ public class Factura_View extends javax.swing.JFrame {
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(aplicaIva)
                                             .addComponent(aplicaIeps))
-                                        .addGap(54, 54, 54)
+                                        .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(aplicaIsr)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(aplicaIsr)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(aplicaPredial))
                                             .addComponent(aplicaIvaRet))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(editarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                                     .addComponent(agregarConcepto, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -915,7 +919,8 @@ public class Factura_View extends javax.swing.JFrame {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(aplicaIva)
-                                .addComponent(aplicaIsr))
+                                .addComponent(aplicaIsr)
+                                .addComponent(aplicaPredial))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(aplicaIeps)
@@ -1403,13 +1408,16 @@ public class Factura_View extends javax.swing.JFrame {
                 aux += model.getValueAt(i, 5).toString() + "@";
                 aux += model.getValueAt(i, 6).toString() + "@";
                 aux += model.getValueAt(i, 7).toString() + "@";
-                aux += model.getValueAt(i, 8).toString();
-
-                BigDecimal base = new BigDecimal(model.getValueAt(i, 8).toString()).subtract(new BigDecimal(model.getValueAt(i, 7).toString())).setScale(2, RoundingMode.HALF_UP);
+                aux += model.getValueAt(i, 8).toString() + "@";
+                aux += (cuentasPredial.isEmpty() ? "" : cuentasPredial.get(i));
+                
+                BigDecimal importe = new BigDecimal(model.getValueAt(i, 8).toString());
+                BigDecimal descuento = new BigDecimal(model.getValueAt(i, 7).toString());
+                BigDecimal base = this.redondear(importe.subtract(descuento), 2);
 
                 ct = fact.new ConceptoTraslado();
                 ct.setBase(base);
-                ct.setImporte(base.multiply(tasaIva.get(i)));
+                ct.setImporte(this.redondear(base.multiply(tasaIva.get(i)), 2));
                 ct.setImpuesto("002");
                 ct.setNumConcepto(i + 1);
                 ct.setTasa(redondear(tasaIva.get(i), 6));
@@ -1420,7 +1428,7 @@ public class Factura_View extends javax.swing.JFrame {
                 if ((Boolean) model.getValueAt(i, 10)) {
                     ct = fact.new ConceptoTraslado();
                     ct.setBase(base);
-                    ct.setImporte(base.multiply(tasaIeps.get(i)));
+                    ct.setImporte(this.redondear(base.multiply(tasaIeps.get(i)), 2));
                     ct.setImpuesto("003");
                     ct.setNumConcepto(i + 1);
                     ct.setTasa(redondear(tasaIeps.get(i), 6));
@@ -1515,8 +1523,8 @@ public class Factura_View extends javax.swing.JFrame {
                 fact.totalIeps = iepsT;
             }
 
-            fact.totalRetenidos = redondear(ivR.add(isr), 2);
-            fact.totalTraslados = redondear(ivaT.add(iepsT), 2);
+            fact.totalRetenidos = ivR.add(isr);
+            fact.totalTraslados = ivaT.add(iepsT);
             fact.leyenda = leyenda;
             fact.prefactura = condicion;
 
@@ -1549,12 +1557,12 @@ public class Factura_View extends javax.swing.JFrame {
         } else {
             BigDecimal cant = new BigDecimal(cantidad.getText().trim());
             BigDecimal prec = new BigDecimal(precio.getText().trim()).setScale(2, redondeo);
-            BigDecimal desc = new BigDecimal(descuento.getText().trim()).setScale(2, redondeo);
+            BigDecimal desc = new BigDecimal(descuento.getText().trim());
             BigDecimal impDesc;
             if (desc.doubleValue() > 100 || desc.doubleValue() < 0) {
-                JOptionPane.showMessageDialog(null, "El descuento no puede ser mayor a 100 ni menor a 0", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "El porcentaje de descuento no puede ser mayor a 100 ni menor a 0", "Advertencia", JOptionPane.WARNING_MESSAGE);
             } else {
-                desc = desc.divide(new BigDecimal(100)).setScale(2, redondeo);
+                desc = desc.divide(new BigDecimal(100));
                 BigDecimal impor = cant.multiply(prec).setScale(2, redondeo);
                 impDesc = impor.multiply(desc).setScale(2, redondeo);
 
@@ -1562,6 +1570,7 @@ public class Factura_View extends javax.swing.JFrame {
                 Boolean aplIeps = aplicaIeps.isSelected();
                 Boolean aplIsr = aplicaIsr.isSelected();
                 Boolean aplIvaRet = aplicaIvaRet.isSelected();
+                Boolean aplicaPred = aplicaPredial.isSelected();
 
                 concept[0] = noIdentificacion.getText();
                 concept[1] = claveProdSat.getText();
@@ -1627,6 +1636,14 @@ public class Factura_View extends javax.swing.JFrame {
                         tasaIvaRet.add(redondear(porcentajeIvaRet.divide(new BigDecimal(100)), 6));
                     }
                 }
+                
+                if(aplicaPred){
+                    String pred = JOptionPane.showInputDialog(null, "Ingresa el número de cuenta predial:", "");
+                    
+                    cuentasPredial.add(pred);
+                }else{
+                    cuentasPredial.add("");
+                }
 
                 claveProdSat.setText("");
                 cantidad.setText("");
@@ -1640,6 +1657,7 @@ public class Factura_View extends javax.swing.JFrame {
                 aplicaIeps.setSelected(false);
                 aplicaIsr.setSelected(false);
                 aplicaIvaRet.setSelected(false);
+                aplicaPredial.setSelected(false);
                 noIdentificacion.requestFocus();
 
                 calcular();
@@ -1687,6 +1705,10 @@ public class Factura_View extends javax.swing.JFrame {
 
         if ((Boolean) model.getValueAt(row, 12)) {
             tasaIvaRet.remove(row);
+        }
+        
+        if(!cuentasPredial.get(row).trim().isEmpty()){
+            cuentasPredial.remove(row);
         }
 
         model.removeRow(row);
@@ -1942,6 +1964,7 @@ public class Factura_View extends javax.swing.JFrame {
         aplicaIeps.setSelected((Boolean) model.getValueAt(pos, 10));
         aplicaIsr.setSelected((Boolean) model.getValueAt(pos, 11));
         aplicaIvaRet.setSelected((Boolean) model.getValueAt(pos, 12));
+        aplicaPredial.setSelected(!cuentasPredial.get(pos).trim().isEmpty());
 
         this.quitarActionPerformed(evt);
     }//GEN-LAST:event_editarConceptoActionPerformed
@@ -2351,6 +2374,7 @@ public class Factura_View extends javax.swing.JFrame {
     private javax.swing.JCheckBox aplicaIsr;
     private javax.swing.JCheckBox aplicaIva;
     private javax.swing.JCheckBox aplicaIvaRet;
+    private javax.swing.JCheckBox aplicaPredial;
     private javax.swing.JButton asociarCfdi;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;

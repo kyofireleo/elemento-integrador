@@ -775,6 +775,14 @@ public class RecibosPagos extends javax.swing.JFrame {
                 chkInfoSpei.setEnabled(false);
                 chkInfoSpei.setSelected(false);
             }
+            
+            if(comboFormaPago.getSelectedItem().toString().split(",")[0].trim().equals("01")){
+                txtNumOperacion.setText("01");
+                txtNumOperacion.setEditable(false);
+            }else{
+                txtNumOperacion.setText("");
+                txtNumOperacion.setEditable(true);
+            }
         }else{
             cuentaBeneficiario.setText("");
             bancoBeneficiario.setSelectedIndex(0);
@@ -786,6 +794,8 @@ public class RecibosPagos extends javax.swing.JFrame {
             bancoOrdenante.setEnabled(false);
             chkOrdenante.setEnabled(false);
             chkOrdenante.setSelected(false);
+            txtNumOperacion.setText("");
+            txtNumOperacion.setEditable(false);
         }
     }//GEN-LAST:event_comboFormaPagoActionPerformed
 

@@ -9,6 +9,7 @@ import elemento.Elemento;
 import elemento.Emisor;
 import elemento.Factura;
 import elemento.Layout;
+import gui.Folios;
 import java.awt.Component;
 import java.awt.HeadlessException;
 import java.awt.event.ComponentAdapter;
@@ -34,6 +35,8 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import pagos.Documento;
+import utils.cfdi.Receptor;
 
 /**
  *
@@ -46,16 +49,20 @@ public class NominaGeneral extends javax.swing.JFrame {
     int idEmisor;
     List<Integer> idEmpleados;
     List<String> numEmpleados;
+    List<Empleado> listaEmpleados;
     Map<Integer, Percepciones> ventanasPer;
     Map<Integer, Deducciones> ventanasDec;
     Map<Integer, OtrosPagos> ventanasOtr;
+    Map<Integer, String> uuidAsoc;
     String serie;
     String lugarExpedicion;
     private int totalRecibos = 0;
     private boolean isPtu = false;
+    private boolean isFiniquito = false;
     private BigDecimal importeTotalPtu = BigDecimal.ZERO;
     private BigDecimal importePtu = BigDecimal.ZERO;
     private BigDecimal importeIsr = BigDecimal.ZERO;
+    private Emisor emisor;
     DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 
     public NominaGeneral() {
@@ -66,7 +73,9 @@ public class NominaGeneral extends javax.swing.JFrame {
         ventanasPer = new HashMap();
         ventanasDec = new HashMap();
         ventanasOtr = new HashMap();
+        uuidAsoc = new HashMap();
         df.setParseBigDecimal(true);
+        tablaEmpleados.setEditingColumn(3);
     }
 
     public NominaGeneral(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados) {
@@ -75,64 +84,30 @@ public class NominaGeneral extends javax.swing.JFrame {
         this.idEmisor = idEmisor;
         this.idEmpleados = idEmpleados;
         this.numEmpleados = numEmpleados;
+        this.listaEmpleados = new ArrayList();
         util = new utils.Utils(Elemento.log);
         factory = new utils.ConnectionFactory(Elemento.log);
         ventanasPer = new HashMap();
         ventanasDec = new HashMap();
         ventanasOtr = new HashMap();
+        uuidAsoc = new HashMap();
         df.setParseBigDecimal(true);
+        tablaEmpleados.setEditingColumn(3);
+        emisor = this.getEmisor(idEmisor);
         llenarTabla();
     }
-    
-    public NominaGeneral(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados, boolean isPtu) {
+
+    public NominaGeneral(List<String> numEmpleados, int idEmisor, List<Integer> idEmpleados, char tipoNomina) {
         initComponents();
         this.setLocationRelativeTo(null);
         this.idEmisor = idEmisor;
         this.idEmpleados = idEmpleados;
         this.numEmpleados = numEmpleados;
-        this.isPtu = true;
-        
-        util = new utils.Utils(Elemento.log);
-        factory = new utils.ConnectionFactory(Elemento.log);
-        ventanasPer = new HashMap();
-        ventanasDec = new HashMap();
-        ventanasOtr = new HashMap();
-        df.setParseBigDecimal(true);
-        
-        String cantidadTotalPtu = "";
-        String cantidadIsr = "";
-        int cont = 0;
-        
-        try{
-            do{
-                cantidadTotalPtu = JOptionPane.showInputDialog(null, cont > 0 
-                        ? "La cantidad de PTU \"" + cantidadTotalPtu + "\" ingresada no es correcta, favor de introducirla nuevamente:" 
-                        : "Ingrese la cantidad de PTU a repartir", "Cantidad de PTU", JOptionPane.QUESTION_MESSAGE
-                );
-                cont++;
-            }while(cantidadTotalPtu.trim().isEmpty() && !util.isNumeric(util.quitarComas(cantidadTotalPtu)));
-            
-            cantidadTotalPtu = cantidadTotalPtu.trim();
-            
-            this.importeTotalPtu = (BigDecimal)df.parse(cantidadTotalPtu.contains(".") ? (cantidadTotalPtu.endsWith(".") ? (cantidadTotalPtu + "0") : cantidadTotalPtu) : (cantidadTotalPtu + ".0"));
-            this.importePtu = util.redondear(importeTotalPtu.divide(new BigDecimal(idEmpleados.size()), 2, RoundingMode.HALF_UP));
-
-            cont = 0;
-            do{
-                cantidadIsr = JOptionPane.showInputDialog(null, cont > 0 
-                        ? "La cantidad de ISR \"" + cantidadIsr + "\" ingresada no es correcta, favor de introducirla nuevamente:" 
-                        : "Ingresa el importe ISR segun el PTU individual de: " + df.format(importePtu), "Importe de ISR", JOptionPane.QUESTION_MESSAGE
-                );
-                cont++;
-            }while(cantidadIsr.trim().isEmpty() && util.isNumeric(util.quitarComas(cantidadIsr)));
-            
-            this.importeIsr = (BigDecimal)df.parse(cantidadIsr);
-            
-        }catch(HeadlessException | ParseException e){
-            e.printStackTrace();
-            Elemento.log.error("Error al calcular el importe individual de PTU", e);
-        }
-        this.cmbTipoNomina.setSelectedIndex(1);
+        this.listaEmpleados = new ArrayList();
+        this.isPtu = tipoNomina == 'P';
+        this.isFiniquito = tipoNomina == 'F';
+        emisor = this.getEmisor(idEmisor);
+        this.iniciarNominaEspecial();
     }
 
     /**
@@ -162,16 +137,17 @@ public class NominaGeneral extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         totalDed = new javax.swing.JLabel();
         lblNumRecibos = new javax.swing.JLabel();
+        btnAsociar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Nomina General");
 
         fechaPago.setDateFormatString("yyyy-MM-dd");
         fechaPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaPagoInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         fechaPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
@@ -199,11 +175,11 @@ public class NominaGeneral extends javax.swing.JFrame {
             }
         });
         fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoCaretPositionChanged(evt);
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaFinalPagoInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                fechaFinalPagoCaretPositionChanged(evt);
             }
         });
 
@@ -225,7 +201,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 java.lang.Integer.class, java.lang.String.class, java.lang.Long.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
+                false, false, false, true, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -283,6 +259,13 @@ public class NominaGeneral extends javax.swing.JFrame {
 
         lblNumRecibos.setText("Número de Recibos: ");
 
+        btnAsociar.setText("Asociar");
+        btnAsociar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAsociarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -312,6 +295,8 @@ public class NominaGeneral extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(generarNomina)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnAsociar)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel1)
                                 .addGap(2, 2, 2)
@@ -349,7 +334,9 @@ public class NominaGeneral extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(generarNomina, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(generarNomina, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnAsociar))
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(totalPer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -401,8 +388,7 @@ public class NominaGeneral extends javax.swing.JFrame {
             Percepciones per;
             Deducciones dec;
             Layout lay;
-            Emisor emi = this.getEmisor(idEmisor);
-            int folio = getUltimoFolio(emi.getRfc());
+            int folio = getUltimoFolio(emisor.getRfc());
 
             for (int i = 0; i < model.getRowCount(); i++) {
                 String num = model.getValueAt(i, 0).toString();
@@ -412,7 +398,7 @@ public class NominaGeneral extends javax.swing.JFrame {
 
                 Empleado emp = this.getEmpleadoCompleto(num, idE);
                 fact = this.getEmpleadoRec(emp.getIdEmpleado());
-                fact.emisor = emi;
+                fact.emisor = emisor;
                 fact.folio = "" + folio;
                 folio++;
                 fact.serie = serie;
@@ -426,23 +412,30 @@ public class NominaGeneral extends javax.swing.JFrame {
                 fact.tipoCambio = "1.0";
                 fact.prefactura = "";
                 fact.usoCfdi = "CN01";
-                
-                if(!ventanasOtr.containsKey(emp.getIdEmpleado()))
+                if (!uuidAsoc.isEmpty()) {
+                    fact.tipoRelacion = "04";
+                    fact.cfdisAsociados = uuidAsoc.get(emp.getIdEmpleado());
+                }
+
+                if (!ventanasOtr.containsKey(emp.getIdEmpleado())) {
                     otr = new OtrosPagos(emp.getIdEmpleado(), false);
-                else
+                } else {
                     otr = ventanasOtr.get(emp.getIdEmpleado());
-                
-                if(!ventanasPer.containsKey(emp.getIdEmpleado()))
+                }
+
+                if (!ventanasPer.containsKey(emp.getIdEmpleado())) {
                     per = new Percepciones(emp.getIdEmpleado(), false);
-                else
+                } else {
                     per = ventanasPer.get(emp.getIdEmpleado());
-                
-                if(!ventanasDec.containsKey(emp.getIdEmpleado()))
+                }
+
+                if (!ventanasDec.containsKey(emp.getIdEmpleado())) {
                     dec = new Deducciones(emp.getIdEmpleado(), false);
-                else
+                } else {
                     dec = ventanasDec.get(emp.getIdEmpleado());
-                
-                nom.setTipoNomina(cmbTipoNomina.getSelectedItem().toString().substring(0,1));
+                }
+
+                nom.setTipoNomina(cmbTipoNomina.getSelectedItem().toString().substring(0, 1));
                 nom.setAntiguedad(new Integer(model.getValueAt(i, 2).toString()));
                 nom.setNumDiasPagados(new Integer(model.getValueAt(i, 3).toString()));
                 nom.setEmpleado(emp.getEmpleado());
@@ -452,13 +445,13 @@ public class NominaGeneral extends javax.swing.JFrame {
                 nom.setHorasExtra(null);
                 nom.setIncapacidad(null);
                 nom.setRegistroPatronal(fact.emisor.getRegistroPatronal());
-                
+
                 //Seteamos otros pagos
                 otro.setOtrosPagos(getOtrosPagos(otr));
                 otro.setTotalOtrosPagos(otr.getTotalOtrosPagos());
                 nom.setOtrosPagos(otro);
                 nom.setTotalOtrosPagos(otro.getTotalOtrosPagos());
-                
+
                 //Seteamos deducciones
                 dedu.setDeducciones(getDeducciones(dec));
                 dedu.setTotalRetenido(dec.getTotalRetenido());
@@ -474,7 +467,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 nom.setPercepciones(perc);
                 nom.setTotalPercepciones(per.getTotalSueldos());
 
-                fact.conceptos = getConceptos(perc,otro,dedu);
+                fact.conceptos = getConceptos(perc, otro, dedu);
                 fact = getTotales(perc, dedu, otro, fact);
 
                 lay = new Layout(fact, emp, nom);
@@ -485,7 +478,7 @@ public class NominaGeneral extends javax.swing.JFrame {
 
     private void fechaPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaPagoPropertyChange
         // TODO add your handling code here:
-        if(this.cmbTipoNomina.getSelectedIndex() == 1){
+        if (this.cmbTipoNomina.getSelectedIndex() == 1) {
             this.fechaInicialPago.setDate(this.fechaPago.getDate());
             this.fechaFinalPago.setDate(this.fechaPago.getDate());
         }
@@ -497,82 +490,86 @@ public class NominaGeneral extends javax.swing.JFrame {
 
     private void tablaEmpleadosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaEmpleadosMouseClicked
         // TODO add your handling code here:
-        if(evt.getClickCount() == 2 && !evt.isConsumed()){
-            evt.consume();
+        if (evt.getClickCount() == 2 && !evt.isConsumed()) {
             Percepciones per;
             Deducciones dec;
             OtrosPagos otr;
-            
+
             int selectedRow = tablaEmpleados.getSelectedRow();
             int selectedCol = tablaEmpleados.getSelectedColumn();
             int idE = idEmpleados.get(selectedRow);
-            
-            switch(selectedCol){
+
+            if (selectedCol <= 3) {
+                evt.consume();
+            }
+
+            //DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
+            switch (selectedCol) {
                 case 4:
-                    if(!ventanasPer.containsKey(idE)){
+                    if (!ventanasPer.containsKey(idE)) {
                         per = new Percepciones(idE, true);
                         per.setTipoNomina(cmbTipoNomina.getSelectedIndex());
-                        per.addComponentListener(new ComponentAdapter(){
-                            public void componentHidden(ComponentEvent e){
+                        per.addComponentListener(new ComponentAdapter() {
+                            public void componentHidden(ComponentEvent e) {
                                 llenarTabla();
                             }
                         });
                         ventanasPer.put(idE, per);
-                    }else{
-                        per = (Percepciones)ventanasPer.get(idE);
+                    } else {
+                        per = (Percepciones) ventanasPer.get(idE);
                     }
                     per.setVisible(true);
-                    
-                break;
-                
+
+                    break;
+
                 case 5:
-                    if(!ventanasOtr.containsKey(idE)){
+                    if (!ventanasOtr.containsKey(idE)) {
                         otr = new OtrosPagos(idE, true);
                         otr.setTipoNomina(cmbTipoNomina.getSelectedIndex());
-                        otr.addComponentListener(new ComponentAdapter(){
-                            public void componentHidden(ComponentEvent e){
+                        otr.addComponentListener(new ComponentAdapter() {
+                            public void componentHidden(ComponentEvent e) {
                                 llenarTabla();
                             }
                         });
                         ventanasOtr.put(idE, otr);
-                    }else{
+                    } else {
                         otr = ventanasOtr.get(idE);
                     }
                     otr.setVisible(true);
-                break;
-                
+                    break;
+
                 case 6:
-                    if(!ventanasDec.containsKey(idE)){
+                    if (!ventanasDec.containsKey(idE)) {
                         dec = new Deducciones(idE, true);
                         dec.setTipoNomina(cmbTipoNomina.getSelectedIndex());
-                        dec.addComponentListener(new ComponentAdapter(){
-                            public void componentHidden(ComponentEvent e){
+                        dec.addComponentListener(new ComponentAdapter() {
+                            public void componentHidden(ComponentEvent e) {
                                 llenarTabla();
                             }
                         });
                         ventanasDec.put(idE, dec);
-                    }else{
-                        dec = (Deducciones)ventanasDec.get(idE);
+                    } else {
+                        dec = (Deducciones) ventanasDec.get(idE);
                     }
                     dec.setVisible(true);
-                break;
+                    break;
             }
         }
     }//GEN-LAST:event_tablaEmpleadosMouseClicked
 
     private void cmbTipoNominaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbTipoNominaItemStateChanged
         // TODO add your handling code here:
-        if(cmbTipoNomina.getSelectedIndex() == 1 && evt.getItem().equals(cmbTipoNomina.getSelectedItem())){
-            if(fechaPago.getDate() == null){
+        if (cmbTipoNomina.getSelectedIndex() == 1 && evt.getItem().equals(cmbTipoNomina.getSelectedItem())) {
+            if (fechaPago.getDate() == null) {
                 fechaPago.setDate(new Date());
             }
             fechaInicialPago.setDate(fechaPago.getDate());
             fechaFinalPago.setDate(fechaPago.getDate());
             fechaInicialPago.setEnabled(false);
             fechaFinalPago.setEnabled(false);
-            if(!isPtu){
+            if (!isPtu) {
                 util.print("Se cambio el valor de la fecha inicial y final al de la fecha de pago\r\nesto debido a que la nomina extraordinaria asi lo requiere.");
-                DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
+                DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
                 for (int i = 0; i < model.getRowCount(); i++) {
                     model.setValueAt(0, i, 3);
                     model.setValueAt(0.00, i, 4);
@@ -584,24 +581,84 @@ public class NominaGeneral extends javax.swing.JFrame {
                     totalOtros.setText("0.0");
                 }
             }
-            
-            ventanasPer.forEach((k,v) -> v.setTipoNomina(1));
-            ventanasDec.forEach((k,v) -> v.setTipoNomina(1));
-            ventanasOtr.forEach((k,v) -> v.setTipoNomina(1));
-        }else if(cmbTipoNomina.getSelectedIndex() == 0 && evt.getItem().equals(cmbTipoNomina.getSelectedItem())){
+
+            ventanasPer.forEach((k, v) -> v.setTipoNomina(1));
+            ventanasDec.forEach((k, v) -> v.setTipoNomina(1));
+            ventanasOtr.forEach((k, v) -> v.setTipoNomina(1));
+        } else if (cmbTipoNomina.getSelectedIndex() == 0 && evt.getItem().equals(cmbTipoNomina.getSelectedItem())) {
             fechaInicialPago.setDate(null);
             fechaFinalPago.setDate(null);
             fechaInicialPago.setEnabled(true);
             fechaFinalPago.setEnabled(true);
             util.print("Se reinicio el valor de la fecha inicial y final, debe de registrarlas de nuevo.");
-            ventanasPer.forEach((k,v) -> v.setTipoNomina(0));
-            ventanasDec.forEach((k,v) -> v.setTipoNomina(0));
-            ventanasOtr.forEach((k,v) -> v.setTipoNomina(0));
+            ventanasPer.forEach((k, v) -> v.setTipoNomina(0));
+            ventanasDec.forEach((k, v) -> v.setTipoNomina(0));
+            ventanasOtr.forEach((k, v) -> v.setTipoNomina(0));
             llenarTabla();
         }
     }//GEN-LAST:event_cmbTipoNominaItemStateChanged
 
-    
+    private void btnAsociarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAsociarActionPerformed
+        // TODO add your handling code here:
+        String rfcsEmpleados = "";
+        for (int i = 0; i < listaEmpleados.size(); i++) {
+            rfcsEmpleados += (i == 0 ? "'" : ",'") + listaEmpleados.get(i).getReceptor().getRfc() + "'";
+        }
+        Folios fol = new Folios(this.emisor.getRfc(), rfcsEmpleados, this);
+        fol.setVisible(true);
+    }//GEN-LAST:event_btnAsociarActionPerformed
+
+    private void iniciarNominaEspecial() {
+        util = new utils.Utils(Elemento.log);
+        factory = new utils.ConnectionFactory(Elemento.log);
+        ventanasPer = new HashMap();
+        ventanasDec = new HashMap();
+        ventanasOtr = new HashMap();
+        uuidAsoc = new HashMap();
+        df.setParseBigDecimal(true);
+
+        int cont = 0;
+
+        tablaEmpleados.setEditingColumn(3);
+
+        if (this.isPtu) {
+            try {
+
+                String cantidadTotalPtu = "";
+                String cantidadIsr = "";
+                do {
+                    cantidadTotalPtu = JOptionPane.showInputDialog(null, cont > 0
+                            ? "La cantidad de PTU \"" + cantidadTotalPtu + "\" ingresada no es correcta, favor de introducirla nuevamente:"
+                            : "Ingrese la cantidad de PTU a repartir", "Cantidad de PTU", JOptionPane.QUESTION_MESSAGE
+                    );
+                    cont++;
+                } while (cantidadTotalPtu.trim().isEmpty() && !util.isNumeric(util.quitarComas(cantidadTotalPtu)));
+
+                cantidadTotalPtu = cantidadTotalPtu.trim();
+
+                this.importeTotalPtu = (BigDecimal) df.parse(cantidadTotalPtu.contains(".") ? (cantidadTotalPtu.endsWith(".") ? (cantidadTotalPtu + "0") : cantidadTotalPtu) : (cantidadTotalPtu + ".0"));
+                this.importePtu = util.redondear(importeTotalPtu.divide(new BigDecimal(idEmpleados.size()), 2, RoundingMode.HALF_UP));
+
+                cont = 0;
+                do {
+                    cantidadIsr = JOptionPane.showInputDialog(null, cont > 0
+                            ? "La cantidad de ISR \"" + cantidadIsr + "\" ingresada no es correcta, favor de introducirla nuevamente:"
+                            : "Ingresa el importe ISR segun el PTU individual de: " + df.format(importePtu), "Importe de ISR", JOptionPane.QUESTION_MESSAGE
+                    );
+                    cont++;
+                } while (cantidadIsr.trim().isEmpty() && util.isNumeric(util.quitarComas(cantidadIsr)));
+
+                this.importeIsr = (BigDecimal) df.parse(cantidadIsr);
+
+            } catch (HeadlessException | ParseException e) {
+                e.printStackTrace();
+                Elemento.log.error("Error al calcular el importe individual de PTU", e);
+            }
+
+            this.cmbTipoNomina.setSelectedIndex(1);
+        }
+    }
+
     public int calcularDiasPagados(Date date, Date date2) {
         try {
             if (!(date == null || date2 == null)) {
@@ -625,24 +682,43 @@ public class NominaGeneral extends javax.swing.JFrame {
         try {
             Date date = fechaInicial;
             Date date2;
-            if(fechaFinalPay == null){
+            if (fechaFinalPay == null) {
                 date2 = new Date();
-            }else{
+            } else {
                 date2 = fechaFinalPay;
             }
-            
+
             GregorianCalendar cal = new GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
             GregorianCalendar cal2 = new GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
 
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
             long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
-            long difd = difms / (((1000 * 60 * 60 * 24)+1) * 7);
+            long difd = difms / (((1000 * 60 * 60 * 24) + 1) * 7);
             return (int) difd;
         } catch (Exception ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al calcular los dias pagados: ", ex);
             return -1;
         }
+    }
+
+    public void setUuids(Folios fol) {
+        for (int i = 0; i < listaEmpleados.size(); i++) {
+            Empleado emp = listaEmpleados.get(i);
+            for (int j = 0; j < fol.docsPagar.size(); j++) {
+                Documento d = fol.docsPagar.get(j);
+                if (emp.getReceptor().getRfc().equalsIgnoreCase(d.getRfcReceptor())) {
+                    if (uuidAsoc.containsKey(emp.getIdEmpleado())) {
+                        String value = uuidAsoc.get(emp.getIdEmpleado());
+                        value += "," + d.getUuid();
+                        uuidAsoc.put(emp.getIdEmpleado(), value);
+                    } else {
+                        uuidAsoc.put(emp.getIdEmpleado(), d.getUuid());
+                    }
+                }
+            }
+        }
+        fol.dispose();
     }
 
     /**
@@ -681,6 +757,7 @@ public class NominaGeneral extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAsociar;
     private javax.swing.JComboBox cmbTipoNomina;
     private com.toedter.calendar.JDateChooser fechaFinalPago;
     private com.toedter.calendar.JDateChooser fechaInicialPago;
@@ -705,12 +782,12 @@ public class NominaGeneral extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
-        
+
         BigDecimal tp = BigDecimal.ZERO;
         BigDecimal to = BigDecimal.ZERO;
         BigDecimal td = BigDecimal.ZERO;
-        
-        TableCellRenderer render = new TableCellRenderer(){
+
+        TableCellRenderer render = new TableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = new JLabel(value == null ? "" : value.toString());
@@ -718,52 +795,54 @@ public class NominaGeneral extends javax.swing.JFrame {
                 return lbl;
             }
         };
-        
-        if(numEmpleados != null){
+
+        if (numEmpleados != null) {
             for (int j = 0; j < numEmpleados.size(); j++) {
                 row = new Object[7];
-                Empleado emp = getEmpleado(numEmpleados.get(j), idEmpleados.get(j));
+                Empleado emp = getEmpleadoCompleto(numEmpleados.get(j), idEmpleados.get(j));
                 if (emp != null) {
                     Percepciones per;
                     OtrosPagos op;
                     Deducciones dec;
-                    
-                    if(!ventanasPer.containsKey(emp.getIdEmpleado())){
+
+                    listaEmpleados.add(emp);
+
+                    if (!ventanasPer.containsKey(emp.getIdEmpleado())) {
                         per = new Percepciones(emp.getIdEmpleado(), true, isPtu, importePtu);
-                        per.addComponentListener(new ComponentAdapter(){
-                            public void componentHidden(ComponentEvent e){
+                        per.addComponentListener(new ComponentAdapter() {
+                            public void componentHidden(ComponentEvent e) {
                                 llenarTabla();
                             }
                         });
                         ventanasPer.put(emp.getIdEmpleado(), per);
-                    }else{
+                    } else {
                         per = ventanasPer.get(emp.getIdEmpleado());
                     }
-                    
-                    if(!ventanasOtr.containsKey(emp.getIdEmpleado())){
+
+                    if (!ventanasOtr.containsKey(emp.getIdEmpleado())) {
                         op = new OtrosPagos(emp.getIdEmpleado(), true);
-                        op.addComponentListener(new ComponentAdapter(){
-                            public void componentHidden(ComponentEvent e){
+                        op.addComponentListener(new ComponentAdapter() {
+                            public void componentHidden(ComponentEvent e) {
                                 llenarTabla();
                             }
                         });
                         ventanasOtr.put(emp.getIdEmpleado(), op);
-                    }else{
+                    } else {
                         op = ventanasOtr.get(emp.getIdEmpleado());
                     }
-                    
-                    if(!ventanasDec.containsKey(emp.getIdEmpleado())){
+
+                    if (!ventanasDec.containsKey(emp.getIdEmpleado())) {
                         dec = new Deducciones(emp.getIdEmpleado(), true, isPtu, importeIsr);
-                        dec.addComponentListener(new ComponentAdapter(){
-                            public void componentHidden(ComponentEvent e){
+                        dec.addComponentListener(new ComponentAdapter() {
+                            public void componentHidden(ComponentEvent e) {
                                 llenarTabla();
                             }
                         });
                         ventanasDec.put(emp.getIdEmpleado(), dec);
-                    }else{
+                    } else {
                         dec = ventanasDec.get(emp.getIdEmpleado());
                     }
-                    
+
                     //Se igualan a cero cuando el tipo de nomina es Extraordinaria y que no exista un tipo de nomina existente
                     BigDecimal i = util.redondear(per.getTotalExento().add(per.getTotalGravado()));
                     BigDecimal o = util.redondear(op.getTotalOtrosPagos());
@@ -781,16 +860,16 @@ public class NominaGeneral extends javax.swing.JFrame {
                     model.addRow(row);
                 }
             }
-            
+
             tablaEmpleados.getColumnModel().getColumn(4).setCellRenderer(render);
             tablaEmpleados.getColumnModel().getColumn(5).setCellRenderer(render);
             tablaEmpleados.getColumnModel().getColumn(6).setCellRenderer(render);
-            
+
             totalRecibos = numEmpleados.size();
             lblNumRecibos.setText("Número de Recibos: " + totalRecibos);
-            totalPer.setText("$"+df.format(tp));
-            totalOtros.setText("$"+df.format(to));
-            totalDed.setText("$"+df.format(td));
+            totalPer.setText("$" + df.format(tp));
+            totalOtros.setText("$" + df.format(to));
+            totalDed.setText("$" + df.format(td));
         }
     }
 
@@ -801,7 +880,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         Empleado emp = null;
 
         try {
-            rs = stmt.executeQuery("SELECT idEmpleado,fechaInicialRelLaboral FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado like \'" + numEmpleado + "\'");
+            rs = stmt.executeQuery("SELECT idEmpleado,fechaInicialRelLaboral FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado = \'" + numEmpleado + "\'");
             if (rs.next()) {
                 emp = new Empleado();
                 emp.setNumEmpleado(numEmpleado);
@@ -847,6 +926,8 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emp.setRiesgoPuesto(rs.getString("riesgoPuesto"));
                 emp.setSalarioDiarioInt(rs.getBigDecimal("salarioDiarioInt"));
                 emp.setSalarioBaseCotApor(rs.getBigDecimal("salarioBaseCotApor"));
+
+                emp.setReceptor(getEmpleadoReceptor(idEmpleado));
             }
             rs.close();
             stmt.close();
@@ -910,6 +991,30 @@ public class NominaGeneral extends javax.swing.JFrame {
             Elemento.log.error("Excepcion al obtener los datos fiscales del Empleado con ID: " + idEmpleado, e);
         }
         return fact;
+    }
+
+    private Receptor getEmpleadoReceptor(int idEmpleado) {
+        Connection con = Elemento.odbc();
+        Statement stmt = factory.stmtLectura(con);
+        ResultSet rs;
+        Receptor rec = null;
+        try {
+            rs = stmt.executeQuery("SELECT * FROM EmpleadosRec WHERE id = " + idEmpleado);
+            if (rs.next()) {
+                rec = new Receptor();
+                rec.setNombre(rs.getString("nombre"));
+                rec.setRfc(rs.getString("rfc"));
+                rec.setCp(rs.getString("cp"));
+                rec.setRegimenFiscal(rs.getString("regimenFiscal"));
+            }
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Elemento.log.error("Excepcion al obtener los datos fiscales del Empleado con ID: " + idEmpleado, e);
+        }
+        return rec;
     }
 
     private BigDecimal obtenerNetoAPagar(int idEmpleado) {
@@ -1009,7 +1114,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
         return regimenFiscal;
     }
-    
+
     private List<complementos.nominas.Deducciones.Deduccion> getDeducciones(Deducciones dec) {
         DefaultTableModel model = (DefaultTableModel) dec.tabla.getModel();
         List<complementos.nominas.Deducciones.Deduccion> lista = new ArrayList();
@@ -1072,7 +1177,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         List<String> conceptos = new ArrayList();
         BigDecimal pers = util.redondear(perc.getTotalSueldos().add(otro.getTotalOtrosPagos()));
         BigDecimal deds = util.redondear(dec.getTotalRetenido().add(dec.getTotalOtras()));
-        String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@"+deds.toString()+"@" + pers.toString() + "\r\n";
+        String con = "C1: 84111505@ACT@.@.@1@Pago de nómina@" + pers.toString() + "@" + deds.toString() + "@" + pers.toString() + "\r\n";
         conceptos.add(con);
         return conceptos;
     }

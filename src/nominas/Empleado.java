@@ -6,6 +6,7 @@ package nominas;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import utils.cfdi.Receptor;
 
 /**
  *
@@ -14,6 +15,15 @@ import java.util.Date;
 public class Empleado {
     private complementos.nominas.Empleado emp;
     private int idEmpleado;
+    private Receptor receptor;
+
+    public Receptor getReceptor() {
+        return receptor;
+    }
+
+    public void setReceptor(Receptor receptor) {
+        this.receptor = receptor;
+    }
     
     public Empleado(){
         emp = new complementos.nominas.Empleado();

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-/*
+ /*
  * Folios.java
  *
  * Created on 13/11/2011, 08:13:44 PM
@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import nominas.NominaGeneral;
 import nominas.configuracion.NominaCorreos;
 import utils.Utils;
 import pagos.Documento;
@@ -67,10 +68,11 @@ public class Folios extends javax.swing.JFrame {
     private Factura_View fv;
     private int orderColumn = -1;
     private String tipoOrder = "ASC"; //variable para el tipo de ordenamiento de los folios
-    
+
     RecibosPagos rp;
     Pago p;
     private CancelarView cv;
+    private NominaGeneral nominaGeneral;
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     public Folios() {
@@ -87,9 +89,9 @@ public class Folios extends javax.swing.JFrame {
                 rfcEmisor.clear();
                 uuid.clear();
                 idTiposComprobante.clear();
-                
+
                 activar = true;
-                
+
                 while (rs.next()) {
                     String rfcE = rs.getString("rfcEmisor");
                     fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
@@ -123,16 +125,16 @@ public class Folios extends javax.swing.JFrame {
         con = conexion();
         setTableHeaderListener();
     }
-    
-    public Folios(String rfcEmi, String rfcReceptor, Factura_View fv, RecibosPagos rp){
+
+    public Folios(String rfcEmi, String rfcReceptor, Factura_View fv, RecibosPagos rp) {
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         //finishWhile = true;
-        if(fv != null){
+        if (fv != null) {
             this.fv = fv;
         }
-        if(rp != null){
+        if (rp != null) {
             this.rp = rp;
         }
         try {
@@ -140,7 +142,7 @@ public class Folios extends javax.swing.JFrame {
             con = conexion();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND idComprobante <> 4 AND timbrado = True" + order);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND idComprobante <> 4 AND timbrado = True" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -186,8 +188,8 @@ public class Folios extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    
-    public Folios(String rfcEmi, String rfcReceptor, RecibosPagos rp, Pago p){
+
+    public Folios(String rfcEmi, String rfcReceptor, RecibosPagos rp, Pago p) {
         this.rp = rp;
         this.p = p;
         initComponents();
@@ -198,7 +200,7 @@ public class Folios extends javax.swing.JFrame {
             String order = getOrdenamiento();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND idComprobante <> 4 AND timbrado = True" + order);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND idComprobante <> 4 AND timbrado = True" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -238,19 +240,19 @@ public class Folios extends javax.swing.JFrame {
                 con.close();
             }
             setTableHeaderListener();
-            
+
         } catch (SQLException e) {
             Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
             e.printStackTrace();
         }
     }
 
-    public Folios(String rfcEmi, String rfcReceptor, CancelarView cv){
+    public Folios(String rfcEmi, String rfcReceptor, CancelarView cv) {
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         //finishWhile = true;
-        if(cv != null){
+        if (cv != null) {
             this.cv = cv;
         }
         try {
@@ -258,7 +260,7 @@ public class Folios extends javax.swing.JFrame {
             con = conexion();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '"+rfcEmi+"' AND rfc = '"+rfcReceptor+"' AND timbrado = True" + order);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND timbrado = True" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -304,15 +306,78 @@ public class Folios extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    
-    private void setTableHeaderListener(){
-        if(folios != null){
+
+    public Folios(String rfcEmi, String rfcsEmpleados, NominaGeneral nominaGeneral) {
+        initComponents();
+        setLocationRelativeTo(null);
+        model = (DefaultTableModel) folios.getModel();
+        //finishWhile = true;
+        if (nominaGeneral != null) {
+            this.nominaGeneral = nominaGeneral;
+            try {
+                String order = getOrdenamiento();
+                con = conexion();
+                if (con != null) {
+                    Statement stmt = factory.stmtLectura(con);
+                    ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc in(" + rfcsEmpleados + ") AND idComprobante = 4 AND timbrado = True" + order);
+                    Object[] fila = new Object[7];
+                    rfcEmisor.clear();
+                    uuid.clear();
+                    idTiposComprobante.clear();
+
+                    //Deshabilitar los controles
+                    activar = false;
+                    consultar.setEnabled(false);
+                    //verificar.setEnabled(false);
+                    reporte.setEnabled(false);
+                    folioTxt.setEnabled(false);
+                    noTimbrados.setEnabled(false);
+                    porEmisores.setEnabled(false);
+
+                    verificar.setText("Asociar");
+                    verificar.setEnabled(true);
+
+                    while (rs.next()) {
+                        String rfcE = rs.getString("rfcEmisor");
+                        fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
+                        fila[1] = ((String) rfcE);
+                        fila[2] = ((String) rs.getString("rfc"));
+                        fila[3] = ((String) rs.getString("status"));
+                        fila[4] = ((String) sdf.format(new Date(rs.getTimestamp("fecha").getTime())));
+                        fila[5] = ((String) rs.getString("total"));
+                        fila[6] = ((Boolean) rs.getBoolean("timbrado"));
+
+                        rfcEmisor.add(rs.getString("rfcEmisor"));
+                        idTiposComprobante.add(rs.getInt("idComprobante"));
+                        uuid.add(rs.getString("UUID"));
+
+                        model.addRow(fila);
+                        fila = new Object[7];
+                    }
+
+                    rs.close();
+                    stmt.close();
+                    con.close();
+                }
+                setTableHeaderListener();
+            } catch (SQLException e) {
+                Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
+                e.printStackTrace();
+            }
+        } else {
+            util.printError("No existe instancia de Nomina General");
+            Elemento.log.error("No existe instancia de Nomina General");
+        }
+    }
+
+    private void setTableHeaderListener() {
+        if (folios != null) {
             folios.getTableHeader().addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if(orderColumn == folios.columnAtPoint(e.getPoint())){
+                    if (orderColumn == folios.columnAtPoint(e.getPoint())) {
                         tipoOrder = tipoOrder.equals("ASC") ? "DESC" : "ASC";
-                    }else{
+                    } else {
                         tipoOrder = "ASC";
                     }
                     orderColumn = folios.columnAtPoint(e.getPoint());
@@ -321,43 +386,43 @@ public class Folios extends javax.swing.JFrame {
             });
         }
     }
-    
-    private String getOrdenamiento(){
+
+    private String getOrdenamiento() {
         String query;
-        switch(this.orderColumn){
+        switch (this.orderColumn) {
             case 0:
                 query = " ORDER BY serie " + this.tipoOrder + ", folio DESC, rfcEmisor ASC";
-            break;
-            
+                break;
+
             case 1:
                 query = " ORDER BY rfcEmisor " + this.tipoOrder + ", serie ASC, folio DESC";
-            break;
-            
+                break;
+
             case 2:
                 query = " ORDER BY rfc " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
-            break;
-            
+                break;
+
             case 3:
                 query = " ORDER BY status " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
-            break;
-            
+                break;
+
             case 4:
                 query = " ORDER BY fecha " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
-            break;
-            
+                break;
+
             case 5:
                 query = " ORDER BY total " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
-            break;
-            
+                break;
+
             case 6:
                 query = " ORDER BY timbrado " + this.tipoOrder + ", rfcEmisor ASC, serie ASC, folio DESC";
-            break;
-            
+                break;
+
             default:
                 query = " ORDER BY fecha DESC, rfcEmisor ASC, serie ASC, folio DESC";
-            break;
+                break;
         }
-        
+
         return query;
     }
 
@@ -631,9 +696,9 @@ public class Folios extends javax.swing.JFrame {
         Object[] fila = new Object[7];
         String order = getOrdenamiento();
         String query = "SELECT * FROM Facturas " + tim + order;
-        
+
         try {
-            
+
             con = conexion();
             Statement stmt;
             ResultSet rs;
@@ -677,7 +742,7 @@ public class Folios extends javax.swing.JFrame {
         Boolean tim = (Boolean) model.getValueAt(row, 6);
         crearNotaCre.setText("Crear Nota de Credito");
         String estatus = model.getValueAt(row, 3).toString();
-        if(activar){
+        if (activar) {
             if (!tim && estatus.equalsIgnoreCase("NO TIMBRADA")) {
                 enviar.setEnabled(false);
                 verPdf.setEnabled(false);
@@ -701,14 +766,14 @@ public class Folios extends javax.swing.JFrame {
                 verificar.setEnabled(true);
                 crearNotaCre.setEnabled(true);
             }
-        }else if(this.rp != null){
+        } else if (this.rp != null) {
             verificar.setEnabled(true);
-        }else if(this.cv != null){
-            int [] rowsSelected = folios.getSelectedRows();
+        } else if (this.cv != null) {
+            int[] rowsSelected = folios.getSelectedRows();
 
-            if(rowsSelected.length != 1){
+            if (rowsSelected.length != 1) {
                 verificar.setEnabled(false);
-            }else{
+            } else {
                 verificar.setEnabled(true);
             }
         }
@@ -725,7 +790,7 @@ public class Folios extends javax.swing.JFrame {
         String estatus = model.getValueAt(row, 3).toString();
         Elemento.leerConfig(rfcEmi);
 
-        String name = folioSerie + "_" + rfcEmi + "_" + rfcRec + (estatus.equals("PREFACTURA") ? "" :  ("_" + uid));
+        String name = folioSerie + "_" + rfcEmi + "_" + rfcRec + (estatus.equals("PREFACTURA") ? "" : ("_" + uid));
         String pathXml = (estatus.equals("PREFACTURA") ? Elemento.pathXmlST : Elemento.pathXml);
         String path = "";
 
@@ -737,7 +802,7 @@ public class Folios extends javax.swing.JFrame {
                     util.escribirArchivo(getTextXml(serie, folio, rfcEmi, rfcRec), pathXml, name + ".xml");
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    Elemento.log.error("Ocurrio un error al regenerar el XML:",ex);
+                    Elemento.log.error("Ocurrio un error al regenerar el XML:", ex);
                 }
                 return name;
             } else {
@@ -763,7 +828,7 @@ public class Folios extends javax.swing.JFrame {
             String path;
             isCancelado = estatus.equalsIgnoreCase("CANCELADA");
             int tipoComprobante = this.idTiposComprobante.get(row);
-            
+
             if (pdf.exists()) {
                 path = pdf.getAbsolutePath();
                 if (pdfCancel.exists()) {
@@ -819,10 +884,10 @@ public class Folios extends javax.swing.JFrame {
                 series.add(serie);
                 emis.add(rfcEmi);
                 recs.add(rfcRec);
-                
+
                 nombre = this.obtenerNombreComprobante(row);
-                
-                if(i == 0){
+
+                if (i == 0) {
                     try {
                         emailO = this.getEmail("Emisores", rfcEmi);
                         passO = this.getPass(rfcEmi);
@@ -837,49 +902,49 @@ public class Folios extends javax.swing.JFrame {
                     break revisando;
                 }
 
-                xmls.append(Elemento.pathXml).append(nombre).append(".xml").append((i == (selec.length -1) ? "" : coma));
-                pdfs.append(Elemento.pathPdf).append(nombre).append(".pdf").append((i == (selec.length -1) ? "" : coma));
-                nameX.append(nombre).append(".xml").append((i == (selec.length -1) ? "" : coma));
-                nameP.append(nombre).append(".pdf").append((i == (selec.length -1) ? "" : coma));
+                xmls.append(Elemento.pathXml).append(nombre).append(".xml").append((i == (selec.length - 1) ? "" : coma));
+                pdfs.append(Elemento.pathPdf).append(nombre).append(".pdf").append((i == (selec.length - 1) ? "" : coma));
+                nameX.append(nombre).append(".xml").append((i == (selec.length - 1) ? "" : coma));
+                nameP.append(nombre).append(".pdf").append((i == (selec.length - 1) ? "" : coma));
             }
 
             try {
                 boolean continuar = true;
                 String ent = emis.get(0);
-                
-                for(String x : emis){
-                    if(!x.equals(ent)){
+
+                for (String x : emis) {
+                    if (!x.equals(ent)) {
                         continuar = false;
                     }
                 }
-                
-                if(continuar){
+
+                if (continuar) {
                     boolean enviarNomi = true;
                     String nant = "N";
-                    
-                    for(String x: series){
-                        if(!x.equals(nant)){
+
+                    for (String x : series) {
+                        if (!x.equals(nant)) {
                             enviarNomi = false;
                         }
                     }
-                    
-                    if(enviarNomi){
+
+                    if (enviarNomi) {
                         String pathXmls[] = xmls.toString().split(",");
                         String pathPdfs[] = pdfs.toString().split(",");
                         String nameXmls[] = nameX.toString().split(",");
                         String namePdfs[] = nameP.toString().split(",");
-                        
+
                         NominaCorreos nc = new NominaCorreos(emailO, passO, recs, pathXmls, pathPdfs, nameXmls, namePdfs);
                         nc.setVisible(true);
-                        
-                    }else{
+
+                    } else {
                         boolean si = true;
                         String ant = recs.get(0);
 
                         for (String x : recs) {
                             if (!x.equals(ant)) {
                                 si = false;
-                            } 
+                            }
                         }
                         if (si) {
                             if (!serie.equalsIgnoreCase("NOM")) {
@@ -888,7 +953,7 @@ public class Folios extends javax.swing.JFrame {
                                 correo = getEmail("EmpleadosRec", ant);
                             }
                         }
-                        
+
                         String args[] = new String[8];
                         args[0] = xmls.toString();
                         args[1] = pdfs.toString();
@@ -901,7 +966,7 @@ public class Folios extends javax.swing.JFrame {
 
                         SendMail.main(args);
                     }
-                }else{
+                } else {
                     util.printError("Solo puede enviar comprobantes del mismo emisor");
                 }
             } catch (SQLException ex) {
@@ -914,7 +979,7 @@ public class Folios extends javax.swing.JFrame {
             rfcEmi = model.getValueAt(row, 1).toString().trim();
             rfcRec = model.getValueAt(row, 2).toString().trim();
             estatus = model.getValueAt(row, 3).toString().trim();
-            
+
             nombre = this.obtenerNombreComprobante(row);
 
             try {
@@ -1010,7 +1075,7 @@ public class Folios extends javax.swing.JFrame {
 
     private void verificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verificarActionPerformed
         // TODO add your handling code here:
-        if(activar){
+        if (activar) {
             TestValidator validar = new TestValidator();
             int row = folios.getSelectedRow();
             String re = model.getValueAt(row, 1).toString();
@@ -1025,7 +1090,7 @@ public class Folios extends javax.swing.JFrame {
             }
 
             util.print(validar.consultar(validar.formarXml(re, rr, tt, uid)));
-        }else{
+        } else {
             cfdisAsoc = new ArrayList();
             docsPagar = new ArrayList();
             Documento doc;
@@ -1034,168 +1099,178 @@ public class Folios extends javax.swing.JFrame {
             BigDecimal monto = p != null ? p.getMonto() : null;
             BigDecimal total;
             BigDecimal importePagado = BigDecimal.ZERO;
-            
+
             final BigDecimal TASA_IVA_16 = new BigDecimal("0.160000");
             final BigDecimal TASA_IVA_8 = new BigDecimal("0.080000");
             final BigDecimal TASA_IVA_0 = new BigDecimal("0.000000");
-            
-            if(select.length > 0){
+
+            if (select.length > 0) {
                 for (int i = 0; i < select.length; i++) {
                     try {
                         int pos = select[i];
-                        doc = new Documento();
                         cfdisAsoc.add(uuid.get(pos));
-                        String nameXml = folios.getModel().getValueAt(pos,0).toString() + "_" + folios.getModel().getValueAt(pos,1).toString() + "_" + folios.getModel().getValueAt(pos,2).toString();
-                        File xml = new File(Elemento.pathXml + nameXml + ".xml");
-                        
-                        if(!xml.exists()){
-                            nameXml += "_" + uuid.get(pos) + ".xml";
-                        }
-                        
-                        comp = util.analizarXml(Elemento.pathXml+nameXml);
-                        
-                        total = new BigDecimal(comp.getTotal());
-                        if(p != null){
-                            importePagado = monto.compareTo(total) >= 0 ? total : monto;
-                            if(monto.compareTo(BigDecimal.ZERO) == 1)
-                                monto = monto.subtract(importePagado);
-                            
-                            /****** Codigo pendiente ******/
-                            /*
-                            if(p.getMoneda().equals(doc.getMoneda() == null ? "MXN" : doc.getMoneda())){
-                                doc.setEquivalencia(BigDecimal.ONE);
-                            }else if(p.getMoneda().equals("MXN")){
-                                doc.setEquivalencia(util.redondear(p.getMonto().divide(doc.getTipoCambio())));   
-                            }else{
-                                if(p.getTipoCambio().compareTo(doc.getTipoCambio()) == 1){
-                                    doc.setEquivalencia(util.redondear(doc.getTipoCambio() * p.getMonto()));
-                                }
-                                doc.setEquivalencia(util.redondear(monto));
+
+                        if (p != null || nominaGeneral != null) {
+                            String nameXml = folios.getModel().getValueAt(pos, 0).toString() + "_" + folios.getModel().getValueAt(pos, 1).toString() + "_" + folios.getModel().getValueAt(pos, 2).toString();
+                            File xml = new File(Elemento.pathXml + nameXml + ".xml");
+
+                            if (!xml.exists()) {
+                                nameXml += "_" + uuid.get(pos) + ".xml";
                             }
-                            */
+
+                            comp = util.analizarXml(Elemento.pathXml + nameXml);
+                            total = new BigDecimal(comp.getTotal());
+
+                            doc = new Documento();
                             doc.setEquivalencia(BigDecimal.ONE);
-                        }
-                        
-                        doc.setRfcEmisor(comp.getEmisor().getRfc());
-                        doc.setRfcReceptor(comp.getReceptor().getRfc());
-                        doc.setFolio(comp.getFolio());
-                        doc.setSerie(comp.getSerie());
-                        doc.setImpPagado(importePagado);
-                        doc.setImpSaldoAnterior(total);
-                        doc.setImpSaldoInsoluto(total.subtract(importePagado));
-                        doc.setMoneda(comp.getMoneda());
-                        doc.setNumParcialidad(1);
-                        doc.setTipoCambio(comp.getTipoCambio() == null || comp.getTipoCambio().isEmpty() ? null : new BigDecimal(comp.getTipoCambio()));
-                        doc.setMetodoPago(comp.getMetodoPago());
-                        doc.setUuid(uuid.get(pos));
-                        
-                        //Pagos 2.0
-                        if(comp.getImpuestos() != null){
-                            doc.setObjImp("02");
-                            
-                            //List<Documento.Impuesto> impuestos = new ArrayList();
-                            //Retenciones
-                            if(comp.getImpuestos().getImpuestosRetenidos() != null && !comp.getImpuestos().getImpuestosRetenidos().isEmpty()){
-                                for(Retenciones r : comp.getImpuestos().getImpuestosRetenidos()){
-                                    switch(r.getNombre().toUpperCase()){
-                                        case "IVA":
-                                            doc.setRetencionIVA(r.getImporte());
-                                            //impuestos.add(new Documento.Impuesto('R',r.getNombre(), "002", "Tasa", r.get, total, monto));
-                                        break;
-                                        
-                                        case "ISR":
-                                            doc.setRetensionISR(r.getImporte());
-                                        break;
-                                        
-                                        case "IEPS":
-                                            doc.setRetensionIEPS(r.getImporte());
-                                        break;
-                                    }
+
+                            doc.setRfcEmisor(comp.getEmisor().getRfc());
+                            doc.setRfcReceptor(comp.getReceptor().getRfc());
+                            doc.setFolio(comp.getFolio());
+                            doc.setSerie(comp.getSerie());
+                            doc.setUuid(uuid.get(pos));
+
+                            if (p != null) {
+                                importePagado = monto.compareTo(total) >= 0 ? total : monto;
+                                
+                                /**
+                                * **** Codigo pendiente *****
+                                */
+                                /*
+                                if (monto.compareTo(BigDecimal.ZERO) == 1) {
+                                    monto = monto.subtract(importePagado);
                                 }
-                            }
-                            
-                            if(comp.getImpuestos().getImpuestosTrasladados() != null && !comp.getImpuestos().getImpuestosTrasladados().isEmpty()){
-                                for(Traslados t: comp.getImpuestos().getImpuestosTrasladados()){
-                                    if(t.getNombre().equalsIgnoreCase("IVA")){
-                                        if(t.getTasa().compareTo(TASA_IVA_16) == 0){
-                                            BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_16.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
-                                            doc.setTrasladoBaseIVA16(baseImportePagado);
-                                            doc.setTrasladoImpuestoIVA16(importePagado.subtract(baseImportePagado));
-                                        }
-                                        if(t.getTasa().compareTo(TASA_IVA_8) == 0){
-                                            BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_8.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
-                                            doc.setTrasladoBaseIVA8(baseImportePagado);
-                                            doc.setTrasladoImpuestoIVA8(importePagado.subtract(baseImportePagado));
-                                        }
-                                        if(t.getTasa().compareTo(TASA_IVA_0) == 0 && t.getTipoFactor().equalsIgnoreCase("Tasa")){
-                                            doc.setTrasladoBaseIVA0(importePagado);
-                                            doc.setTrasladoImpuestoIVA0(BigDecimal.ZERO);
-                                        }
-                                        if(t.getTipoFactor().equalsIgnoreCase("Exento")){
-                                            doc.setTrasladoBaseIVAExento(importePagado);
+                                if(p.getMoneda().equals(doc.getMoneda() == null ? "MXN" : doc.getMoneda())){
+                                    doc.setEquivalencia(BigDecimal.ONE);
+                                }else if(p.getMoneda().equals("MXN")){
+                                    doc.setEquivalencia(util.redondear(p.getMonto().divide(doc.getTipoCambio())));   
+                                }else{
+                                    if(p.getTipoCambio().compareTo(doc.getTipoCambio()) == 1){
+                                        doc.setEquivalencia(util.redondear(doc.getTipoCambio() * p.getMonto()));
+                                    }
+                                    doc.setEquivalencia(util.redondear(monto));
+                                }
+                                 */
+                                
+                                doc.setImpPagado(importePagado);
+                                doc.setImpSaldoAnterior(total);
+                                doc.setImpSaldoInsoluto(total.subtract(importePagado));
+                                doc.setMoneda(comp.getMoneda());
+                                doc.setNumParcialidad(1);
+                                doc.setTipoCambio(comp.getTipoCambio() == null || comp.getTipoCambio().isEmpty() ? null : new BigDecimal(comp.getTipoCambio()));
+                                doc.setMetodoPago(comp.getMetodoPago());
+                                
+                                //Pagos 2.0
+                                if (comp.getImpuestos() != null) {
+                                    doc.setObjImp("02");
+
+                                    //List<Documento.Impuesto> impuestos = new ArrayList();
+                                    //Retenciones
+                                    if (comp.getImpuestos().getImpuestosRetenidos() != null && !comp.getImpuestos().getImpuestosRetenidos().isEmpty()) {
+                                        for (Retenciones r : comp.getImpuestos().getImpuestosRetenidos()) {
+                                            switch (r.getNombre().toUpperCase()) {
+                                                case "IVA":
+                                                    doc.setRetencionIVA(r.getImporte());
+                                                    //impuestos.add(new Documento.Impuesto('R',r.getNombre(), "002", "Tasa", r.get, total, monto));
+                                                    break;
+
+                                                case "ISR":
+                                                    doc.setRetensionISR(r.getImporte());
+                                                    break;
+
+                                                case "IEPS":
+                                                    doc.setRetensionIEPS(r.getImporte());
+                                                    break;
+                                            }
                                         }
                                     }
+
+                                    if (comp.getImpuestos().getImpuestosTrasladados() != null && !comp.getImpuestos().getImpuestosTrasladados().isEmpty()) {
+                                        for (Traslados t : comp.getImpuestos().getImpuestosTrasladados()) {
+                                            if (t.getNombre().equalsIgnoreCase("IVA")) {
+                                                if (t.getTasa().compareTo(TASA_IVA_16) == 0) {
+                                                    BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_16.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                                                    doc.setTrasladoBaseIVA16(baseImportePagado);
+                                                    doc.setTrasladoImpuestoIVA16(importePagado.subtract(baseImportePagado));
+                                                }
+                                                if (t.getTasa().compareTo(TASA_IVA_8) == 0) {
+                                                    BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_8.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                                                    doc.setTrasladoBaseIVA8(baseImportePagado);
+                                                    doc.setTrasladoImpuestoIVA8(importePagado.subtract(baseImportePagado));
+                                                }
+                                                if (t.getTasa().compareTo(TASA_IVA_0) == 0 && t.getTipoFactor().equalsIgnoreCase("Tasa")) {
+                                                    doc.setTrasladoBaseIVA0(importePagado);
+                                                    doc.setTrasladoImpuestoIVA0(BigDecimal.ZERO);
+                                                }
+                                                if (t.getTipoFactor().equalsIgnoreCase("Exento")) {
+                                                    doc.setTrasladoBaseIVAExento(importePagado);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    doc.setObjImp("01");
                                 }
+
+                                docsPagar.add(doc);
+
+                                //suma
+                                if (doc.getRetencionIVA() != null) {
+                                    rp.totalRetencionesIVA = rp.totalRetencionesIVA != null ? rp.totalRetencionesIVA.add(doc.getRetencionIVA()) : doc.getRetencionIVA();
+                                    rp.pagoRetencionesIVA = rp.pagoRetencionesIVA != null ? rp.pagoRetencionesIVA.add(doc.getRetencionIVA()) : doc.getRetencionIVA();
+                                }
+
+                                if (doc.getRetensionISR() != null) {
+                                    rp.totalRetensionesISR = rp.totalRetensionesISR != null ? rp.totalRetensionesISR.add(doc.getRetensionISR()) : doc.getRetensionISR();
+                                    rp.pagoRetensionesISR = rp.pagoRetensionesISR != null ? rp.pagoRetensionesISR.add(doc.getRetensionISR()) : doc.getRetensionISR();
+                                }
+
+                                if (doc.getRetensionIEPS() != null) {
+                                    rp.totalRetensionesIEPS = rp.totalRetensionesIEPS != null ? rp.totalRetensionesIEPS.add(doc.getRetensionIEPS()) : doc.getRetensionIEPS();
+                                    rp.pagoRetensionesIEPS = rp.pagoRetensionesIEPS != null ? rp.pagoRetensionesIEPS.add(doc.getRetensionIEPS()) : doc.getRetensionIEPS();
+                                }
+
+                                if (doc.getTrasladoBaseIVA16() != null) {
+                                    rp.totalTrasladosBaseIVA16 = rp.totalTrasladosBaseIVA16 != null ? rp.totalTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16()) : doc.getTrasladoBaseIVA16();
+                                    rp.pagoTrasladosBaseIVA16 = rp.pagoTrasladosBaseIVA16 != null ? rp.pagoTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16()) : doc.getTrasladoBaseIVA16();
+                                }
+
+                                if (doc.getTrasladoImpuestoIVA16() != null) {
+                                    rp.totalTrasladosImpuestoIVA16 = rp.totalTrasladosImpuestoIVA16 != null ? rp.totalTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16()) : doc.getTrasladoImpuestoIVA16();
+                                    rp.pagoTrasladosImpuestoIVA16 = rp.pagoTrasladosImpuestoIVA16 != null ? rp.pagoTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16()) : doc.getTrasladoImpuestoIVA16();
+                                }
+
+                                if (doc.getTrasladoBaseIVA8() != null) {
+                                    rp.totalTrasladosBaseIVA8 = rp.totalTrasladosBaseIVA8 != null ? rp.totalTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8()) : doc.getTrasladoBaseIVA8();
+                                    rp.pagoTrasladosBaseIVA8 = rp.pagoTrasladosBaseIVA8 != null ? rp.pagoTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8()) : doc.getTrasladoBaseIVA8();
+                                }
+
+                                if (doc.getTrasladoImpuestoIVA8() != null) {
+                                    rp.totalTrasladosImpuestoIVA8 = rp.totalTrasladosImpuestoIVA8 != null ? rp.totalTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8()) : doc.getTrasladoImpuestoIVA8();
+                                    rp.pagoTrasladosImpuestoIVA8 = rp.pagoTrasladosImpuestoIVA8 != null ? rp.pagoTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8()) : doc.getTrasladoImpuestoIVA8();
+                                }
+
+                                if (doc.getTrasladoBaseIVA0() != null) {
+                                    rp.totalTrasladosBaseIVA0 = rp.totalTrasladosBaseIVA0 != null ? rp.totalTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0()) : doc.getTrasladoBaseIVA0();
+                                    rp.pagoTrasladosBaseIVA0 = rp.pagoTrasladosBaseIVA0 != null ? rp.pagoTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0()) : doc.getTrasladoBaseIVA0();
+                                }
+
+                                if (doc.getTrasladoImpuestoIVA0() != null) {
+                                    rp.totalTrasladosImpuestoIVA0 = rp.totalTrasladosImpuestoIVA0 != null ? rp.totalTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0()) : doc.getTrasladoImpuestoIVA0();
+                                    rp.pagoTrasladosImpuestoIVA0 = rp.pagoTrasladosImpuestoIVA0 != null ? rp.pagoTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0()) : doc.getTrasladoImpuestoIVA0();
+                                }
+
+                                if (doc.getTrasladoBaseIVAExento() != null) {
+                                    rp.totalTrasladosBaseIVAExento = rp.totalTrasladosBaseIVAExento != null ? rp.totalTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
+                                    rp.pagoTrasladosBaseIVAExento = rp.pagoTrasladosBaseIVAExento != null ? rp.pagoTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
+                                }
+
+                                rp.addDocumentos(this, p);
+                            } else {
+                                docsPagar.add(doc);
                             }
-                        }else{
-                            doc.setObjImp("01");
                         }
-                        
-                        docsPagar.add(doc);
-                        
-                        //suma
-                        if(p != null){
-                            if(doc.getRetencionIVA() != null){
-                                rp.totalRetencionesIVA = rp.totalRetencionesIVA != null ? rp.totalRetencionesIVA.add(doc.getRetencionIVA()) : doc.getRetencionIVA();
-                                rp.pagoRetencionesIVA = rp.pagoRetencionesIVA != null ? rp.pagoRetencionesIVA.add(doc.getRetencionIVA()) : doc.getRetencionIVA();
-                            }
 
-                            if(doc.getRetensionISR() != null){
-                                rp.totalRetensionesISR = rp.totalRetensionesISR != null ? rp.totalRetensionesISR.add(doc.getRetensionISR()) : doc.getRetensionISR();
-                                rp.pagoRetensionesISR = rp.pagoRetensionesISR != null ? rp.pagoRetensionesISR.add(doc.getRetensionISR()) : doc.getRetensionISR();
-                            }
-
-                            if(doc.getRetensionIEPS() != null){
-                                rp.totalRetensionesIEPS = rp.totalRetensionesIEPS != null ? rp.totalRetensionesIEPS.add(doc.getRetensionIEPS()) : doc.getRetensionIEPS();
-                                rp.pagoRetensionesIEPS = rp.pagoRetensionesIEPS != null ? rp.pagoRetensionesIEPS.add(doc.getRetensionIEPS()) : doc.getRetensionIEPS();
-                            }
-
-                            if(doc.getTrasladoBaseIVA16() != null){
-                                rp.totalTrasladosBaseIVA16 = rp.totalTrasladosBaseIVA16 != null ? rp.totalTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16()) : doc.getTrasladoBaseIVA16();
-                                rp.pagoTrasladosBaseIVA16 = rp.pagoTrasladosBaseIVA16 != null ? rp.pagoTrasladosBaseIVA16.add(doc.getTrasladoBaseIVA16()) : doc.getTrasladoBaseIVA16();
-                            }
-
-                            if(doc.getTrasladoImpuestoIVA16() != null){
-                                rp.totalTrasladosImpuestoIVA16 = rp.totalTrasladosImpuestoIVA16 != null ? rp.totalTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16()) : doc.getTrasladoImpuestoIVA16();
-                                rp.pagoTrasladosImpuestoIVA16 = rp.pagoTrasladosImpuestoIVA16 != null ? rp.pagoTrasladosImpuestoIVA16.add(doc.getTrasladoImpuestoIVA16()) : doc.getTrasladoImpuestoIVA16();
-                            }
-
-                            if(doc.getTrasladoBaseIVA8() != null){
-                                rp.totalTrasladosBaseIVA8 = rp.totalTrasladosBaseIVA8 != null ? rp.totalTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8()) : doc.getTrasladoBaseIVA8();
-                                rp.pagoTrasladosBaseIVA8 = rp.pagoTrasladosBaseIVA8 != null ? rp.pagoTrasladosBaseIVA8.add(doc.getTrasladoBaseIVA8()) : doc.getTrasladoBaseIVA8();
-                            }
-
-                            if(doc.getTrasladoImpuestoIVA8() != null){
-                                rp.totalTrasladosImpuestoIVA8 = rp.totalTrasladosImpuestoIVA8 != null ? rp.totalTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8()) : doc.getTrasladoImpuestoIVA8();
-                                rp.pagoTrasladosImpuestoIVA8 = rp.pagoTrasladosImpuestoIVA8 != null ? rp.pagoTrasladosImpuestoIVA8.add(doc.getTrasladoImpuestoIVA8()) : doc.getTrasladoImpuestoIVA8();
-                            }
-
-                            if(doc.getTrasladoBaseIVA0() != null){
-                                rp.totalTrasladosBaseIVA0 = rp.totalTrasladosBaseIVA0 != null ? rp.totalTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0()) : doc.getTrasladoBaseIVA0();
-                                rp.pagoTrasladosBaseIVA0 = rp.pagoTrasladosBaseIVA0 != null ? rp.pagoTrasladosBaseIVA0.add(doc.getTrasladoBaseIVA0()) : doc.getTrasladoBaseIVA0();
-                            }
-
-                            if(doc.getTrasladoImpuestoIVA0() != null){
-                                rp.totalTrasladosImpuestoIVA0 = rp.totalTrasladosImpuestoIVA0 != null ? rp.totalTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0()) : doc.getTrasladoImpuestoIVA0();
-                                rp.pagoTrasladosImpuestoIVA0 = rp.pagoTrasladosImpuestoIVA0 != null ? rp.pagoTrasladosImpuestoIVA0.add(doc.getTrasladoImpuestoIVA0()) : doc.getTrasladoImpuestoIVA0();
-                            }
-
-                            if(doc.getTrasladoBaseIVAExento() != null){
-                                rp.totalTrasladosBaseIVAExento = rp.totalTrasladosBaseIVAExento != null ? rp.totalTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
-                                rp.pagoTrasladosBaseIVAExento = rp.pagoTrasladosBaseIVAExento != null ? rp.pagoTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
-                            }
-                        }
-                        
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         String msg = "Error al obtener los datos de las documentos";
@@ -1203,20 +1278,20 @@ public class Folios extends javax.swing.JFrame {
                         util.printError(msg + " - " + ex.getMessage());
                     }
                 }
-                if(p != null){
-                    rp.addDocumentos(this, p);
-                }else{
-                    if(this.fv != null){
-                        this.fv.setUuids(this);
-                    }else if(this.rp != null){
-                        this.rp.setUuids(this);
-                    }else if(this.cv != null){
-                        this.cv.setUuidRelacionado(docsPagar.get(0));
-                    }
+
+                if (this.fv != null) {
+                    this.fv.setUuids(this);
+                } else if (this.rp != null) {
+                    this.rp.setUuids(this);
+                } else if (this.cv != null) {
+                    this.cv.setUuidRelacionado(docsPagar.get(0));
+                } else if (this.nominaGeneral != null) {
+                    this.nominaGeneral.setUuids(this);
                 }
+
                 this.setVisible(false);
-            }else{
-                JOptionPane.showMessageDialog(null,"Debe seleccionar almenos un documento", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Debe seleccionar almenos un documento", "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
         }
     }//GEN-LAST:event_verificarActionPerformed
@@ -1232,14 +1307,16 @@ public class Folios extends javax.swing.JFrame {
         int respuesta[];
         double descuento = 0.0;
         boolean tieneIva = true;
-        
-        if(!estatus.equals("PREFACTURA")){
-            if(verificarTipoComprobanteEgreso(rfcEmi)){
-                while(descuento <= 0.0){
-                    try{
+
+        if (!estatus.equals("PREFACTURA")) {
+            if (verificarTipoComprobanteEgreso(rfcEmi)) {
+                while (descuento <= 0.0) {
+                    try {
                         descuento = new Double(JOptionPane.showInputDialog(null, "Ingrese el total de descuento para la nota de crédito", "0.00"));
-                        if(descuento <= 0) throw new NumberFormatException(); 
-                    }catch(NumberFormatException e){
+                        if (descuento <= 0) {
+                            throw new NumberFormatException();
+                        }
+                    } catch (NumberFormatException e) {
                         util.printError("La cantidad que ingreso no es válida");
                         descuento = 0.0;
                     }
@@ -1249,7 +1326,7 @@ public class Folios extends javax.swing.JFrame {
                 tieneIva = (confirma == JOptionPane.YES_OPTION);
 
                 respuesta = obtenerEmiRecIDs(rfcEmi, rfcRec);
-                if(respuesta != null){
+                if (respuesta != null) {
                     idEmisor = respuesta[0];
                     idReceptor = respuesta[1];
 
@@ -1257,21 +1334,21 @@ public class Folios extends javax.swing.JFrame {
                     //fv.setVisible(true);
                 }
 
-            }else{
-                util.print("El Emisor " + rfcEmi + " no cuenta con un tipo de comprobante de Egreso"); 
+            } else {
+                util.print("El Emisor " + rfcEmi + " no cuenta con un tipo de comprobante de Egreso");
             }
-        }else{
+        } else {
             respuesta = obtenerEmiRecIDs(rfcEmi, rfcRec);
-            if(respuesta != null){
+            if (respuesta != null) {
                 idEmisor = respuesta[0];
                 idReceptor = respuesta[1];
 
-                Factura_View fv = new Factura_View(idEmisor, idReceptor, (Elemento.pathXmlST + (serieFolio+"_"+rfcEmi+"_"+rfcRec+".xml")));
+                Factura_View fv = new Factura_View(idEmisor, idReceptor, (Elemento.pathXmlST + (serieFolio + "_" + rfcEmi + "_" + rfcRec + ".xml")));
                 //fv.setVisible(true);
             }
         }
     }//GEN-LAST:event_crearNotaCreActionPerformed
-    
+
     private String obtenerCadenaOriginal(File xml) throws Exception {
         File stylesheet = new File("/Facturas/config/cadenaoriginal_3_3.xslt");
         Stylezer st = new Stylezer();
@@ -1427,50 +1504,50 @@ public class Folios extends javax.swing.JFrame {
         Statement stmt = factory.stmtLectura(conn);
         ResultSet rs;
         boolean hasEgreso = false;
-        try{
+        try {
             rs = stmt.executeQuery("SELECT TOP 1 1 FROM Folios WHERE rfc = '" + rfcEmi + "' AND idComprobante = 2");
-            if(rs.next()){
+            if (rs.next()) {
                 hasEgreso = true;
             }
-            
+
             rs.close();
             stmt.close();
             conn.close();
-        }catch(SQLException ex){
+        } catch (SQLException ex) {
             ex.printStackTrace();
             String msg = "Error al verificar tipo de comprobante egreso";
             util.printError(msg);
             Elemento.log.error(msg, ex);
         }
-        
+
         return hasEgreso;
     }
-    
-    private int[] obtenerEmiRecIDs(String rfcEmi, String rfcRec){
+
+    private int[] obtenerEmiRecIDs(String rfcEmi, String rfcRec) {
         int respuesta[] = new int[2];
         Connection conn = Elemento.odbc();
         Statement stmt = factory.stmtLectura(conn);
         ResultSet rs;
-        
+
         try {
             //Obtener ID de Emisor
             rs = stmt.executeQuery("SELECT TOP 1 id FROM Emisores WHERE rfc = '" + rfcEmi + "'");
-            if(rs.next()){
+            if (rs.next()) {
                 respuesta[0] = rs.getInt("id");
-            }else{
+            } else {
                 throw new Exception("No se encuentra el ID de Emisor con RFC " + rfcEmi);
             }
-            
+
             rs.close();
-            
+
             //Obtener ID de Receptor
             rs = stmt.executeQuery("SELECT TOP 1 id FROM Clientes WHERE rfc = '" + rfcRec + "'");
-            if(rs.next()){
+            if (rs.next()) {
                 respuesta[1] = rs.getInt("id");
-            }else{
+            } else {
                 throw new Exception("No se encuentra el ID de Receptor con RFC " + rfcRec);
             }
-            
+
             rs.close();
             stmt.close();
             conn.close();
@@ -1479,18 +1556,22 @@ public class Folios extends javax.swing.JFrame {
             String msg = "Error al obtener los IDs de Emisor y Receptor (Emisor: " + rfcEmi + ", Receptor: " + rfcRec + ")";
             util.printError(msg);
             Elemento.log.error(msg, e);
-            
+
             respuesta = null;
-            
+
             try {
-                if(stmt != null) stmt.close();
-                if(conn != null) conn.close();
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 Elemento.log.error("No se pudo cerrar la conexión a la base de datos", ex);
             }
         }
-        
+
         return respuesta;
     }
 }
