@@ -69,12 +69,10 @@ public class ConfigNominas extends javax.swing.JFrame {
         }
     }
 
-    public void consultarEmpleados(){
+    public void consultarEmpleados(String filtro, String valor){
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
-        Statement stmt2 = factory.stmtLectura(con);
         ResultSet rs;
-        ResultSet rs2;
         Object[] row;
         String num;
         String nom;
@@ -83,27 +81,35 @@ public class ConfigNominas extends javax.swing.JFrame {
         numeros.clear();
         nombres.clear();
         idEmpleados.clear();
+        String query = "SELECT er.id, er.nombre, e.numEmpleado FROM EmpleadosRec er "
+                    + "INNER JOIN Empleados e ON e.idEmpleado = er.id "
+                    + "WHERE er.idEmisor = "+idEmisor;
+        if(filtro != null && !filtro.isEmpty()){
+            switch(filtro){
+                case "nombre":
+                    query += " AND er.nombre like '*"+valor+"*'";
+                break;
+                case "numero":
+                    query += " AND e.numEmpleado = "+valor;
+                break;
+            }
+        }
         
         try {
-            rs = stmt.executeQuery("SELECT id, nombre FROM EmpleadosRec WHERE idEmisor = "+idEmisor);
+            rs = stmt.executeQuery(query);
             while(rs.next()){
                 row = new Object[2];
                 idEmpleado = rs.getInt("id");
-                
-                rs2 = stmt2.executeQuery("SELECT numEmpleado FROM Empleados WHERE idEmpleado="+idEmpleado);
-                if(rs2.next()){
-                    nom = rs.getString("nombre");
-                    num = rs2.getString("numEmpleado");
-                    numeros.add(num);
-                    nombres.add(nom);
-                    idEmpleados.add(idEmpleado);
-                    row[0] = num;
-                    row[1] = nom;
-                    model.addRow(row);
-                }
+                nom = rs.getString("nombre");
+                num = rs.getString("numEmpleado");
+                numeros.add(num);
+                nombres.add(nom);
+                idEmpleados.add(idEmpleado);
+                row[0] = num;
+                row[1] = nom;
+                model.addRow(row);
             }
             stmt.close();
-            stmt2.close();
             con.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -111,6 +117,9 @@ public class ConfigNominas extends javax.swing.JFrame {
         }
     }
     
+    public void consultarEmpleados(){
+        consultarEmpleados(null, null);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -192,9 +201,6 @@ public class ConfigNominas extends javax.swing.JFrame {
         nombreBusqueda.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 nombreBusquedaKeyPressed(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                nombreBusquedaKeyTyped(evt);
             }
         });
 
@@ -381,11 +387,6 @@ public class ConfigNominas extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void nombreBusquedaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_nombreBusquedaKeyTyped
-        // TODO add your handling code here:
-        
-    }//GEN-LAST:event_nombreBusquedaKeyTyped
-
     private void numeroBusquedaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_numeroBusquedaKeyTyped
         // TODO add your handling code here:
         
@@ -398,23 +399,9 @@ public class ConfigNominas extends javax.swing.JFrame {
         if(evt.getKeyCode() == KeyEvent.VK_ENTER){
             texto = nombreBusqueda.getText().trim();
             if(!texto.isEmpty()){
-                model.setRowCount(0);
-                for (int i = 0; i < nombres.size(); i++) {
-                    row = new Object[2];
-                    if(nombres.get(i).toUpperCase().startsWith(nombreBusqueda.getText().toUpperCase())){
-                        row[0] = numeros.get(i);
-                        row[1] = nombres.get(i);
-                        model.addRow(row);
-                    }
-                }
+                consultarEmpleados("nombre", texto);
             }else{
-                model.setRowCount(0);
-                for (int i = 0; i < nombres.size(); i++) {
-                    row = new Object[2];
-                    row[0] = numeros.get(i);
-                    row[1] = nombres.get(i);
-                    model.addRow(row);
-                }
+                consultarEmpleados();
             }
         }
     }//GEN-LAST:event_nombreBusquedaKeyPressed
@@ -423,31 +410,12 @@ public class ConfigNominas extends javax.swing.JFrame {
         // TODO add your handling code here:
         Object[] row;
         String texto;
-        if(evt.getKeyCode() == KeyEvent.VK_ENTER){          
+        if(evt.getKeyCode() == KeyEvent.VK_ENTER){
             texto = numeroBusqueda.getText().trim();
             if(!texto.isEmpty()){
-                if(isNumeric(texto)){
-                    model.setRowCount(0);
-                    for (int i = 0; i < numeros.size(); i++) {
-                        row = new Object[2];
-                        if(numeros.get(i).equals(texto)){
-                            row[0] = numeros.get(i);
-                            row[1] = nombres.get(i);
-                            model.addRow(row);
-                        }
-                    }
-                }else{
-                    evt.consume();
-                    JOptionPane.showMessageDialog(null, "Solo puede usar caracteres numericos");
-                }
+                consultarEmpleados("numero", texto);
             }else{
-                model.setRowCount(0);
-                for (int i = 0; i < numeros.size(); i++) {
-                    row = new Object[2];
-                    row[0] = numeros.get(i);
-                    row[1] = nombres.get(i);
-                    model.addRow(row);
-                }
+                consultarEmpleados();
             }
         }
     }//GEN-LAST:event_numeroBusquedaKeyPressed

@@ -31,19 +31,8 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="folioTxt" min="-2" pref="131" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="porEmisores" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="noTimbrados" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="reporte" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                              <Component id="reporte" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="445" max="-2" attributes="0"/>
                               <Component id="verificar" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="crearNotaCre" min="-2" max="-2" attributes="0"/>
@@ -57,7 +46,16 @@
                               <Component id="cancelar" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jLabel24" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="selectEmisores" min="-2" pref="269" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="folioTxt" min="-2" pref="131" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="noTimbrados" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="consultar" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -72,31 +70,27 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="consultar" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="folioTxt" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="porEmisores" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="noTimbrados" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="verPdf" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="enviar" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="cancelar" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="reporte" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="timbrar" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="verificar" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="crearNotaCre" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel24" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="selectEmisores" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="consultar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="folioTxt" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="noTimbrados" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <Component id="jScrollPane1" pref="368" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="verPdf" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="enviar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cancelar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="reporte" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="timbrar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="verificar" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="crearNotaCre" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jScrollPane1" pref="347" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -259,11 +253,6 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verificarActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="porEmisores">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Por Emisores"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="crearNotaCre">
       <Properties>
         <Property name="text" type="java.lang.String" value="Crear Nota de Credito"/>
@@ -272,6 +261,21 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="crearNotaCreActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="selectEmisores">
+      <Properties>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[28, 20]"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="selectEmisoresItemStateChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel24">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Emisor"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

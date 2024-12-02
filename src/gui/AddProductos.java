@@ -16,14 +16,13 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author Abe
  */
-public class AddProductos extends javax.swing.JFrame {
+public class AddProductos extends elemento.ClavesProdUniSat {
 
     /**
      * Creates new form AddProductos
      */
     ConnectionFactory factory = new ConnectionFactory();
     DefaultTableModel model;
-    Integer idClaveSat, idClaveUnidadSat;
     
     public AddProductos() {
         initComponents();
@@ -426,11 +425,15 @@ public class AddProductos extends javax.swing.JFrame {
         cu.setVentanaActual(this);
     }//GEN-LAST:event_buscarClaveUniActionPerformed
     
+    @Override
     public void setClaveSat(String clave){
+        this.claveSat = clave;
         claveprodserv.setText(clave);
     }
     
+    @Override
     public void setClaveUnidadSat(String clave){
+        this.claveUnidadSat = clave;
         claveunidad.setText(clave);
     }
     

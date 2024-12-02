@@ -56,10 +56,10 @@
               </Group>
               <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
           </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" pref="204" max="-2" attributes="0"/>
               <Component id="ejecutar" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="184" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -82,9 +82,9 @@
                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="rfcReceptor" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace pref="26" max="32767" attributes="0"/>
               <Component id="ejecutar" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -142,7 +142,7 @@
             <StringItem index="15" value="2027"/>
           </StringArray>
         </Property>
-        <Property name="selectedIndex" type="int" value="7"/>
+        <Property name="selectedIndex" type="int" value="12"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="comboHastaMes">
@@ -187,7 +187,7 @@
             <StringItem index="15" value="2027"/>
           </StringArray>
         </Property>
-        <Property name="selectedIndex" type="int" value="7"/>
+        <Property name="selectedIndex" type="int" value="12"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="ejecutar">

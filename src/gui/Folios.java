@@ -13,9 +13,11 @@ package gui;
 import com.impresoresdigitales.verificar.cfdi.TestValidator;
 import elemento.ConnectionFactory;
 import elemento.Elemento;
+import elemento.Emisor;
 import elemento.Exe;
 import elemento.Listener;
 import elemento.Stylezer;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import nominas.NominaGeneral;
@@ -68,6 +71,9 @@ public class Folios extends javax.swing.JFrame {
     private Factura_View fv;
     private int orderColumn = -1;
     private String tipoOrder = "ASC"; //variable para el tipo de ordenamiento de los folios
+    private DefaultComboBoxModel comboE;
+    private List<Emisor> listaEmisores;
+    private int selectedEmisor;
 
     RecibosPagos rp;
     Pago p;
@@ -80,40 +86,12 @@ public class Folios extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
         try {
-            String order = getOrdenamiento();
             con = conexion();
-            if (con != null) {
-                Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas" + order);
-                Object[] fila = new Object[7];
-                rfcEmisor.clear();
-                uuid.clear();
-                idTiposComprobante.clear();
-
-                activar = true;
-
-                while (rs.next()) {
-                    String rfcE = rs.getString("rfcEmisor");
-                    fila[0] = ((String) (rs.getString("serie") + "_" + rs.getString("folio")));
-                    fila[1] = ((String) rfcE);
-                    fila[2] = ((String) rs.getString("rfc"));
-                    fila[3] = ((String) rs.getString("status"));
-                    fila[4] = ((String) sdf.format(new Date(rs.getTimestamp("fecha").getTime())));
-                    fila[5] = ((String) rs.getString("total"));
-                    fila[6] = ((Boolean) rs.getBoolean("timbrado"));
-
-                    rfcEmisor.add(rs.getString("rfcEmisor"));
-                    idTiposComprobante.add(rs.getInt("idComprobante"));
-                    uuid.add(rs.getString("UUID"));
-
-                    model.addRow(fila);
-                    fila = new Object[7];
-                }
-
-                rs.close();
-                stmt.close();
-                con.close();
-            }
+            getEmisores(con, null);
+            String order = getOrdenamiento();
+            activar = true;
+            
+            consultarFacturas();
             setTableHeaderListener();
         } catch (Exception e) {
             Elemento.log.error("Excepcion al consultar los Folios Registrados: " + e.getMessage(), e);
@@ -140,6 +118,7 @@ public class Folios extends javax.swing.JFrame {
         try {
             String order = getOrdenamiento();
             con = conexion();
+            getEmisores(con, rfcEmi);
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
                 ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND idComprobante <> 4 AND timbrado = True" + order);
@@ -155,7 +134,6 @@ public class Folios extends javax.swing.JFrame {
                 reporte.setEnabled(false);
                 folioTxt.setEnabled(false);
                 noTimbrados.setEnabled(false);
-                porEmisores.setEnabled(false);
 
                 verificar.setText("Asociar");
                 verificar.setEnabled(true);
@@ -197,6 +175,7 @@ public class Folios extends javax.swing.JFrame {
         model = (DefaultTableModel) folios.getModel();
         try {
             con = conexion();
+            getEmisores(con, rfcEmi);
             String order = getOrdenamiento();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
@@ -213,7 +192,6 @@ public class Folios extends javax.swing.JFrame {
                 reporte.setEnabled(false);
                 folioTxt.setEnabled(false);
                 noTimbrados.setEnabled(false);
-                porEmisores.setEnabled(false);
 
                 verificar.setText("Asociar");
 
@@ -258,6 +236,7 @@ public class Folios extends javax.swing.JFrame {
         try {
             String order = getOrdenamiento();
             con = conexion();
+            getEmisores(con, rfcEmi);
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
                 ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND timbrado = True" + order);
@@ -273,7 +252,6 @@ public class Folios extends javax.swing.JFrame {
                 reporte.setEnabled(false);
                 folioTxt.setEnabled(false);
                 noTimbrados.setEnabled(false);
-                porEmisores.setEnabled(false);
 
                 verificar.setText("Asociar");
                 verificar.setEnabled(true);
@@ -317,9 +295,10 @@ public class Folios extends javax.swing.JFrame {
             try {
                 String order = getOrdenamiento();
                 con = conexion();
+                getEmisores(con, rfcEmi);
                 if (con != null) {
                     Statement stmt = factory.stmtLectura(con);
-                    ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc in(" + rfcsEmpleados + ") AND idComprobante = 4 AND timbrado = True" + order);
+                    ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc in(" + rfcsEmpleados + ") AND idComprobante = 4 AND timbrado = True AND status = 'VIGENTE'" + order);
                     Object[] fila = new Object[7];
                     rfcEmisor.clear();
                     uuid.clear();
@@ -332,7 +311,6 @@ public class Folios extends javax.swing.JFrame {
                     reporte.setEnabled(false);
                     folioTxt.setEnabled(false);
                     noTimbrados.setEnabled(false);
-                    porEmisores.setEnabled(false);
 
                     verificar.setText("Asociar");
                     verificar.setEnabled(true);
@@ -370,6 +348,46 @@ public class Folios extends javax.swing.JFrame {
         }
     }
 
+    private void getEmisores(Connection con, String rfc) throws SQLException{
+        comboE = (DefaultComboBoxModel) selectEmisores.getModel();
+        ItemListener[] il = selectEmisores.getItemListeners();
+        selectEmisores.removeItemListener(il[0]);
+        
+        if(con != null){
+            listaEmisores = new ArrayList();
+            comboE.removeAllElements();
+            
+            Statement stmt = factory.stmtLectura(con);
+            String query = "SELECT e.id, e.nombre, e.rfc, c.regimenFiscal FROM Emisores e "
+                    + "INNER JOIN Cuentas c ON c.rfc = e.rfc";
+            
+            if(rfc != null && !rfc.trim().isEmpty()){
+                query += " WHERE e.rfc = '" + rfc + "'";
+            }
+            ResultSet rs = stmt.executeQuery(query);
+
+            while(rs.next()){
+                Emisor emi = new Emisor();
+                emi.setIdEmisor(rs.getInt("id"));
+                emi.setNombre(rs.getString("nombre"));
+                emi.setRfc(rs.getString("rfc"));
+                emi.setRegimenFiscal(rs.getString("regimenFiscal"));
+                
+                listaEmisores.add(emi);
+                comboE.addElement(emi.getIdEmisor() + ", " + emi.getNombre() + ", " + emi.getRegimenFiscal());
+            }
+            
+            selectedEmisor = 0;
+            rs.close();
+            stmt.close();
+        }else{
+            throw new SQLException("La conexion es nula");
+        }
+        
+        selectEmisores.setModel(comboE);
+        selectEmisores.addItemListener(il[0]);
+    }
+    
     private void setTableHeaderListener() {
         if (folios != null) {
             folios.getTableHeader().addMouseListener(new MouseAdapter() {
@@ -447,8 +465,9 @@ public class Folios extends javax.swing.JFrame {
         reporte = new javax.swing.JButton();
         timbrar = new javax.swing.JButton();
         verificar = new javax.swing.JButton();
-        porEmisores = new javax.swing.JCheckBox();
         crearNotaCre = new javax.swing.JButton();
+        selectEmisores = new javax.swing.JComboBox();
+        jLabel24 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Folios Registrados");
@@ -554,8 +573,6 @@ public class Folios extends javax.swing.JFrame {
             }
         });
 
-        porEmisores.setText("Por Emisores");
-
         crearNotaCre.setText("Crear Nota de Credito");
         crearNotaCre.setEnabled(false);
         crearNotaCre.addActionListener(new java.awt.event.ActionListener() {
@@ -563,6 +580,15 @@ public class Folios extends javax.swing.JFrame {
                 crearNotaCreActionPerformed(evt);
             }
         });
+
+        selectEmisores.setMaximumSize(new java.awt.Dimension(28, 20));
+        selectEmisores.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                selectEmisoresItemStateChanged(evt);
+            }
+        });
+
+        jLabel24.setText("Emisor");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -575,19 +601,8 @@ public class Folios extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(porEmisores)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(noTimbrados))
-                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(reporte)
-                                .addGap(4, 4, 4)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(30, 30, 30)
+                                .addGap(445, 445, 445)
                                 .addComponent(verificar)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(crearNotaCre)
@@ -600,7 +615,16 @@ public class Folios extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(cancelar))
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel24)
+                                .addGap(18, 18, 18)
+                                .addComponent(selectEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(noTimbrados)
+                                .addGap(18, 18, 18)
                                 .addComponent(consultar)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -609,26 +633,25 @@ public class Folios extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(consultar)
-                            .addComponent(jLabel2)
-                            .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(porEmisores)
-                            .addComponent(noTimbrados))
-                        .addGap(40, 40, 40))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(verPdf)
-                            .addComponent(enviar)
-                            .addComponent(cancelar)
-                            .addComponent(reporte)
-                            .addComponent(timbrar)
-                            .addComponent(verificar)
-                            .addComponent(crearNotaCre))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel24)
+                    .addComponent(selectEmisores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(consultar)
+                    .addComponent(jLabel2)
+                    .addComponent(folioTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(noTimbrados))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(verPdf)
+                    .addComponent(enviar)
+                    .addComponent(cancelar)
+                    .addComponent(reporte)
+                    .addComponent(timbrar)
+                    .addComponent(verificar)
+                    .addComponent(crearNotaCre))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -652,47 +675,24 @@ public class Folios extends javax.swing.JFrame {
         // TODO add your handling code here:
         String tim;
         model.setRowCount(0);
-        String folio = folioTxt.getText().trim();
+        String textoBusqueda = folioTxt.getText().trim();
         Boolean timbra = (Boolean) noTimbrados.isSelected();
-        String rfcDato;
-
-        if (porEmisores.isSelected()) {
-            rfcDato = "rfcEmisor";
-        } else {
-            rfcDato = "rfc";
-        }
-
-        if (!folio.isEmpty()) {
-            if (isNumeric(folio)) {
-                tim = "WHERE folio = " + folio;
+        Emisor emi = listaEmisores.get(selectedEmisor);
+        
+        tim = "WHERE rfcEmisor = '" + emi.getRfc() + "' ";
+        
+        if (!textoBusqueda.isEmpty()) {
+            if (isNumeric(textoBusqueda)) {
+                tim += "AND folio = " + textoBusqueda;
             } else {
-                tim = "WHERE " + rfcDato + " like \'%" + folio + "%\'";
+                tim += "AND rfc like '%" + textoBusqueda + "%'";
             }
-        } else {
-            tim = "";
         }
 
         if (timbra) {
-            if (tim.isEmpty()) {
-                tim = "WHERE timbrado=" + !timbra;
-            } else {
-                tim += " AND timbrado=" + !timbra;
-            }
+           tim += " AND timbrado=" + !timbra;
         }
 
-//        if(timbra || !(folio.isEmpty())) {
-//            if(isNumeric(folio)){
-//                tim = " WHERE folio = " + folio + " AND timbrado="+!timbra;
-//            }else{
-//                tim = " WHERE rfc like \'%"+folio+"%\' AND timbrado="+!timbra;
-//            }
-//        }else{
-//            if(isNumeric(folio)){
-//                tim = " WHERE folio = " + folio;
-//            }else{
-//                tim = " WHERE rfc like \'%"+folio+"%\'";
-//            }
-//        }
         Object[] fila = new Object[7];
         String order = getOrdenamiento();
         String query = "SELECT * FROM Facturas " + tim + order;
@@ -1110,7 +1110,7 @@ public class Folios extends javax.swing.JFrame {
                         int pos = select[i];
                         cfdisAsoc.add(uuid.get(pos));
 
-                        if (p != null || nominaGeneral != null) {
+                        if (p != null || nominaGeneral != null || cv != null) {
                             String nameXml = folios.getModel().getValueAt(pos, 0).toString() + "_" + folios.getModel().getValueAt(pos, 1).toString() + "_" + folios.getModel().getValueAt(pos, 2).toString();
                             File xml = new File(Elemento.pathXml + nameXml + ".xml");
 
@@ -1264,8 +1264,6 @@ public class Folios extends javax.swing.JFrame {
                                     rp.totalTrasladosBaseIVAExento = rp.totalTrasladosBaseIVAExento != null ? rp.totalTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
                                     rp.pagoTrasladosBaseIVAExento = rp.pagoTrasladosBaseIVAExento != null ? rp.pagoTrasladosBaseIVAExento.add(doc.getTrasladoBaseIVAExento()) : doc.getTrasladoBaseIVAExento();
                                 }
-
-                                rp.addDocumentos(this, p);
                             } else {
                                 docsPagar.add(doc);
                             }
@@ -1281,8 +1279,10 @@ public class Folios extends javax.swing.JFrame {
 
                 if (this.fv != null) {
                     this.fv.setUuids(this);
-                } else if (this.rp != null) {
+                } else if (this.rp != null && this.p == null) {
                     this.rp.setUuids(this);
+                } else if (this.rp != null && this.p != null) {
+                    this.rp.addDocumentos(this, p);
                 } else if (this.cv != null) {
                     this.cv.setUuidRelacionado(docsPagar.get(0));
                 } else if (this.nominaGeneral != null) {
@@ -1348,6 +1348,12 @@ public class Folios extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_crearNotaCreActionPerformed
+
+    private void selectEmisoresItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_selectEmisoresItemStateChanged
+        // TODO add your handling code here:
+        selectedEmisor = selectEmisores.getSelectedIndex();
+        consultarFacturas();
+    }//GEN-LAST:event_selectEmisoresItemStateChanged
 
     private String obtenerCadenaOriginal(File xml) throws Exception {
         File stylesheet = new File("/Facturas/config/cadenaoriginal_3_3.xslt");
@@ -1447,10 +1453,11 @@ public class Folios extends javax.swing.JFrame {
     private javax.swing.JTextField folioTxt;
     private javax.swing.JTable folios;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel24;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JCheckBox noTimbrados;
-    private javax.swing.JCheckBox porEmisores;
     private javax.swing.JButton reporte;
+    private javax.swing.JComboBox selectEmisores;
     private javax.swing.JButton timbrar;
     private javax.swing.JButton verPdf;
     private javax.swing.JButton verificar;

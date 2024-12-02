@@ -143,13 +143,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         setTitle("Nomina General");
 
         fechaPago.setDateFormatString("yyyy-MM-dd");
-        fechaPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                fechaPagoInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
-        });
         fechaPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 fechaPagoPropertyChange(evt);
@@ -157,29 +150,23 @@ public class NominaGeneral extends javax.swing.JFrame {
         });
 
         fechaInicialPago.setDateFormatString("yyyy-MM-dd");
+        fechaInicialPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                fechaInicialPagoPropertyChange(evt);
+            }
+        });
 
         fechaFinalPago.setDateFormatString("yyyy-MM-dd");
-        fechaFinalPago.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                fechaFinalPagoMouseExited(evt);
-            }
-        });
-        fechaFinalPago.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                fechaFinalPagoFocusLost(evt);
-            }
-        });
-        fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                fechaFinalPagoPropertyChange(evt);
-            }
-        });
         fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaFinalPagoInputMethodTextChanged(evt);
             }
             public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-                fechaFinalPagoCaretPositionChanged(evt);
+            }
+        });
+        fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                fechaFinalPagoPropertyChange(evt);
             }
         });
 
@@ -194,14 +181,14 @@ public class NominaGeneral extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Numero", "Empleado", "Antiguedad", "Dias Pagados", "Percepciones", "Otros Pagos", "Deducciones"
+                "Numero", "Empleado", "Antiguedad", "Dias Pagados", "Relacion CFDi", "Percepciones", "Otros Pagos", "Deducciones"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Long.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Long.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, true, false, false, false
+                false, false, false, true, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -217,6 +204,15 @@ public class NominaGeneral extends javax.swing.JFrame {
                 tablaEmpleadosMouseClicked(evt);
             }
         });
+        tablaEmpleados.getColumnModel().getColumn(0).setPreferredWidth(10);
+        tablaEmpleados.getColumnModel().getColumn(1).setPreferredWidth(120);
+        tablaEmpleados.getColumnModel().getColumn(2).setPreferredWidth(10);
+        tablaEmpleados.getColumnModel().getColumn(3).setPreferredWidth(10);
+        tablaEmpleados.getColumnModel().getColumn(4).setPreferredWidth(120);
+        tablaEmpleados.getColumnModel().getColumn(5).setPreferredWidth(30);
+        tablaEmpleados.getColumnModel().getColumn(6).setPreferredWidth(30);
+        tablaEmpleados.getColumnModel().getColumn(7).setPreferredWidth(30);
+        //tablaEmpleados.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         jScrollPane1.setViewportView(tablaEmpleados);
 
         generarNomina.setText("Timbrar");
@@ -349,28 +345,16 @@ public class NominaGeneral extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fechaFinalPagoFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fechaFinalPagoFocusLost
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fechaFinalPagoFocusLost
-
-    private void fechaFinalPagoCaretPositionChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaFinalPagoCaretPositionChanged
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_fechaFinalPagoCaretPositionChanged
-
     private void fechaFinalPagoInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaFinalPagoInputMethodTextChanged
         // TODO add your handling code here:
-        llenarTabla();
+        //generarNomina.setEnabled(true);
+        //llenarTabla();
     }//GEN-LAST:event_fechaFinalPagoInputMethodTextChanged
-
-    private void fechaFinalPagoMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fechaFinalPagoMouseExited
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_fechaFinalPagoMouseExited
 
     private void fechaFinalPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaFinalPagoPropertyChange
         // TODO add your handling code here:
         generarNomina.setEnabled(true);
+        //calcularDiasPagadosPorEmpleado();
         llenarTabla();
     }//GEN-LAST:event_fechaFinalPagoPropertyChange
 
@@ -484,10 +468,6 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_fechaPagoPropertyChange
 
-    private void fechaPagoInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_fechaPagoInputMethodTextChanged
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fechaPagoInputMethodTextChanged
-
     private void tablaEmpleadosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablaEmpleadosMouseClicked
         // TODO add your handling code here:
         if (evt.getClickCount() == 2 && !evt.isConsumed()) {
@@ -505,7 +485,7 @@ public class NominaGeneral extends javax.swing.JFrame {
 
             //DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
             switch (selectedCol) {
-                case 4:
+                case 5:
                     if (!ventanasPer.containsKey(idE)) {
                         per = new Percepciones(idE, true);
                         per.setTipoNomina(cmbTipoNomina.getSelectedIndex());
@@ -522,7 +502,7 @@ public class NominaGeneral extends javax.swing.JFrame {
 
                     break;
 
-                case 5:
+                case 6:
                     if (!ventanasOtr.containsKey(idE)) {
                         otr = new OtrosPagos(idE, true);
                         otr.setTipoNomina(cmbTipoNomina.getSelectedIndex());
@@ -538,7 +518,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                     otr.setVisible(true);
                     break;
 
-                case 6:
+                case 7:
                     if (!ventanasDec.containsKey(idE)) {
                         dec = new Deducciones(idE, true);
                         dec.setTipoNomina(cmbTipoNomina.getSelectedIndex());
@@ -572,9 +552,10 @@ public class NominaGeneral extends javax.swing.JFrame {
                 DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
                 for (int i = 0; i < model.getRowCount(); i++) {
                     model.setValueAt(0, i, 3);
-                    model.setValueAt(0.00, i, 4);
+                    model.setValueAt("", i, 4);
                     model.setValueAt(0.00, i, 5);
                     model.setValueAt(0.00, i, 6);
+                    model.setValueAt(0.00, i, 7);
 
                     totalPer.setText("0.0");
                     totalDed.setText("0.0");
@@ -607,6 +588,22 @@ public class NominaGeneral extends javax.swing.JFrame {
         Folios fol = new Folios(this.emisor.getRfc(), rfcsEmpleados, this);
         fol.setVisible(true);
     }//GEN-LAST:event_btnAsociarActionPerformed
+
+    private void fechaInicialPagoPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fechaInicialPagoPropertyChange
+        // TODO add your handling code here:
+        //calcularDiasPagadosPorEmpleado();
+        llenarTabla();
+    }//GEN-LAST:event_fechaInicialPagoPropertyChange
+
+    private void calcularDiasPagadosPorEmpleado() {
+        if (fechaInicialPago.getDate() != null && fechaFinalPago.getDate() != null) {
+            DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
+
+            for (int i = 0; i < model.getRowCount(); i++) {
+                model.setValueAt(this.calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate()), i, 3);
+            }
+        }
+    }
 
     private void iniciarNominaEspecial() {
         util = new utils.Utils(Elemento.log);
@@ -703,20 +700,25 @@ public class NominaGeneral extends javax.swing.JFrame {
     }
 
     public void setUuids(Folios fol) {
+        DefaultTableModel model = (DefaultTableModel)tablaEmpleados.getModel();
+        uuidAsoc.clear();
         for (int i = 0; i < listaEmpleados.size(); i++) {
             Empleado emp = listaEmpleados.get(i);
+            String value = null;
+
             for (int j = 0; j < fol.docsPagar.size(); j++) {
                 Documento d = fol.docsPagar.get(j);
                 if (emp.getReceptor().getRfc().equalsIgnoreCase(d.getRfcReceptor())) {
-                    if (uuidAsoc.containsKey(emp.getIdEmpleado())) {
-                        String value = uuidAsoc.get(emp.getIdEmpleado());
+                    if (value != null) {
                         value += "," + d.getUuid();
-                        uuidAsoc.put(emp.getIdEmpleado(), value);
                     } else {
-                        uuidAsoc.put(emp.getIdEmpleado(), d.getUuid());
+                        value = d.getUuid();
                     }
                 }
             }
+            
+            uuidAsoc.put(emp.getIdEmpleado(), value);
+            model.setValueAt(value, i, 4);
         }
         fol.dispose();
     }
@@ -798,7 +800,7 @@ public class NominaGeneral extends javax.swing.JFrame {
 
         if (numEmpleados != null) {
             for (int j = 0; j < numEmpleados.size(); j++) {
-                row = new Object[7];
+                row = new Object[8];
                 Empleado emp = getEmpleadoCompleto(numEmpleados.get(j), idEmpleados.get(j));
                 if (emp != null) {
                     Percepciones per;
@@ -851,9 +853,9 @@ public class NominaGeneral extends javax.swing.JFrame {
                     row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
                     row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
                     row[3] = this.calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate());
-                    row[4] = df.format(i);
-                    row[5] = df.format(o);
-                    row[6] = df.format(d);
+                    row[5] = df.format(i);
+                    row[6] = df.format(o);
+                    row[7] = df.format(d);
                     tp = tp.add(i);
                     to = to.add(o);
                     td = td.add(d);
@@ -861,9 +863,9 @@ public class NominaGeneral extends javax.swing.JFrame {
                 }
             }
 
-            tablaEmpleados.getColumnModel().getColumn(4).setCellRenderer(render);
             tablaEmpleados.getColumnModel().getColumn(5).setCellRenderer(render);
             tablaEmpleados.getColumnModel().getColumn(6).setCellRenderer(render);
+            tablaEmpleados.getColumnModel().getColumn(7).setCellRenderer(render);
 
             totalRecibos = numEmpleados.size();
             lblNumRecibos.setText("Número de Recibos: " + totalRecibos);
@@ -907,7 +909,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         Empleado emp = null;
 
         try {
-            rs = stmt.executeQuery("SELECT * FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado = \'" + numEmpleado + "\'");
+            rs = stmt.executeQuery("SELECT * FROM Empleados WHERE idEmpleado = " + idEmpleado + " AND numEmpleado = '" + numEmpleado + "'");
             if (rs.next()) {
                 emp = new Empleado();
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));

@@ -14,6 +14,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -35,7 +37,7 @@ public class MantenimientoDataBase {
         verificarCBancos();
         
         /******cambios en tabla Cuentas y Folios******/
-        verificarCuentasFolios();
+        //verificarCuentasFolios();
         
         /******cambios en tabla de Regimen Fiscal******/
         verificarRegimenFiscal();
@@ -44,13 +46,13 @@ public class MantenimientoDataBase {
         verificarUsoCfdi();
         
         /******cambios en tabla de Clientes******/
-        verificarClientes();
+        //verificarClientes();
         
         /******cambios en tabla de EmisoresBancos******/
         verificarEmisoresBancos();
         
         /******cambios en tabla de EmpleadosRec******/
-        verificarEmpleados();
+        //verificarEmpleados();
     }
     
     private void verificarCBancos(){
@@ -245,7 +247,7 @@ public class MantenimientoDataBase {
     private void verificarCuentasFolios(){
         Connection con = Elemento.odbc();
         Statement stmt = null;
-        ResultSet rs;
+        ResultSet rs = null;
         
         try{
             stmt = con.createStatement();
@@ -254,6 +256,9 @@ public class MantenimientoDataBase {
             
             rs = stmt.executeQuery("Select top 1 cuenta_id from Folios");
             rs.close();
+            
+            rs = stmt.executeQuery("Select top 1 pathCert from Cuentas");
+            rs.close(); 
             
             stmt.close();
             con.close();
@@ -301,6 +306,29 @@ public class MantenimientoDataBase {
                     }
 
                     stmt.close();
+                }else if(ex.getMessage().toUpperCase().contains("PATHCERT")){
+                    stmt = con.createStatement();
+                    stmt.execute("ALTER TABLE Cuentas ADD pathCert VARCHAR(8000)");
+                    stmt.execute("ALTER TABLE Cuentas ADD pathKey VARCHAR(8000)");
+                    stmt.execute("ALTER TABLE Cuentas ADD keyPass TEXT");
+                    System.out.println("Se agregaron los Campos pathCert, pathKey y keyPass");
+                    
+                    rs = stmt.executeQuery("SELECT rfc FROM Cuentas");
+                    while(rs.next()){
+                        String rfc = rs.getString("rfc");
+
+                        String query = "UPDATE Cuentas SET "
+                            + "pathCert = '" + Elemento.pathConfig + rfc + ".cer',"
+                            + "pathKey = '" + Elemento.pathConfig + rfc + ".key',"
+                            + "keyPass = '" + getKeyPass(rfc) + "' "
+                            + "WHERE rfc = '" + rfc + "'";
+
+                        stmt.executeUpdate(query);
+                    }
+
+                    System.out.println("Se actualizaron los campos de certificado");
+                    rs.close();
+                    stmt.close();
                 }
                 
                 con.close();
@@ -317,6 +345,13 @@ public class MantenimientoDataBase {
                 util.printError(error);
             }
         }
+    }
+    
+    private String getKeyPass(String rfc){
+        if(new File(Elemento.pathConfig + rfc + "_pass.txt").exists())
+            return util.leerXml(Elemento.pathConfig + rfc + "_pass.txt");
+        else
+            return "";
     }
     
     private void verificarRegimenFiscal(){

@@ -395,13 +395,13 @@ public class Emisores extends javax.swing.JFrame {
                         + "localidad=\'"+localidad.getText().trim()+"\',municipio=\'"+municipio.getText().trim()+"\',estado=\'"+estado.getSelectedItem().toString().trim()+"\',"
                         + "pais=\'"+pais.getSelectedItem().toString().trim()+"\',cp=\'"+cp.getText().trim()+"\',pass=\'"+String.copyValueOf(pass.getPassword()).trim()+ "\',"
                         + "email=\'"+ email.getText().trim() + "\', registroPatronal=\'"+ registroPatronal.getText().trim() +"\', emiteNominas="+ emiteNominas.isSelected() +", curp=\'"+curp.getText().trim()+"\' WHERE id="+id;
-                if(emiteNominas.isSelected()){
-                    rs = stmt.executeQuery("SELECT * FROM Folios WHERE rfc like \'"+rfc.getText()+"\' AND idComprobante = 4");
+                /*if(emiteNominas.isSelected()){
+                    rs = stmt.executeQuery("SELECT * FROM Folios WHERE rfc = \'"+rfc.getText()+"\' AND idComprobante = 4");
                     if(!rs.next()){
                         stmt.executeUpdate("INSERT INTO Folios (rfc,idComprobante,ultimo_folio,serie,plantilla) "
                                 + "VALUES (\'"+rfc.getText()+"\',4,1,\'NOM\',\'C:\\Facturas\\config\\plantillas\\Nomina.jasper\')");
                     }
-                }
+                }*/
                 textoLog = "El emisor " + nombre.getText() + " fue actualizado correctamente";
             }else{
                 query = "INSERT INTO Emisores (nombre,rfc,calle,noExterior,noInterior,colonia,localidad,municipio,estado,pais,cp,pass,email,registroPatronal,emiteNominas,curp) "

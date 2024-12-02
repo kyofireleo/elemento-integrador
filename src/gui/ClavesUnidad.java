@@ -5,6 +5,7 @@
  */
 package gui;
 
+import elemento.ClavesProdUniSat;
 import elemento.ConnectionFactory;
 import elemento.Elemento;
 import java.awt.HeadlessException;
@@ -24,7 +25,7 @@ public class ClavesUnidad extends javax.swing.JFrame {
     ConnectionFactory factory = new ConnectionFactory();
     DefaultTableModel model;
     String claveSat;
-    AddProductos ventanaActual;
+    ClavesProdUniSat ventanaActual;
     
     public ClavesUnidad() {
         initComponents();
@@ -47,6 +48,8 @@ public class ClavesUnidad extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         claveBuscar = new javax.swing.JTextField();
         buscarClave = new javax.swing.JButton();
+
+        setTitle("Claves de Unidades de Medida SAT");
 
         jLabel1.setText("Nombre o palabras clave:");
 
@@ -127,8 +130,8 @@ public class ClavesUnidad extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 628, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(jScrollPane1)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(claveBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -154,12 +157,12 @@ public class ClavesUnidad extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel2)
                                 .addComponent(claveBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18))
+                        .addGap(13, 13, 13))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(buscarClave, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pack();
@@ -181,8 +184,8 @@ public class ClavesUnidad extends javax.swing.JFrame {
             claveSat = model.getValueAt(row, 1).toString();
             String id = model.getValueAt(row,0).toString();
             
-            ventanaActual.setClaveUnidadSat(claveSat);
             ventanaActual.setIdClaveUnidadSat(new Integer(id));
+            ventanaActual.setClaveUnidadSat(claveSat);
             
             this.dispose();
         }
@@ -270,7 +273,7 @@ public class ClavesUnidad extends javax.swing.JFrame {
         }
     }
     
-    public void setVentanaActual(AddProductos ventanaActual){
+    public void setVentanaActual(ClavesProdUniSat ventanaActual){
         this.ventanaActual = ventanaActual;
     }
     /**

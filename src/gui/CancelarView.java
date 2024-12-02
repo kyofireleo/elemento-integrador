@@ -12,6 +12,7 @@ import elemento.Exe;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -393,11 +394,42 @@ public class CancelarView extends javax.swing.JFrame {
 
     private void generarPdfCancelado(String pathXml, String pathPdf, String name, String logo) {
         try {
-            util.crearPdfCancelado(pathXml, pathPdf, name, logo);
+            String plantilla = getPlantillaFromTipoComprobante(idTipoComprobante, name.split("_")[2]); //Serie_Folio_Emisor_Receptor_UUID
+            util.crearPdfCancelado(pathXml, pathPdf, name, logo, plantilla);
         } catch (Exception ex) {
             ex.printStackTrace();
             Elemento.log.error("Excepcion al generar el PDF Cancelado", ex);
         }
+    }
+    
+    private String getPlantillaFromTipoComprobante(int idTipoComprobante, String rfcEmisor) {
+        String plantilla = null;
+        try {
+            Connection con = Elemento.odbc();
+            PreparedStatement ps = con.prepareStatement(""
+                    + "select f.plantilla from Cuentas c "
+                    + "inner join Folios f on f.cuenta_id = c.cuenta_id and f.idComprobante = ? "
+                    + "where c.rfc = ?"
+            );
+            ps.setInt(1, idTipoComprobante);
+            ps.setString(2, rfcEmisor);
+            
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                plantilla = rs.getString("plantilla");
+            }
+            
+            rs.close();
+            ps.close();
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            String msg = "Error al obtener la plantilla del tipo de comprobante: " + idTipoComprobante + ", para el RFC: " + rfcEmisor;
+            Elemento.log.error(msg, e);
+            util.printError(msg);
+        }
+        
+        return plantilla;
     }
 
     public void setUuidRelacionado(Documento doc) {

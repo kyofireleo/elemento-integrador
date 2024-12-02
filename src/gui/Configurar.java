@@ -320,6 +320,8 @@ public class Configurar extends javax.swing.JFrame {
             }
             rs.close();
             
+            this.cambiarBotonTiposComprobante();
+            
             stmt.close();
             con.close();
         } catch (SQLException ex) {
@@ -395,6 +397,18 @@ public class Configurar extends javax.swing.JFrame {
     public String getLogo() {
         return logoPath.getText().trim();
     }
+    
+    public String getPathCert(){
+        return txtPathCert.getText().trim();
+    }
+    
+    public String getPathKey(){
+        return txtPathKey.getText().trim();
+    }
+    
+    public String getKeyPass(){
+        return new String(pwdKeyPass.getPassword());
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -443,6 +457,14 @@ public class Configurar extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JSeparator();
         borrarComprobante = new javax.swing.JButton();
         regimenCombo = new javax.swing.JComboBox<>();
+        jLabel9 = new javax.swing.JLabel();
+        txtPathCert = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        txtPathKey = new javax.swing.JTextField();
+        btnExaminarCert = new javax.swing.JButton();
+        btnExaminarKey = new javax.swing.JButton();
+        jLabel11 = new javax.swing.JLabel();
+        pwdKeyPass = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Configuracion");
@@ -511,7 +533,7 @@ public class Configurar extends javax.swing.JFrame {
 
         logoPath.setNextFocusableComponent(examinar);
 
-        examinar.setText("Examinar");
+        examinar.setText("...");
         examinar.setNextFocusableComponent(lugarExpedicion);
         examinar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -561,6 +583,8 @@ public class Configurar extends javax.swing.JFrame {
         });
 
         jLabel3.setText("No. Certificado");
+
+        certificado.setEnabled(false);
 
         rfc.setNextFocusableComponent(certificado);
         rfc.addItemListener(new java.awt.event.ItemListener() {
@@ -664,6 +688,26 @@ public class Configurar extends javax.swing.JFrame {
             }
         });
 
+        jLabel9.setText("Archivo CER");
+
+        jLabel10.setText("Archivo KEY");
+
+        btnExaminarCert.setText("...");
+        btnExaminarCert.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExaminarCertActionPerformed(evt);
+            }
+        });
+
+        btnExaminarKey.setText("...");
+        btnExaminarKey.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExaminarKeyActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setText("Contraseña");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -671,14 +715,6 @@ public class Configurar extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 352, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(35, 35, 35)
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator2))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel5)
@@ -687,49 +723,64 @@ public class Configurar extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(produccion))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(50, 50, 50)
-                                        .addComponent(jLabel4))
-                                    .addComponent(jLabel3))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(certificado, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
-                                    .addComponent(rfc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(esSucursalCheck)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel2)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(20, 20, 20)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jLabel7)
-                                            .addComponent(jLabel1))))
+                                        .addGap(53, 53, 53)
+                                        .addComponent(jLabel1)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(regimenCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 358, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(examinar, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                        .addComponent(examinar))
+                                    .addComponent(regimenCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(jLabel7)
+                                .addGap(18, 18, 18)
+                                .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(61, 61, 61)
+                                                .addComponent(jLabel4))
+                                            .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(rfc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(txtPathCert, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel10)
+                                            .addComponent(jLabel3))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(certificado)
+                                            .addComponent(txtPathKey, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(esSucursalCheck)
+                                    .addComponent(btnExaminarCert)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btnExaminarKey)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel11)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(pwdKeyPass, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGap(171, 171, 171)
                                 .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(plantilla, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                                .addComponent(plantilla, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(exaFact, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -737,8 +788,8 @@ public class Configurar extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(borrarComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE))))
+                                .addGap(18, 18, 18)
+                                .addComponent(jScrollPane2))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(agregarCreditos)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -747,12 +798,25 @@ public class Configurar extends javax.swing.JFrame {
                         .addComponent(actualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(agregar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 289, Short.MAX_VALUE)
                         .addComponent(btnDonat, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(infoSucursal)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(infoEmisor)))
+                        .addComponent(infoEmisor))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 369, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator2)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -763,7 +827,7 @@ public class Configurar extends javax.swing.JFrame {
                     .addComponent(jLabel5)
                     .addComponent(produccion)
                     .addComponent(agregarEmisor))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -773,29 +837,30 @@ public class Configurar extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(exaFact)
-                                .addComponent(agregarComprobante))
-                            .addComponent(borrarComprobante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(11, 11, 11)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
                             .addComponent(rfc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(esSucursalCheck))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel9)
+                            .addComponent(txtPathCert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnExaminarCert))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(certificado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel3)))
-                        .addGap(11, 11, 11)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(certificado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(txtPathKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnExaminarKey)
+                                    .addComponent(jLabel10)
+                                    .addComponent(jLabel11)
+                                    .addComponent(pwdKeyPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(lblFechaCert, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
                             .addComponent(regimenCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -805,11 +870,23 @@ public class Configurar extends javax.swing.JFrame {
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(logoPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(examinar)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lugarExpedicion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel7)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(tipoComprobante, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(serie, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(plantilla, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(exaFact)
+                                .addComponent(agregarComprobante))
+                            .addComponent(borrarComprobante))
+                        .addGap(11, 11, 11)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(infoEmisor)
@@ -840,7 +917,7 @@ public class Configurar extends javax.swing.JFrame {
         if (nombre.contains("Plantilla")) {
             chooser.setCurrentDirectory(new File(Elemento.pathPlantillas));
         } else {
-            chooser.setCurrentDirectory(new File(Elemento.unidad + ":\\"));
+            chooser.setCurrentDirectory(new File(Elemento.unidad.contains(":") ? (Elemento.unidad + "\\") : Elemento.unidad));
         }
         chooser.setVisible(true);
         int opc = chooser.showOpenDialog(null);
@@ -874,26 +951,12 @@ public class Configurar extends javax.swing.JFrame {
         TableModel model = datos.getModel();
         String rfct = model.getValueAt(datos.getSelectedRow(), 0).toString().trim();
         String cuenta_id = model.getValueAt(datos.getSelectedRow(), 6).toString().trim();
-        String cert, logot, regi, ser;
+        String cert, logot, regi, ser, pathCert, pathKey, keyPass;
         int cuent;
         boolean esSuc;
         habilitarBotones(true);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
-
+        
         try {
-            File certFile = new File(Elemento.pathConfig+rfct+".cer");
-            if(certFile.exists()){
-                CertificateFactory fac = CertificateFactory.getInstance("X509");
-                FileInputStream is = new FileInputStream(certFile);
-                X509Certificate certi = (X509Certificate) fac.generateCertificate(is);
-                //System.out.println("From: " + certi.getNotBefore());
-                lblFechaCert.setText("Caduca el " + sdf.format(certi.getNotAfter()));
-                byte[] byteArray = certi.getSerialNumber().toByteArray();
-                String noSerie = new String(byteArray);
-                Elemento.log.info("Se selecciono cuenta con certificado: " + noSerie);
-            }else{
-                lblFechaCert.setText("");
-            }
             
             Connection con = Elemento.odbc();
             Statement stmt = fact.stmtLectura(con);
@@ -908,12 +971,18 @@ public class Configurar extends javax.swing.JFrame {
                 ser = rs.getString("lugarExpedicion");
                 esSuc = rs.getBoolean("esSucursal");
                 cuent = rs.getInt("cuenta_id");
+                pathCert = rs.getString("pathCert");
+                pathKey = rs.getString("pathKey");
+                keyPass = rs.getString("keyPass");
 
                 certificado.setText(cert);
                 logoPath.setText(logot);
                 setIndexRegimenFiscal(regi);
                 lugarExpedicion.setText(ser);
                 esSucursalCheck.setSelected(esSuc);
+                txtPathCert.setText(pathCert);
+                txtPathKey.setText(pathKey);
+                pwdKeyPass.setText(keyPass);
 
                 rfcActual = rfct;
                 certActual = cert;
@@ -922,6 +991,7 @@ public class Configurar extends javax.swing.JFrame {
                 lugarActual = ser;
                 cuentaIdActual = cuent;
                 
+                validarCertificado(false);
                 consultarInfoFolios(rfct);
             }
         } catch (Exception ex) {
@@ -1012,18 +1082,21 @@ public class Configurar extends javax.swing.JFrame {
                 /*ResultSet rs = stmt.executeQuery("SELECT 1 FROM Cuentas WHERE rfc = \'" + rfcE + "\' AND nocertificado = \'"+cert+"\'");*/
                 /************************************************************/
                 
-                ResultSet rs = stmt.executeQuery("SELECT 1 FROM Cuentas WHERE rfc = \'" + rfcE + "\'");
+                ResultSet rs = stmt.executeQuery("SELECT TOP 1 1 FROM Cuentas WHERE rfc = \'" + rfcE + "\'");
+                
                 if (!rs.next()) {
                     if (foliosTabla.getRowCount() < 1) {
                         util.printError("Falta agregar la informacion de series y folios");
                     } else {
+                        String regimen = regimenCombo.getSelectedItem().toString().split(",")[0];
                         Savepoint sp = con.setSavepoint("Cuentas");
-                        stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal)"
+                        stmt.executeUpdate("INSERT INTO Cuentas (rfc,nocertificado,logo,regimenFiscal,lugarExpedicion,cantDecimales,creditosActivados,creditosRestantes,creditosUsados,esSucursal,idSucursal,pathCert,pathKey,keyPass)"
                                 + "VALUES (\'" + rfcE + "\', \'" + certificado.getText().trim() + "\', \'" + logoPath.getText() + "\', \'"
-                                + regimenCombo.getSelectedItem().toString().split(",")[0] + "\', \'" + lugarExpedicion.getText() + "\',"
-                                + 2 + "," + creditos + "," + creditos + "," + 0 + "," + esSucursalCheck.isSelected() + "," + idSucursal + ")");
+                                + regimen + "\', \'" + lugarExpedicion.getText() + "\',"
+                                + 2 + "," + creditos + "," + creditos + "," + 0 + "," + esSucursalCheck.isSelected() + "," + idSucursal + ", \'"
+                                + getPathCert() + "\', \'" + getPathKey() + "\', \'" + getKeyPass() + "\')");
                         
-                        rs = stmt.executeQuery("SELECT cuenta_id FROM Cuentas WHERE rfc = \'"+rfcE+"\'");
+                        rs = stmt.executeQuery("SELECT top 1 cuenta_id FROM Cuentas WHERE rfc = \'"+rfcE+"\' AND regimenFiscal = \'"+regimen+"\'");
                         rs.next();
                         int cuenta_id = rs.getInt("cuenta_id");
                         boolean resultado = guardarTiposComprobante(cuenta_id, rfcE, con);
@@ -1037,7 +1110,7 @@ public class Configurar extends javax.swing.JFrame {
                             new Thread() {
                                 @Override
                                 public void run() {
-                                    util.enviarEmail("esquerodriguez@gmail.com,activacion@feimpresoresdigitales.com,gorenajc2.3@gmail.com",
+                                    util.enviarEmail("esquerodriguez@gmail.com,gorenajc2.3@gmail.com",
                                             "SE AGREGO LA SIGUIENTE CUENTA\r\n"
                                             + "*Vendedor: " + rfcVendedor.toUpperCase() + "\r\n"
                                             + "*Certificado: " + cert + "\r\n\r\n"
@@ -1158,7 +1231,8 @@ public class Configurar extends javax.swing.JFrame {
                 lugarExp = getLugarExp();
 
                 stmt.executeUpdate("UPDATE Cuentas SET rfc=\'" + rfce + "\', nocertificado=\'" + noCertificado + "\',"
-                        + " logo=\'" + logo + "\', regimenFiscal=\'" + regimenFiscal + "\', lugarExpedicion=\'" + lugarExp + "\'"
+                        + " logo=\'" + logo + "\', regimenFiscal=\'" + regimenFiscal + "\', lugarExpedicion=\'" + lugarExp + "\',"
+                        + " pathCert = \'" + getPathCert() + "\', pathKey = \'" + getPathKey() + "\', keyPass = \'" + getKeyPass() + "\'"
                         + " WHERE rfc = \'" + rfcActual + "\' AND nocertificado = \'" + certActual + "\'");
 
 
@@ -1409,6 +1483,43 @@ public class Configurar extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_rfcItemStateChanged
 
+    private void btnExaminarCertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarCertActionPerformed
+        // TODO add your handling code here:
+        txtPathCert.setText(seleccionarArchivo("Archivo de certificado .CER", "cer"));
+        
+        validarCertificado(true);
+    }//GEN-LAST:event_btnExaminarCertActionPerformed
+
+    private void btnExaminarKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarKeyActionPerformed
+        // TODO add your handling code here:
+        txtPathKey.setText(seleccionarArchivo("Archivo de llave .KEY", "key"));
+    }//GEN-LAST:event_btnExaminarKeyActionPerformed
+
+    private void validarCertificado(boolean setNoCertificado){
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+        
+        try{
+            File certFile = new File(txtPathCert.getText());
+            if(certFile.exists()){
+                CertificateFactory fac = CertificateFactory.getInstance("X509");
+                FileInputStream is = new FileInputStream(certFile);
+                X509Certificate certi = (X509Certificate) fac.generateCertificate(is);
+                //System.out.println("From: " + certi.getNotBefore());
+                lblFechaCert.setText("Caduca el " + sdf.format(certi.getNotAfter()));
+                byte[] byteArray = certi.getSerialNumber().toByteArray();
+                String noSerie = new String(byteArray);
+                if(setNoCertificado)
+                    certificado.setText(noSerie);
+                Elemento.log.info("Se selecciono cuenta con certificado: " + noSerie);
+            }else{
+                lblFechaCert.setText("");
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            Elemento.log.error("No se pudo leer el certificado: ", e);
+        }
+    }
+    
     private void agregarCreditos(final int creditos, final String rfcE, final String cert) {
         try {
             Connection con = Elemento.odbc();
@@ -1425,7 +1536,7 @@ public class Configurar extends javax.swing.JFrame {
                 new Thread() {
                     @Override
                     public void run() {
-                        util.enviarEmail("esquerodriguez@gmail.com,activacion@feimpresoresdigitales.com,gorenajc2.3@gmail.com",
+                        util.enviarEmail("esquerodriguez@gmail.com,gorenajc2.3@gmail.com",
                                 "SE AGREGARON CREDITOS A LA SIGUIENTE CUENTA\r\n"
                                 + "*Vendedor: " + rfcVendedor.toUpperCase() + "\r\n"
                                 + "*Certificado: " + cert + "\r\n\r\n"
@@ -1500,6 +1611,21 @@ public class Configurar extends javax.swing.JFrame {
             return false;
         }
         
+        if(txtPathCert.getText().trim().isEmpty()){
+            util.printError("Debe de ingresar el archivo de CSD");
+            return false;
+        }
+        
+        if(txtPathKey.getText().trim().isEmpty()){
+            util.printError("Debe de ingresar el archivo KEY para el certificado");
+            return false;
+        }
+        
+        if(new String(pwdKeyPass.getPassword()).trim().isEmpty()){
+            util.printError("Debe de ingresar la contraseña del archivo KEY");
+            return false;
+        }
+        
         if(regimenCombo.getSelectedIndex() == 0){
             util.printError("Debe de seleccionar un régimen fiscal");
             return false;
@@ -1568,6 +1694,8 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JButton borrar;
     private javax.swing.JButton borrarComprobante;
     private javax.swing.JButton btnDonat;
+    private javax.swing.JButton btnExaminarCert;
+    private javax.swing.JButton btnExaminarKey;
     private javax.swing.JTextField certificado;
     private javax.swing.JTable datos;
     private javax.swing.JCheckBox esSucursalCheck;
@@ -1578,6 +1706,8 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JButton infoEmisor;
     private javax.swing.JButton infoSucursal;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1585,6 +1715,7 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
@@ -1594,10 +1725,13 @@ public class Configurar extends javax.swing.JFrame {
     private javax.swing.JTextField lugarExpedicion;
     private javax.swing.JTextField plantilla;
     private javax.swing.JCheckBox produccion;
+    private javax.swing.JPasswordField pwdKeyPass;
     private javax.swing.JComboBox<String> regimenCombo;
     private javax.swing.JComboBox rfc;
     private javax.swing.JTextField serie;
     private javax.swing.JComboBox tipoComprobante;
+    private javax.swing.JTextField txtPathCert;
+    private javax.swing.JTextField txtPathKey;
     // End of variables declaration//GEN-END:variables
 
     private int obtenerIDEmisor(String rfcE, Connection con) {

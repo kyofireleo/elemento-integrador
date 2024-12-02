@@ -9,6 +9,7 @@ import elemento.ConnectionFactory;
 import elemento.Elemento;
 import java.awt.HeadlessException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,6 +35,9 @@ public class Empleados extends javax.swing.JFrame {
     Deducciones dec;
     private boolean guardo;
     ConfigNominas nomi;
+    private final int DIAS_AGUINALDO = 15;
+    private final int DIAS_ANIO = 365;
+    private final double PRIMA_VACACIONAL = 0.25;
     
     public Empleados() {
         initComponents();
@@ -504,6 +508,10 @@ public class Empleados extends javax.swing.JFrame {
 
     private void salarioBaseCotAporFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_salarioBaseCotAporFocusGained
         // TODO add your handling code here:
+        BigDecimal factorIntegracion = new BigDecimal(((DIAS_ANIO + DIAS_AGUINALDO) + (getDiasVacaciones() * PRIMA_VACACIONAL)) / DIAS_ANIO);
+        factorIntegracion.setScale(4, RoundingMode.CEILING);
+        BigDecimal sbc = new BigDecimal(this.salarioDiario.getText()).multiply(factorIntegracion).setScale(2, RoundingMode.CEILING);
+        salarioBaseCotApor.setText(sbc.toString());
         salarioBaseCotApor.selectAll();
     }//GEN-LAST:event_salarioBaseCotAporFocusGained
 
@@ -673,6 +681,12 @@ public class Empleados extends javax.swing.JFrame {
         }
         //</editor-fold>
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -718,4 +732,9 @@ public class Empleados extends javax.swing.JFrame {
     private javax.swing.JButton verOtrosPagos;
     private javax.swing.JButton verPercepciones;
     // End of variables declaration//GEN-END:variables
+
+    private int getDiasVacaciones() {
+        //calcular dias de vacaciones a partir de la fecha de inicio de relacion laboral
+        return 12;
+    }
 }

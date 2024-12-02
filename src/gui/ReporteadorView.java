@@ -19,7 +19,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Year;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -77,12 +79,12 @@ public class ReporteadorView extends javax.swing.JFrame {
         comboDesdeMes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" }));
 
         comboDesdeAno.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026", "2027" }));
-        comboDesdeAno.setSelectedIndex(7);
+        comboDesdeAno.setSelectedIndex(12);
 
         comboHastaMes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" }));
 
         comboHastaAno.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026", "2027" }));
-        comboHastaAno.setSelectedIndex(7);
+        comboHastaAno.setSelectedIndex(12);
 
         ejecutar.setText("Ejecutar");
         ejecutar.addActionListener(new java.awt.event.ActionListener() {
@@ -124,10 +126,10 @@ public class ReporteadorView extends javax.swing.JFrame {
                         .addComponent(comboHastaAno, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(rfcReceptor, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(27, 27, 27))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(204, 204, 204)
                 .addComponent(ejecutar)
-                .addGap(184, 184, 184))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -146,9 +148,9 @@ public class ReporteadorView extends javax.swing.JFrame {
                     .addComponent(rfcEmisor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
                     .addComponent(rfcReceptor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                 .addComponent(ejecutar)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(8, 8, 8))
         );
 
         pack();
@@ -202,7 +204,7 @@ public class ReporteadorView extends javax.swing.JFrame {
         String rr = rfcReceptor.getSelectedItem().toString().trim();
 
         try {
-            rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor like \'%" + re + "%\' AND rfc like \'%" + rr + "%\' AND fecha_timbrado BETWEEN #" + fechaDesde + "# AND #" + fechaHasta + "# ORDER BY fecha_timbrado DESC, folio DESC");
+            rs = stmt.executeQuery("SELECT f.*, t.tiposcomprobante as letraTipoComprobante, t.descripcion as tipoComprobante FROM Facturas f INNER JOIN c_tiposcomprobante t ON f.idComprobante = t.c_tiposcomprobante_id WHERE f.rfcEmisor like \'%" + re + "%\' AND f.rfc like \'%" + rr + "%\' AND f.fecha_timbrado BETWEEN #" + fechaDesde + "# AND #" + fechaHasta + "# ORDER BY f.fecha_timbrado DESC, f.folio DESC");
             ResultSetMetaData meta = rs.getMetaData();
             while (rs.next()) {
                 String xmlString = rs.getString("xml");
@@ -224,6 +226,7 @@ public class ReporteadorView extends javax.swing.JFrame {
                     comp.setTotal("" + rs.getDouble("total"));
                     comp.setStatus(rs.getString("status"));
                     comp.setUuid(rs.getString("uuid"));
+                    comp.setTipoDeComprobante(rs.getString("tipoComprobante"));
 
                     String name = comp.getSerie() + "_" + comp.getFolio() + "_" + emi.getRfc() + "_" + rec.getRfc() + "_" + comp.getUuid();
                     File xml = new File(Elemento.pathXml + name + ".xml");
@@ -237,8 +240,12 @@ public class ReporteadorView extends javax.swing.JFrame {
                     }
                     
                     try {
-                        comp.setTotalTraslados(getDatoComprobante("totalImpuestosTrasladados", xml));
-                        comp.setSubtotal(getDatoComprobante("subTotal", xml));
+                        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+                        Document doc = docBuilder.parse(xml);
+                        
+                        comp.setTotalTraslados(getDato(doc, "cfdi:Impuestos", "TotalImpuestosTrasladados"));
+                        comp.setSubtotal(getDato(doc, "cfdi:Comprobante","SubTotal"));
 
                         lista.add(comp);
                     } catch (Exception ex) {
@@ -259,43 +266,42 @@ public class ReporteadorView extends javax.swing.JFrame {
 
     }//GEN-LAST:event_ejecutarActionPerformed
 
-    private String getDatoComprobante(String dato, File x) throws Exception {
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        Document doc = docBuilder.parse(x);
-
-        doc.getDocumentElement().normalize();
-        NodeList comprobante = doc.getElementsByTagName("cfdi:Comprobante");
-        NodeList impuestos = doc.getElementsByTagName("cfdi:Impuestos");
-
-        Node nodoComprobante = comprobante.item(0);
-        Node nodoImpuestos = impuestos.item(0);
-
-        Element elementoComprobante = (Element) nodoComprobante;
-        Element elementoImpuestos = (Element) nodoImpuestos;
-
-        switch (dato) {
-            case "totalImpuestosTrasladados":
-                return getTagValue(dato, elementoImpuestos);
-            default:
-                return getTagValue(dato, elementoComprobante);
-        }
-
-    }
-
     private static String getTagValue(String sTag, Element eElement) {
         String valor = eElement.getAttribute(sTag);
         return valor;
     }
+    
+    private String getDato(Document doc, String element, String dato) {
+        doc.normalize();
+        //doc.getDocumentElement().normalize();
+        NodeList lista = doc.getElementsByTagName(element);
+
+        Node nodo = lista.item(lista.getLength()-1);
+        if (nodo != null) {
+            if (nodo.getNodeType() == Node.ELEMENT_NODE) {
+                org.w3c.dom.Element elementoReceptor = (org.w3c.dom.Element) nodo;
+
+                return (getTagValue(dato, elementoReceptor));
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
 
     private int diaMaximo(int mes, int ano) {
         int day = 0;
+        Calendar fec = Calendar.getInstance();
+        fec.set(ano, (mes-1), 1);
+        day = fec.getActualMaximum(Calendar.DAY_OF_MONTH);
+        /*
         switch (mes) {
             case 1:
                 day = 31;
                 break;
             case 2:
-                if (ano == 2012 || ano == 2016 || ano == 2020) {
+                if (Year.isLeap(ano)) {
                     day = 29;
                 } else {
                     day = 28;
@@ -332,7 +338,8 @@ public class ReporteadorView extends javax.swing.JFrame {
                 day = 31;
                 break;
         }
-
+        */
+        
         return day;
     }
 
@@ -342,8 +349,7 @@ public class ReporteadorView extends javax.swing.JFrame {
         String fecha;
         String fechaDesde = format.format(desde);
         String fechaHasta = format.format(hasta);
-        double totalReporte = 0.0;
-        BigDecimal totalizado;
+        BigDecimal totalReporte = BigDecimal.ZERO;
         String linea = "----------------------------------------------------------------------------------------------------------------------------------------------\r\n";
 
         sb.append("\t\t\t*****REPORTE DE COMPROBANTES DESDE " + fechaDesde + " HASTA " + fechaHasta + "*****\r\n\r\n\r\n");
@@ -352,8 +358,8 @@ public class ReporteadorView extends javax.swing.JFrame {
         sb.append(linea);
 
         for (Comprobante comp : lista) {
-            double total = Double.parseDouble(comp.getTotal());
-            totalReporte += total;
+            BigDecimal total = new BigDecimal(comp.getTotal());
+            totalReporte = totalReporte.add(total);
             fecha = format.format(comp.getFechaTimbrado());
             String status = comp.getStatus();
             String tabs, tabsFolio, tabsSub;
@@ -379,19 +385,18 @@ public class ReporteadorView extends javax.swing.JFrame {
                 tabsSub = "\t\t";
             }
 
-            sb.append(comp.getSerie() + "\t\t" + folio + tabsFolio + comp.getEmisor().getRfc() + "\t" + comp.getReceptor().getRfc() + "\t" + status + tabs + fecha + "\t" + subtotal + tabsSub + iva + "\t\t" + total + "\r\n");
+            sb.append(comp.getSerie() + "\t\t" + folio + tabsFolio + comp.getEmisor().getRfc() + "\t" + comp.getReceptor().getRfc() + "\t" + status + tabs + fecha + "\t" + subtotal + tabsSub + iva + "\t\t" + total.toString() + "\r\n");
         }
-        totalizado = new BigDecimal(totalReporte);
-        totalizado = totalizado.setScale(2, RoundingMode.HALF_UP);
+        totalReporte = totalReporte.setScale(2, RoundingMode.HALF_UP);
         sb.append(linea);
 
-        sb.append("TOTAL FACTURADO: " + totalizado.toString());
+        sb.append("TOTAL FACTURADO: " + totalReporte.toString());
         String mesDesde = comboDesdeMes.getSelectedItem().toString();
         String anoDesde = comboDesdeAno.getSelectedItem().toString();
         String mesHasta = comboHastaMes.getSelectedItem().toString();
         String anoHasta = comboHastaAno.getSelectedItem().toString();
 
-        String path = "C:\\Facturas\\";
+        String path = Elemento.pathRaiz + "/";
         String name = "reporte " + mesDesde + "-" + anoDesde + " al " + mesHasta + "-" + anoHasta + ".txt";
 
         escribirArchivo(sb.toString(), path, name);

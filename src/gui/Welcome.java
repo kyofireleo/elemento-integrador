@@ -12,6 +12,8 @@ package gui;
 
 import elemento.Elemento;
 import elemento.Exe;
+import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import nominas.configuracion.ConfigNominas;
 
@@ -110,7 +112,7 @@ public class Welcome extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("v4.0");
+        jLabel1.setText("v4.0.4");
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/elemento/empleadosIcon.png"))); // NOI18N
         jButton6.setText("Nomina");
@@ -147,8 +149,8 @@ public class Welcome extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jLabel2)
-                .addGap(143, 143, 143)
-                .addComponent(jLabel1))
+                .addGap(131, 131, 131)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -219,7 +221,16 @@ public class Welcome extends javax.swing.JFrame {
     private void abrirCarpeta() {
         try {
             // TODO add your handling code here:
-            Exe.exeSinTiempo("explorer.exe \"" + Elemento.unidad + ":\\Facturas\\\"");
+            if(Elemento.sistema.contains("Mac OS")){
+                System.out.println("Coming soon...");
+            }else{
+                Exe.exeSinTiempo("explorer.exe \"" + Elemento.unidad + "\\Facturas\\\"");
+            }
+            
+            if(Desktop.isDesktopSupported()){
+                Desktop.getDesktop().open(new File(Elemento.pathRaiz));
+            }
+            
         } catch (IOException ex) {
             ex.printStackTrace();
         }

@@ -25,7 +25,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import nominas.NominaGeneral;
@@ -38,11 +40,9 @@ public class Listener {
 
     utils.Utils util = new utils.Utils(Elemento.log);
     utils.ConnectionFactory factory = new utils.ConnectionFactory(Elemento.log);
-    List<String> emisores = new ArrayList();
-    List<String> folios = new ArrayList();
-    List<String> series = new ArrayList();
-    List<Boolean> timbrado = new ArrayList();
-
+    HashMap<String, List<FoliosRegistrados>> folios = new HashMap();
+    CertificadoSelloDigital sellos;
+    
     public Listener() {
         
     }
@@ -82,7 +82,7 @@ public class Listener {
             Elemento.log.error("Error en el Thread.sleep de la clase Listener: " + ex.getMessage(), ex);
             ex.printStackTrace();
         }
-        traerFolios();
+        //traerFolios();
 
         if (name.toUpperCase().contains(".XML")) {
             //ConectorFES con = new ConectorFES(true, Elemento.user, Elemento.pass, util.leerXml(rootPath + name), Elemento.log);
@@ -118,6 +118,16 @@ public class Listener {
                 ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, lay, Elemento.log, Elemento.unidad, false, Elemento.estructuraNombre);
                 //JOptionPane.showMessageDialog(null,con.consultarTimbres());
                 ConstruirXML cons = con.getObjXml();
+                traerFolios(cons.getRfcEmisor());
+                
+                sellos = traerCertificados(cons.getRfcEmisor(), cons.getRegimenFiscalEmisor());
+                if(sellos == null){
+                    return;
+                }
+                cons.setPathCert(sellos.getPathCert());
+                cons.setPathKey(sellos.getPathKey());
+                cons.setKeyPass(sellos.getKeyPass());
+                
                 Factura_View fv = new Factura_View("");
                 cons.setNoCertificado(Elemento.noCertificado);
 
@@ -135,7 +145,7 @@ public class Listener {
                 String leyenda = cons.getLeyenda().trim();
 
                 String pathXml = Elemento.pathXml;
-                String destinoXml = Elemento.unidad + ":\\Facturas\\XmlModificados\\";
+                String destinoXml = Elemento.pathXmlMod;
                 String pathXmlST = Elemento.pathXmlST;
                 
                 int idTipoComprobante = this.getIdComprobante(cons.getTipoComprobanteLayout());
@@ -168,94 +178,89 @@ public class Listener {
                         }
                     }
                     String msg = null;
-
-                    if (folios.contains(folio)) {
-                        int index = folios.indexOf(folio);
-                        String ser = series.get(index);
-                        String rf = emisores.get(index);
-                        Boolean tim = timbrado.get(index);
-
-                        if (ser.equalsIgnoreCase(serie) && rf.equalsIgnoreCase(rfcEmi) && tim == Boolean.FALSE) {
-                            modificar = true;
-                        } else if (ser.equalsIgnoreCase(serie) && rf.equalsIgnoreCase(rfcEmi) && tim == Boolean.TRUE) {
+                    
+                    List<FoliosRegistrados> listaFolios = folios.get(rfcEmi);
+                    if(!listaFolios.isEmpty()){
+                        if (listaFolios.stream().filter(o -> o.getFolio().equalsIgnoreCase(folio) && o.getSerie().equalsIgnoreCase(serie) && o.isTimbrado()).findFirst().isPresent()) {
                             msg = "El comprobante " + cons.getNameXml() + "\nya habia sido timbrado anteriormente";
                             JOptionPane.showMessageDialog(null, msg);
                             Elemento.log.warn(msg);
-                            modificar = false;
+                            fv.modificar = false;
+                            
+                            return;
+                        } else if (listaFolios.stream().filter(o -> o.getFolio().equalsIgnoreCase(folio) && o.getSerie().equalsIgnoreCase(serie) && !o.isTimbrado()).findFirst().isPresent()) {
+                            fv.modificar = true;
                         } else {
-                            modificar = false;
+                            fv.modificar = false;
                         }
-                    } else {
-                        modificar = false;
+                    }else{
+                        fv.modificar = false;
                     }
 
-                    fv.modificar = modificar;
-                    if (msg == null) {
-                        if (Elemento.checarCreditos(cons.getRfcEmisor())) {
-                            if (con.timbrar(Elemento.pathXml)) {
-                                util.fileMove(rootPath + name, Elemento.pathLayoutDone + name);
-                                String text = "Archivo " + name + " movido a done.";
-                                System.out.println(text);
-                                log.info(text);
-                                
-                                try {
-                                    Folios fol = new Folios("");
-                                    String fechaT = cons.getFechaTim();
-                                    String uuid = con.getUuid();
-                                    String nameXml = cons.getNameXmlTimbrado();
-                                    String xml = con.getXmlTimbrado();
-                                    String sello = cons.getSello();
+                    if (Elemento.checarCreditos(cons.getRfcEmisor())) {
+                        if (con.timbrar(Elemento.pathXml)) {
+                            util.fileMove(rootPath + name, Elemento.pathLayoutDone + name);
+                            String text = "Archivo " + name + " movido a done.";
+                            System.out.println(text);
+                            log.info(text);
 
-                                    if (lay.contains("NOMBRE_ADDENDA: Klyns")) {
-                                        xml = xml.replace("</cfdi:Comprobante>", cons.getAddendaKlyns() + "</cfdi:Comprobante>");
-                                        util.escribirArchivo(xml, pathXml, nameXml + ".xml");
-                                    }
+                            try {
+                                Folios fol = new Folios("");
+                                String fechaT = cons.getFechaTim();
+                                String uuid = con.getUuid();
+                                String nameXml = cons.getNameXmlTimbrado();
+                                String xml = con.getXmlTimbrado();
+                                String sello = cons.getSello();
 
-                                    Long transId = 0l;
-                                    Boolean tim = Boolean.TRUE;
-                                    fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
-
-                                    this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
-                                    this.restarCredito(rfcEmi);
-
-                                    Elemento.log.info("Se agrega el folio timbrado " + folio + " en la base de datos");
-                                    Elemento.log.info("Se comienza la generación del PDF...");
-
-                                    Elemento.leerConfig(rfcEmi);
-
-                                    if (leyenda.isEmpty()) {
-                                        Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios, idTipoComprobante);
-                                    } else {
-                                        Elemento.interpretarXML(pathXml, nameXml, leyenda, destinoXml);
-                                        Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios, idTipoComprobante);
-                                    }
-
-                                    this.crearQR(nameXml, "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid + "&fe=" + sello.substring(sello.length() - 8 , sello.length()));
-                                    if (!tipoComprobante.equalsIgnoreCase("N")) {
-                                        openSendEmailWindow(fol, pathXml, nameXml, cons);
-                                    } 
-
-                                } catch (NumberFormatException | SQLException | HeadlessException ex) {
-                                    ex.printStackTrace();
-                                    Elemento.log.error("Excepcion al crear PDF o al enviar email: " + ex.getMessage(), ex);
+                                if (lay.contains("NOMBRE_ADDENDA: Klyns")) {
+                                    xml = xml.replace("</cfdi:Comprobante>", cons.getAddendaKlyns() + "</cfdi:Comprobante>");
+                                    util.escribirArchivo(xml, pathXml, nameXml + ".xml");
                                 }
 
-                            } else {
-                                String fechaT = "01/01/2000 00:00:00";
-                                String uuid = "";
-                                String xml = "";
                                 Long transId = 0l;
-                                Boolean tim = Boolean.FALSE;
+                                Boolean tim = Boolean.TRUE;
                                 fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
-                                print(con.getMensajeError());
-                                Elemento.log.info("Se agrega el folio no timbrado " + folio + " en la base de datos");
-                                moveLayoutError(rootPath, name);
+
+                                this.aumentarFolio(rfcEmi, cons.getTipoComprobanteLayout());
+                                this.restarCredito(rfcEmi);
+
+                                Elemento.log.info("Se agrega el folio timbrado " + folio + " en la base de datos");
+                                Elemento.log.info("Se comienza la generación del PDF...");
+
+                                Elemento.leerConfig(rfcEmi);
+
+                                if (leyenda.isEmpty()) {
+                                    Factura_View.visualizar(pathXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios, idTipoComprobante);
+                                } else {
+                                    Elemento.interpretarXML(pathXml, nameXml, leyenda, destinoXml);
+                                    Factura_View.visualizarInterpretado(pathXml, destinoXml, nameXml, fol.getEmail("Emisores", rfcEmi), cons.jsonDomicilios, idTipoComprobante);
+                                }
+
+                                this.crearQR(nameXml, "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?re=" + rfcEmi + "&rr=" + rfcRe + "&tt=" + total + "&id=" + uuid + "&fe=" + sello.substring(sello.length() - 8 , sello.length()));
+                                if (!tipoComprobante.equalsIgnoreCase("N")) {
+                                    openSendEmailWindow(fol, pathXml, nameXml, cons);
+                                } 
+
+                            } catch (NumberFormatException | SQLException | HeadlessException ex) {
+                                ex.printStackTrace();
+                                Elemento.log.error("Excepcion al crear PDF o al enviar email: " + ex.getMessage(), ex);
                             }
+
                         } else {
-                            this.print("No cuenta con creditos, favor de comunicarse\nal 6672802966 o al 6672804444");
-                            Elemento.log.warn("No cuenta con creditos");
+                            String fechaT = "01/01/2000 00:00:00";
+                            String uuid = "";
+                            String xml = "";
+                            Long transId = 0l;
+                            Boolean tim = Boolean.FALSE;
+                            fv.agregarFactura(serie, folio, rfcEmi, rfcRe, nombreRe, fecha, total, datos, layout, xml, tim, fechaT, uuid, transId, cons.getTipoComprobanteLayout());
+                            print(con.getMensajeError());
+                            Elemento.log.info("Se agrega el folio no timbrado " + folio + " en la base de datos");
                             moveLayoutError(rootPath, name);
                         }
+                    } else {
+                        this.print("No cuenta con creditos, favor de comunicarse\nal 6672802966 o al 6672804444");
+                        Elemento.log.warn("No cuenta con creditos");
+                        moveLayoutError(rootPath, name);
                     }
                 }
 
@@ -344,25 +349,67 @@ public class Listener {
         }
     }
 
-    private void traerFolios() {
+    private void traerFolios(String rfcEmisor) {
         Connection con = Elemento.odbc();
         Statement stmt = factory.stmtLectura(con);
         ResultSet rs;
         Elemento.log.info("Buscando los folios registrados...");
         try {
-            rs = stmt.executeQuery("SELECT rfcEmisor,serie,folio,timbrado FROM Facturas");
+            rs = stmt.executeQuery("SELECT serie,folio,timbrado FROM Facturas WHERE rfcEmisor = '" + rfcEmisor + "'");
+            List<FoliosRegistrados> listaFolios = new ArrayList();
+            
             while (rs.next()) {
+                FoliosRegistrados fr = new FoliosRegistrados();
+                fr.setSerie(rs.getString("serie"));
+                fr.setFolio(rs.getString("folio"));
+                fr.setTimbrado(rs.getBoolean("timbrado"));
+                /*
                 emisores.add(rs.getString("rfcEmisor"));
                 series.add(rs.getString("serie"));
                 folios.add(rs.getString("folio"));
                 timbrado.add(rs.getBoolean("timbrado"));
+                */
+                listaFolios.add(fr);
             }
+            
+            folios.put(rfcEmisor, listaFolios);
+            
             rs.close();
             stmt.close();
             con.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    private CertificadoSelloDigital traerCertificados(String rfcEmi, String regimenFiscal){
+        Connection con = Elemento.odbc();
+        Statement stmt = factory.stmtLectura(con);
+        ResultSet rs;
+        Elemento.log.info("Buscando los certificados del RFC Emisor: " + rfcEmi);
+        CertificadoSelloDigital csd = null;
+        
+        try {
+            rs = stmt.executeQuery("SELECT pathCert, pathKey, keyPass FROM Cuentas WHERE rfc = '" + rfcEmi + "' AND regimenFiscal = '" + regimenFiscal + "'");
+            if(rs.next()){
+                csd = new CertificadoSelloDigital();
+                csd.setPathCert(rs.getString("pathCert"));
+                csd.setPathKey(rs.getString("pathKey"));
+                csd.setKeyPass(rs.getString("keyPass"));
+            }else{
+                String msg = "No existe ninguna cuenta asociada al Emisor " + rfcEmi + " con Regimen Fiscal " + regimenFiscal;
+                util.printError(msg);
+                log.warn(msg);
+            }
+            
+            rs.close();
+            stmt.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return csd;
     }
 
     private void crearQR(String name, String text) throws Exception {
@@ -463,5 +510,75 @@ public class Listener {
             e.printStackTrace();
             Elemento.log.error("Excepcion al agregar el cliente desde Listener", e);
         }
+    }
+
+    private class FoliosRegistrados {
+        
+        private String serie, folio;
+        private boolean timbrado;
+        
+        public FoliosRegistrados() {
+        }
+
+        public String getSerie() {
+            return serie;
+        }
+
+        public void setSerie(String serie) {
+            this.serie = serie;
+        }
+
+        public String getFolio() {
+            return folio;
+        }
+
+        public void setFolio(String folio) {
+            this.folio = folio;
+        }
+
+        public boolean isTimbrado() {
+            return timbrado;
+        }
+
+        public void setTimbrado(boolean timbrado) {
+            this.timbrado = timbrado;
+        }
+        
+    }
+    
+    private class CertificadoSelloDigital{
+        private String pathCert;
+        private String pathKey;
+        private String keyPass;
+        
+        public CertificadoSelloDigital(){
+            
+        }
+
+        public String getPathCert() {
+            return pathCert;
+        }
+
+        public void setPathCert(String pathCert) {
+            this.pathCert = pathCert;
+        }
+
+        public String getPathKey() {
+            return pathKey;
+        }
+
+        public void setPathKey(String pathKey) {
+            this.pathKey = pathKey;
+        }
+
+        public String getKeyPass() {
+            return keyPass;
+        }
+
+        public void setKeyPass(String keyPass) {
+            this.keyPass = keyPass;
+        }
+        
+        
     }
 }

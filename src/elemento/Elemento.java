@@ -15,12 +15,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 import javax.swing.JOptionPane;
@@ -41,12 +36,13 @@ public class Elemento {
     public static final String HOLA = "El programa esta corriendo";
     public static final int PORT = 1334;
     private final static ConnectionFactory factory = new ConnectionFactory();
-    public static String pathXml, pathPdf, pathXmlST, pathXmlMod, pathLayout, pathConfig, pathPlantillas, pathQR;
+    public static String pathXml, pathPdf, pathXmlST, pathXmlMod, pathLayout, pathConfig, pathPlantillas, pathQR, pathRaiz;
     public static String pathLayoutWorking, pathLayoutDone, pathLayoutError;
-    public static String user, pass;
+    public static String user, pass, sistema;
     private static String tipoConexion, baseDatos;
     public static String estructuraNombre;
     private static String tipoEnvioMail, tipoMailAdjunto, pathOutlook;
+    private static String idUsuario, password;
 
     public Elemento() {
         new Thread() {
@@ -73,6 +69,9 @@ public class Elemento {
                 tipoEnvioMail = tipo == null ? "1" : tipo;
                 tipoMailAdjunto = adjunto == null ? "2" : adjunto;
                 
+                idUsuario = prop.getProperty("idUsuario");
+                password = prop.getProperty("password");
+                
                 if(tipo != null && tipo.equals("2")){
                     pathOutlook = prop.getProperty("pathOutlook");
                 }
@@ -81,17 +80,21 @@ public class Elemento {
                 log.info("El archivo de propiedades no existe, se crea uno nuevo con los valores por default");
                 out = new FileOutputStream(propFile);
                 tipoConexion = "directo";
-                baseDatos = unidad + ":\\Facturas\\config\\ElementoBD3.mdb";
+                baseDatos = unidad + "/Facturas/config/ElementoBD3.mdb";
                 estructuraNombre = "serie_folio_rfce_rfcr_uuid";
                 tipoEnvioMail = "1";
                 tipoMailAdjunto = "2";
+                idUsuario = "FACT.24";
+                password = "Fact240786";
                 
                 prop.setProperty("tipo_conexion", tipoConexion);
                 prop.setProperty("base_datos", baseDatos);
                 prop.setProperty("estructura_nombre", estructuraNombre);
                 prop.setProperty("tipoEnvioMail", tipoEnvioMail);
                 prop.setProperty("tipoMailAdjunto", tipoMailAdjunto);
-                prop.setProperty("pathOutlook", "C:\\Program Files (x86)\\Microsoft Office\\Root\\Office16\\OUTLOOK.EXE");
+                prop.setProperty("idUsuario", idUsuario);
+                prop.setProperty("password", password);
+                prop.setProperty("pathOutlook", "C/Program Files (x86)/Microsoft Office/Root/Office16/OUTLOOK.EXE");
                 
                 prop.store(out, "En el tipo_conexion va \"archivo\" para cuando es un archivo .mdb o .accdb usando JDBC,\r\n"
                         + "\"odbc\" para cuando se configura un ODBC {Microsoft Access Driver (*.mdb)} en el panel de control de Windows\r\n"
@@ -105,8 +108,8 @@ public class Elemento {
                         + "Para el tipoEnvioMail serian 1 o 2, los cuales significan:\r\n"
                         + "\t1: Envio desde el Elemento por medio de JavaMail.\r\n"
                         + "\t2: Envio desde Outlook (previamente configurado).\r\n"
-                        + "Cuando el tipo es 2, entonces debemos poner en pathOutlook la ruta del archivo exe de outlook, utilizando dobles diagonales (\\\\)\r\n"
-                        + "en lugar de una diagonal (\\).\r\n\r\n"
+                        + "Cuando el tipo es 2, entonces debemos poner en pathOutlook la ruta del archivo exe de outlook, utilizando dobles diagonales (//)\r\n"
+                        + "en lugar de una diagonal (/).\r\n\r\n"
                         + "Para el tipoMailAdjunto serian 1 o 2, los cuales significan:\r\n"
                         + "\t1: Envio de un solo archivo ZIP con todos los XMLs y PDFs\r\n"
                         + "\t2: Envio de dos archivos (XML y PDF) por comprobante\r\n");
@@ -145,30 +148,34 @@ public class Elemento {
     public static void main(String[] args) {
         String path;
         String jVersion = "jre" + System.getProperty("java.version");
-        String sistema = System.getProperty("os.name").trim();
-        unidad = System.getenv("WINDIR").split(":")[0];
-        System.out.println(sistema);
-        pathXml = unidad + ":\\Facturas\\C_Procesados\\";
-        pathPdf = unidad + ":\\Facturas\\D_Pdfs\\";
-        pathLayout = unidad + ":\\Facturas\\B_Layout\\";
+        sistema = System.getProperty("os.name").trim();
+        unidad = sistema.contains("Mac OS") ? ("/Users/"+System.getProperty("user.name")) : (System.getenv("WINDIR").split(":")[0] + ":");
+        System.out.println("OS: " + sistema);
+        System.out.println("Unidad: " + unidad);
         
-        pathLayoutWorking = pathLayout + "working\\";
-        pathLayoutDone = pathLayout + "done\\";
-        pathLayoutError = pathLayout + "error\\";
+        pathRaiz = (unidad + "/Facturas");
         
-        pathXmlST = unidad + ":\\Facturas\\C_Interpretados\\";
-        pathXmlMod = unidad + ":\\Facturas\\XmlModificados\\";
-        pathConfig = unidad + ":\\Facturas\\config\\";
-        pathPlantillas = unidad + ":\\Facturas\\config\\plantillas\\";
-        pathQR = unidad + ":\\Facturas\\qrs\\";
+        pathXml = unidad + "/Facturas/C_Procesados/";
+        pathPdf = unidad + "/Facturas/D_Pdfs/";
+        pathLayout = unidad + "/Facturas/B_Layout/";
+        
+        pathLayoutWorking = pathLayout + "working/";
+        pathLayoutDone = pathLayout + "done/";
+        pathLayoutError = pathLayout + "error/";
+        
+        pathXmlST = unidad + "/Facturas/C_Interpretados/";
+        pathXmlMod = unidad + "/Facturas/XmlModificados/";
+        pathConfig = unidad + "/Facturas/config/";
+        pathPlantillas = unidad + "/Facturas/config/plantillas/";
+        pathQR = unidad + "/Facturas/qrs/";
 
 
-        File file1 = new File(unidad + ":\\Facturas");
-        File file2 = new File(unidad + ":\\Facturas\\A_Archivos");
+        File file1 = new File(pathRaiz);
+        File file2 = new File(pathRaiz + "/A_Archivos");
         File file3 = new File(pathLayout);
         File file4 = new File(pathXml);
         File file8 = new File(pathXmlST);
-        File file5 = new File(unidad + ":\\Facturas\\logs");
+        File file5 = new File(pathRaiz + "/logs");
         File file6 = new File(pathPdf);
         File file7 = new File(pathXmlMod);
         File file9 = new File(pathConfig);
@@ -179,7 +186,7 @@ public class Elemento {
         File file13 = new File(pathLayoutDone);
         File file14 = new File(pathLayoutError);
         
-        File file15 = new File(unidad + ":\\Facturas\\zips");
+        File file15 = new File(pathRaiz + "/zips");
 
         file1.mkdir();
         file2.mkdirs();
@@ -205,7 +212,7 @@ public class Elemento {
         System.out.println("TimeZone: " + TimeZone.getDefault().getDisplayName());
 
         try {
-            logObject = new Log(unidad + ":/Facturas/");
+            logObject = new Log(pathRaiz + "/");
             log = logObject.getLog();
         } catch (IOException e) {
             e.printStackTrace();
@@ -268,12 +275,28 @@ public class Elemento {
         conf.dispose();
 
         if (produccion) {
+            user = idUsuario;
+            pass = password;
             /*
-            user = "ZAG4";
-            pass = "ZAG.2015";
+            switch(idUsuario){
+                case "1":
+                    user = "ZAG4";
+                    pass = "ZAG.2015";
+                break;
+                case "2":
+                    user = "General";
+                    pass = "2dtTlwJy";
+                break;
+                case "3":
+                    user = "FACT.24";
+                    pass = "Fact240786";
+                break;
+                default:
+                    user = "ZAG4";
+                    pass = "ZAG.2015";
+                break;
+            }
             */
-            user = "General";
-            pass = "2dtTlwJy";
         } else {
             user = "DEMOGon";
             pass = "cfdi";
@@ -470,7 +493,7 @@ public class Elemento {
     public static String getMailConfiguration(String email){
         String resp = "";
         
-        String prov = (email.trim().isEmpty() ? "gmail" : email.split("@")[1].split("\\.")[0]);
+        String prov = (email.trim().isEmpty() ? "gmail" : email.split("@")[1].split("/.")[0]);
         Connection con = odbc();
         Statement stmt;
         ResultSet rs;
