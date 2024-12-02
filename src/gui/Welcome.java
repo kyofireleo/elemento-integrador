@@ -221,12 +221,6 @@ public class Welcome extends javax.swing.JFrame {
     private void abrirCarpeta() {
         try {
             // TODO add your handling code here:
-            if(Elemento.sistema.contains("Mac OS")){
-                System.out.println("Coming soon...");
-            }else{
-                Exe.exeSinTiempo("explorer.exe \"" + Elemento.unidad + "\\Facturas\\\"");
-            }
-            
             if(Desktop.isDesktopSupported()){
                 Desktop.getDesktop().open(new File(Elemento.pathRaiz));
             }
