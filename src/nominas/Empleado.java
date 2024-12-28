@@ -5,8 +5,8 @@
 package nominas;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import utils.cfdi.Receptor;
+import java.util.Calendar;
 
 /**
  *
@@ -153,11 +153,11 @@ public class Empleado {
         emp.setNumEmpleado(numEmpleado);
     }
 
-    public Date getFechaInicialRelLaboral() {
+    public Calendar getFechaInicialRelLaboral() {
         return emp.getFechaInicialRelLaboral();
     }
 
-    public void setFechaInicialRelLaboral(Date fechaInicialRelLaboral) {
+    public void setFechaInicialRelLaboral(Calendar fechaInicialRelLaboral) {
         emp.setFechaInicialRelLaboral(fechaInicialRelLaboral);
     }
 }

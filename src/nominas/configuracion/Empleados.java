@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 import javax.swing.JOptionPane;
 import nominas.Deducciones;
 import nominas.OtrosPagos;
@@ -536,7 +537,7 @@ public class Empleados extends javax.swing.JFrame {
         emp.setClabe(clabe.getText());
         emp.setCurp(curp.getText());
         emp.setDepartamento(departamento.getText());
-        emp.setFechaInicialRelLaboral(fechaInicialRelLaboral.getDate());
+        emp.setFechaInicialRelLaboral(fechaInicialRelLaboral.getCalendar());
         emp.setNss(nss.getText());
         emp.setNumEmpleado(numEmpleado.getText());
         emp.setPeriodicidadPago(periodicidadPago.getSelectedItem().toString().split(",")[0]);
@@ -557,7 +558,7 @@ public class Empleados extends javax.swing.JFrame {
         ResultSet rs;
         
         if(emp.getFechaInicialRelLaboral() != null){
-            valorFecha = new java.sql.Date(emp.getFechaInicialRelLaboral().getTime());
+            valorFecha = new java.sql.Date(emp.getFechaInicialRelLaboral().getTimeInMillis());
         }else{
             valorFecha = null;
         }
@@ -601,7 +602,7 @@ public class Empleados extends javax.swing.JFrame {
         java.sql.Date valorFecha;
         
         if(emp.getFechaInicialRelLaboral() != null){
-            valorFecha = new java.sql.Date(emp.getFechaInicialRelLaboral().getTime());
+            valorFecha = new java.sql.Date(emp.getFechaInicialRelLaboral().getTimeInMillis());
         }else{
             valorFecha = null;
         }

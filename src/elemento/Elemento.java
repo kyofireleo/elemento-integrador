@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Properties;
 import java.util.TimeZone;
 import javax.swing.JOptionPane;
@@ -30,13 +31,13 @@ public class Elemento {
 
     public static Log logObject;
     public static Logger log;
-    public static String noCertificado, logo, lugarExpedicion;
+    public static String noCertificado, pathCert, pathKey, keyPass, logo, lugarExpedicion;
     public static String rfc, regimenFiscal, unidad;
     public static boolean produccion;
     public static final String HOLA = "El programa esta corriendo";
     public static final int PORT = 1334;
     private final static ConnectionFactory factory = new ConnectionFactory();
-    public static String pathXml, pathPdf, pathXmlST, pathXmlMod, pathLayout, pathConfig, pathPlantillas, pathQR, pathRaiz;
+    public static String pathXml, pathPdf, pathXmlST, pathXmlMod, pathLayout, pathConfig, pathPlantillas, pathQR, pathRaiz, pathZips;
     public static String pathLayoutWorking, pathLayoutDone, pathLayoutError;
     public static String user, pass, sistema;
     private static String tipoConexion, baseDatos;
@@ -50,8 +51,8 @@ public class Elemento {
             public void run() {
                 listen();
             }
-        }.start();
-
+        }.start();       
+        
         Properties prop = new Properties();
         InputStream in;
         OutputStream out;
@@ -80,7 +81,7 @@ public class Elemento {
                 log.info("El archivo de propiedades no existe, se crea uno nuevo con los valores por default");
                 out = new FileOutputStream(propFile);
                 tipoConexion = "directo";
-                baseDatos = unidad + "/Facturas/config/ElementoBD3.mdb";
+                baseDatos = pathRaiz + "/config/ElementoBD3.mdb";
                 estructuraNombre = "serie_folio_rfce_rfcr_uuid";
                 tipoEnvioMail = "1";
                 tipoMailAdjunto = "2";
@@ -155,19 +156,20 @@ public class Elemento {
         
         pathRaiz = (unidad + "/Facturas");
         
-        pathXml = unidad + "/Facturas/C_Procesados/";
-        pathPdf = unidad + "/Facturas/D_Pdfs/";
-        pathLayout = unidad + "/Facturas/B_Layout/";
+        pathXml = pathRaiz + "/C_Procesados/";
+        pathPdf = pathRaiz + "/D_Pdfs/";
+        pathLayout = pathRaiz + "/B_Layout/";
         
         pathLayoutWorking = pathLayout + "working/";
         pathLayoutDone = pathLayout + "done/";
         pathLayoutError = pathLayout + "error/";
         
-        pathXmlST = unidad + "/Facturas/C_Interpretados/";
-        pathXmlMod = unidad + "/Facturas/XmlModificados/";
-        pathConfig = unidad + "/Facturas/config/";
-        pathPlantillas = unidad + "/Facturas/config/plantillas/";
-        pathQR = unidad + "/Facturas/qrs/";
+        pathXmlST = pathRaiz + "/C_Interpretados/";
+        pathXmlMod = pathRaiz + "/XmlModificados/";
+        pathConfig = pathRaiz + "/config/";
+        pathPlantillas = pathRaiz + "/config/plantillas/";
+        pathQR = pathRaiz + "/qrs/";
+        pathZips = pathRaiz + "/zips/";
 
 
         File file1 = new File(pathRaiz);
@@ -268,6 +270,9 @@ public class Elemento {
         Configurar conf = new Configurar(rfce);
         rfc = conf.getRfc();
         noCertificado = conf.getNoCertificado();
+        pathCert = conf.getPathCert();
+        pathKey = conf.getPathKey();
+        keyPass = conf.getKeyPass();
         produccion = conf.isProduccion();
         logo = conf.getLogo();
         regimenFiscal = conf.getRegimen();
@@ -493,7 +498,7 @@ public class Elemento {
     public static String getMailConfiguration(String email){
         String resp = "";
         
-        String prov = (email.trim().isEmpty() ? "gmail" : email.split("@")[1].split("/.")[0]);
+        String prov = (email.trim().isEmpty() ? "gmail" : email.split("@")[1].split("\\.")[0]);
         Connection con = odbc();
         Statement stmt;
         ResultSet rs;

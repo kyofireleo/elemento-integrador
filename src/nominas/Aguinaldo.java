@@ -16,10 +16,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -38,10 +41,11 @@ public class Aguinaldo extends javax.swing.JFrame {
     List<Integer> idEmpleados;
     String serie;
     String lugarExpedicion;
-    double calculo;
-    List<Double> importes;
+    BigDecimal calculo;
+    List<BigDecimal> importes;
     DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
     boolean recalcularDias = false;
+    TimeZone tz = TimeZone.getTimeZone("GMT-7:00");
 
     public Aguinaldo() {
         initComponents();
@@ -66,26 +70,25 @@ public class Aguinaldo extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
-        BigDecimal totalNeto;
-        double tn = 0.0;
+        BigDecimal totalNeto = BigDecimal.ZERO;
         for (int j = 0; j < numEmpleados.size(); j++) {
             row = new Object[6];
             Empleado emp = getEmpleado(numEmpleados.get(j), idEmpleados.get(j));
             if (emp != null) {
-                double i = /*obtenerNetoAPagar(emp.getIdEmpleado())*/ 0.0;
-                double d = /*obtenerNetoDeducciones(emp.getIdEmpleado())*/ 0.0;
+                BigDecimal i = /*obtenerNetoAPagar(emp.getIdEmpleado())*/ BigDecimal.ZERO;
+                BigDecimal d = /*obtenerNetoDeducciones(emp.getIdEmpleado())*/ BigDecimal.ZERO;
                 row[0] = numEmpleados.get(j);
                 row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
-                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(),this.fechaFinalPago.getDate());
+                row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(),this.fechaFinalPago.getCalendar());
                 row[3] = 0;
                 row[4] = i;
                 row[5] = d;
-                tn += (i - d);
+                totalNeto = totalNeto.add(i.subtract(d));
                 model.addRow(row);
             }
         }
-        totalNeto = util.redondearBigDecimal(tn);
-        totalNetoLabel.setText(df.format(totalNeto.doubleValue()));
+        totalNeto = util.redondear(totalNeto);
+        totalNetoLabel.setText(df.format(totalNeto));
     }
 
     private void calcularAguinaldo() {
@@ -106,11 +109,11 @@ public class Aguinaldo extends javax.swing.JFrame {
             
             if(fechaFinalPago.getDate() != null){
                 //Si el año inical de relacion laboral es igual a la fecha final de pago O el mes de la fecha final de pago es antes de Diciembre
-                if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear()){
-                    diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
-                }else if (fechaFinalPago.getDate().getMonth() < 11){
-                    Date fechaIni = new Date(fechaFinalPago.getDate().getYear(), 0, 1);
-                    diasTrabajados = calcularDiasPagados(fechaIni, fechaFinalPago.getDate());
+                if(emp.getFechaInicialRelLaboral().get(Calendar.YEAR) == fechaFinalPago.getCalendar().get(Calendar.YEAR)){
+                    diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getCalendar());
+                }else if (fechaFinalPago.getCalendar().get(Calendar.MONTH) < 11){
+                    Calendar fechaIni = new GregorianCalendar(fechaFinalPago.getCalendar().get(Calendar.YEAR), 0, 1);
+                    diasTrabajados = calcularDiasPagados(fechaIni, fechaFinalPago.getCalendar());
                 }else{
                     diasTrabajados = 365;
                 }
@@ -121,11 +124,11 @@ public class Aguinaldo extends javax.swing.JFrame {
                 if(!recalcularDias && diasATabla > 0)
                     diasA = diasATabla;
 
-                int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
+                int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getCalendar());
                 BigDecimal sd = emp.getSalarioDiarioInt();
                 BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
                 BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
-                importes.add(agui.doubleValue());
+                importes.add(agui);
                 model.setValueAt(anti, i, 2);
                 model.setValueAt(diasA, i, 3);
                 model.setValueAt(agui, i, 4);
@@ -155,11 +158,11 @@ public class Aguinaldo extends javax.swing.JFrame {
             emp = this.getEmpleadoCompleto(num, idE);
             
             if(fechaFinalPago.getDate() != null){
-                if(emp.getFechaInicialRelLaboral().getYear() == fechaFinalPago.getDate().getYear()){
-                    diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
+                if(emp.getFechaInicialRelLaboral().get(Calendar.YEAR) == fechaFinalPago.getCalendar().get(Calendar.YEAR)){
+                    diasTrabajados = calcularDiasPagados(emp.getFechaInicialRelLaboral(), fechaFinalPago.getCalendar());
                 }else if (fechaFinalPago.getDate().getMonth() < 11){
-                    Date fechaIni = new Date(fechaFinalPago.getDate().getYear(), 0, 1);
-                    diasTrabajados = calcularDiasPagados(fechaIni, fechaFinalPago.getDate());
+                    Calendar fechaIni = new GregorianCalendar(fechaFinalPago.getCalendar().get(Calendar.YEAR), 0, 1);
+                    diasTrabajados = calcularDiasPagados(fechaIni, fechaFinalPago.getCalendar());
                 }else{
                     diasTrabajados = 365;
                 }
@@ -171,7 +174,7 @@ public class Aguinaldo extends javax.swing.JFrame {
             if(!recalcularDias && diasATabla > 0)
                 diasA = diasATabla;
             
-            int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), this.fechaFinalPago.getDate());
+            int anti = calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), this.fechaFinalPago.getCalendar());
             BigDecimal sd = emp.getSalarioDiarioInt();
             BigDecimal agui = util.redondear(obtenerAguinaldo(diasA, sd));
             BigDecimal isr = new BigDecimal(model.getValueAt(i, 5).toString());
@@ -224,7 +227,8 @@ public class Aguinaldo extends javax.swing.JFrame {
                 emp = new Empleado();
                 emp.setNumEmpleado(numEmpleado);
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
-                emp.setFechaInicialRelLaboral(rs.getDate("fechaInicialRelLaboral"));
+                LocalDateTime ldt = rs.getTimestamp("fechaInicialRelLaboral").toLocalDateTime();
+                emp.setFechaInicialRelLaboral(new GregorianCalendar(ldt.getYear(), ldt.getMonthValue() - 1, ldt.getDayOfMonth()));
             }
 
             rs.close();
@@ -257,7 +261,8 @@ public class Aguinaldo extends javax.swing.JFrame {
                 emp.setDepartamento(rs.getString("departamento"));
                 emp.setClabe(rs.getString("clabe"));
                 emp.setBanco(rs.getString("banco"));
-                emp.setFechaInicialRelLaboral(rs.getDate("fechaInicialRelLaboral"));
+                LocalDateTime ldt = rs.getTimestamp("fechaInicialRelLaboral").toLocalDateTime();
+                emp.setFechaInicialRelLaboral(new GregorianCalendar(ldt.getYear(),ldt.getMonthValue()-1, ldt.getDayOfMonth()));
                 emp.setPuesto(rs.getString("puesto"));
                 emp.setTipoContrato(rs.getString("tipoContrato"));
                 emp.setTipoJornada(rs.getString("tipoJornada"));
@@ -344,21 +349,17 @@ public class Aguinaldo extends javax.swing.JFrame {
         return util.redondear(neto);
     }
 
-    public int calcularAntiguedadSemanas(Date fechaInicial, Date fechaFinalPay) {
+    public int calcularAntiguedadSemanas(Calendar date, Calendar fechaFinalPay) {
         try {
-            Date date = fechaInicial;
-            Date date2;
+            Calendar date2;
             if(fechaFinalPay == null){
-                date2 = new Date();
+                date2 = new GregorianCalendar();
             }else{
                 date2 = fechaFinalPay;
             }
-            
-            GregorianCalendar cal = new GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
-            GregorianCalendar cal2 = new GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
 
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
-            long difms = date2.getTime() - date.getTime();
+            long difms = date2.getTimeInMillis() - date.getTimeInMillis();
             long difd = (difms / 86400000) + 1;
             return (int) (difd / 7);
         } catch (Exception ex) {
@@ -368,13 +369,10 @@ public class Aguinaldo extends javax.swing.JFrame {
         }
     }
 
-    public int calcularDiasPagados(Date date, Date date2) {
+    public int calcularDiasPagados(Calendar date, Calendar date2) {
         try {
-            if (!(date == null || date2 == null)) {
-                java.util.GregorianCalendar cal = new java.util.GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
-                java.util.GregorianCalendar cal2 = new java.util.GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
-
-                long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
+            if (date != null && date2 != null) {
+                long difms = date2.getTimeInMillis() - date.getTimeInMillis();
                 long difd = difms / (1000 * 60 * 60 * 24) + 1;
                 return (int) difd;
             } else {
@@ -624,7 +622,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                     //Seteamos percepciones
                     perc.setPercepciones(getPercepciones(i));
                     perc.setTotalExento(BigDecimal.ZERO);
-                    perc.setTotalGravado(util.redondear(perc.getPercepciones().get(0).getImporteGravado().add(perc.getPercepciones().get(0).getImporteExento())));
+                    perc.setTotalGravado(util.redondear(perc.getPercepciones().get(0).getImporteGravado()));
                     perc.setTotalSueldos(util.redondear(perc.getTotalGravado().add(perc.getTotalExento())));
                     nom.setPercepciones(perc);
                     nom.setTotalPercepciones(perc.getTotalSueldos());
@@ -638,7 +636,7 @@ public class Aguinaldo extends javax.swing.JFrame {
                     }
 
                     fact.conceptos = getConceptos(perc, dedu, otro);
-                    fact = getTotales(perc, dedu, fact);
+                    fact = getTotales(perc, dedu, otro, fact);
 
                     lay = new Layout(fact, emp, nom);
                 }
@@ -657,8 +655,8 @@ public class Aguinaldo extends javax.swing.JFrame {
         return conceptos;
     }
 
-    private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, Factura fact) {
-        BigDecimal sub = perc.getTotalSueldos();
+    private Factura getTotales(complementos.nominas.Percepciones perc, complementos.nominas.Deducciones dedu, complementos.nominas.OtrosPagos otros,Factura fact) {
+        BigDecimal sub = perc.getTotalSueldos().add(otros.getTotalOtrosPagos());
 
         fact.isrRetenido = dedu.getTotalRetenido();
         fact.descuento = dedu.getTotalOtras().add(dedu.getTotalRetenido());
@@ -946,8 +944,8 @@ public class Aguinaldo extends javax.swing.JFrame {
     private boolean isImportesAguinaldosIguales() {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         for (int i = 0; i < importes.size(); i++) {
-            double v = new Double(model.getValueAt(i, 4).toString());
-            if (importes.get(i) != v) {
+            BigDecimal v = new BigDecimal(model.getValueAt(i, 4).toString());
+            if (importes.get(i).compareTo(v) != 0) {
                 return false;
             }
         }

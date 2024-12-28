@@ -11,6 +11,7 @@ import elemento.Layout;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -730,16 +731,14 @@ public class Nominas extends javax.swing.JFrame {
         }
     }
     
-    public final long calcularAntiguedadSemanas(Date fechaInicial){
+    public final long calcularAntiguedadSemanas(Calendar fechaInicial){
         try {
-            Date date = fechaInicial;
-            Date date2 = new Date();
-            GregorianCalendar cal = new GregorianCalendar(date.getYear(),date.getMonth(),date.getDate());
-            GregorianCalendar cal2 = new GregorianCalendar(date2.getYear(),date2.getMonth(),date2.getDate());
+
+            GregorianCalendar cal2 = new GregorianCalendar();
             
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
             
-            long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
+            long difms = cal2.getTimeInMillis() - fechaInicial.getTimeInMillis();
             long difd = difms / (1000 * 60 * 60 * 24 * 7);
             return difd;
         } catch (Exception ex) {

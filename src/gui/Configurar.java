@@ -1415,7 +1415,7 @@ public class Configurar extends javax.swing.JFrame {
         TableModel model = foliosTabla.getModel();
         int row = foliosTabla.getSelectedRow();
         
-        int indiceTipo = new Integer(model.getValueAt(row, 0).toString().split(",")[0]);
+        int indiceTipo = Integer.valueOf(model.getValueAt(row, 0).toString().split(",")[0]);
         this.tipoComprobante.setSelectedIndex(indiceTipo);
         this.serie.setText(model.getValueAt(row, 1).toString());
         this.folio.setText(model.getValueAt(row, 2).toString());
@@ -1428,7 +1428,7 @@ public class Configurar extends javax.swing.JFrame {
     private void foliosTablaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_foliosTablaFocusLost
         // TODO add your handling code here:
         String nameOb = evt.getOppositeComponent().getName();
-        String names [] = {"serie", "folio", "plantilla", "agregarComprobante", "tipoComprobante", "exaFact", "borrarComprobante"};
+        String names [] = {"serie", "folio", "plantilla", "agregarComprobante", "tipoComprobante", "examinarPlantilla", "borrarComprobante"};
         List<String> nombresTipos = new ArrayList(Arrays.asList(names));
         
         if(!nombresTipos.contains(nameOb)){

@@ -22,6 +22,7 @@ import elemento.Factura;
 import elemento.Factura.ConceptoTraslado;
 import elemento.Factura.ConceptoRetencion;
 import elemento.Layout;
+import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.io.*;
@@ -34,8 +35,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -1249,7 +1252,8 @@ public class Factura_View extends elemento.ClavesProdUniSat {
             empleado.setClabe(rsE.getString("clabe"));
             empleado.setCurp(rsE.getString("curp"));
             empleado.setDepartamento(rsE.getString("departamento"));
-            empleado.setFechaInicialRelLaboral(rsE.getDate("fechaInicialRelLaboral"));
+            LocalDateTime ldt = rsE.getTimestamp("fechaInicialRelLaboral").toLocalDateTime();
+            empleado.setFechaInicialRelLaboral(new GregorianCalendar(ldt.getYear(), ldt.getMonthValue() - 1, ldt.getDayOfMonth()));
             empleado.setIdEmpleado(rsE.getInt("idEmpleado"));
             empleado.setNss(rsE.getString("nss"));
             empleado.setNumEmpleado(rsE.getString("numEmpleado"));
@@ -2291,8 +2295,9 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         String logo = Elemento.logo;
         try {
             util.generarPdf(pdf, xml, name, logo, plantilla, false);
-            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "");
-            Exe.exeSinTiempo(pdf + name + ".pdf");
+            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "", Elemento.pathZips);
+            //Exe.exeSinTiempo(pdf + name + ".pdf");
+            Desktop.getDesktop().open(new File(pdf + name + ".pdf"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2313,7 +2318,7 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         String logo = Elemento.logo;
         try {
             util.generarPdf(pdf, xmlModificado, name, logo, plantilla, false);
-            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "");
+            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "", Elemento.pathZips);
             Exe.exeSinTiempo(pdf + name + ".pdf");
         } catch (Exception e) {
             e.printStackTrace();

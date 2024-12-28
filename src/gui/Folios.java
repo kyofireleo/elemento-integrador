@@ -17,6 +17,7 @@ import elemento.Emisor;
 import elemento.Exe;
 import elemento.Listener;
 import elemento.Stylezer;
+import java.awt.Desktop;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -835,7 +836,7 @@ public class Folios extends javax.swing.JFrame {
                     path = pdfCancel.getAbsolutePath();
                 }
                 try {
-                    Exe.exeSinTiempo(path);
+                    Desktop.getDesktop().open(new File(path));
                 } catch (IOException ex) {
                     ex.printStackTrace();
                     Elemento.log.error("Excepcion al tratar de visualizar un PDF ya existente: " + ex.getMessage(), ex);
@@ -1472,7 +1473,7 @@ public class Folios extends javax.swing.JFrame {
             rs = stmt.executeQuery("SELECT layout FROM Facturas WHERE serie like \'" + serie + "\' AND folio = " + folio + " AND rfcEmisor like \'" + rfcEmi + "\' AND rfc like \'" + rfcRec + "\'");
             if (rs.next()) {
                 String lay = rs.getString("layout");
-                util.escribirLayout(lay, name);
+                util.escribirLayout(lay, Elemento.pathLayout+name);
             } else {
                 String msg = "No se encuentra registrado este comprobante: " + name;
                 Elemento.log.warn(msg);

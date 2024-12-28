@@ -23,7 +23,9 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -600,7 +602,7 @@ public class NominaGeneral extends javax.swing.JFrame {
             DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
 
             for (int i = 0; i < model.getRowCount(); i++) {
-                model.setValueAt(this.calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate()), i, 3);
+                model.setValueAt(this.calcularDiasPagados(fechaInicialPago.getCalendar(), fechaFinalPago.getCalendar()), i, 3);
             }
         }
     }
@@ -656,13 +658,10 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
     }
 
-    public int calcularDiasPagados(Date date, Date date2) {
+    public int calcularDiasPagados(Calendar date, Calendar date2) {
         try {
-            if (!(date == null || date2 == null)) {
-                java.util.GregorianCalendar cal = new java.util.GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
-                java.util.GregorianCalendar cal2 = new java.util.GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
-
-                long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
+            if (date != null && date2 != null) {
+                long difms = date2.getTimeInMillis() - date.getTimeInMillis();
                 long difd = difms / (1000 * 60 * 60 * 24) + 1;
                 return (int) difd;
             } else {
@@ -675,18 +674,11 @@ public class NominaGeneral extends javax.swing.JFrame {
         }
     }
 
-    public int calcularAntiguedadSemanas(Date fechaInicial, Date fechaFinalPay) {
+    public int calcularAntiguedadSemanas(Calendar cal, Calendar cal2) {
         try {
-            Date date = fechaInicial;
-            Date date2;
-            if (fechaFinalPay == null) {
-                date2 = new Date();
-            } else {
-                date2 = fechaFinalPay;
-            }
-
-            GregorianCalendar cal = new GregorianCalendar(date.getYear(), date.getMonth(), date.getDate());
-            GregorianCalendar cal2 = new GregorianCalendar(date2.getYear(), date2.getMonth(), date2.getDate());
+            if (cal2 == null) {
+                cal2 = new GregorianCalendar();
+            } 
 
             //long difms = (cal2.getTimeInMillis()*(-1)) - cal.getTimeInMillis();
             long difms = cal2.getTimeInMillis() - cal.getTimeInMillis();
@@ -851,8 +843,8 @@ public class NominaGeneral extends javax.swing.JFrame {
                     BigDecimal d = util.redondear(dec.getTotalRetenido().add(dec.getTotalOtras()));
                     row[0] = numEmpleados.get(j);
                     row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
-                    row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getDate());
-                    row[3] = this.calcularDiasPagados(fechaInicialPago.getDate(), fechaFinalPago.getDate());
+                    row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getCalendar());
+                    row[3] = this.calcularDiasPagados(fechaInicialPago.getCalendar(), fechaFinalPago.getCalendar());
                     row[5] = df.format(i);
                     row[6] = df.format(o);
                     row[7] = df.format(d);
@@ -887,7 +879,8 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emp = new Empleado();
                 emp.setNumEmpleado(numEmpleado);
                 emp.setIdEmpleado(rs.getInt("idEmpleado"));
-                emp.setFechaInicialRelLaboral(rs.getDate("fechaInicialRelLaboral"));
+                LocalDateTime ldt = rs.getTimestamp("fechaInicialRelLaboral").toLocalDateTime();
+                emp.setFechaInicialRelLaboral(new GregorianCalendar(ldt.getYear(), ldt.getMonthValue() - 1, ldt.getDayOfMonth()));
             }
 
             rs.close();
@@ -920,7 +913,8 @@ public class NominaGeneral extends javax.swing.JFrame {
                 emp.setDepartamento(rs.getString("departamento"));
                 emp.setClabe(rs.getString("clabe"));
                 emp.setBanco(rs.getString("banco"));
-                emp.setFechaInicialRelLaboral(rs.getDate("fechaInicialRelLaboral"));
+                LocalDateTime ldt = rs.getTimestamp("fechaInicialRelLaboral").toLocalDateTime();
+                emp.setFechaInicialRelLaboral(new GregorianCalendar(ldt.getYear(), ldt.getMonthValue() - 1, ldt.getDayOfMonth()));
                 emp.setPuesto(rs.getString("puesto"));
                 emp.setTipoContrato(rs.getString("tipoContrato"));
                 emp.setTipoJornada(rs.getString("tipoJornada"));

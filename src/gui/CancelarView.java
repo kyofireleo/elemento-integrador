@@ -270,7 +270,7 @@ public class CancelarView extends javax.swing.JFrame {
                         + "\r\nPor el motivo: " + motivo;
 
                 ConectorDF con = new ConectorDF(Elemento.produccion, Elemento.user, Elemento.pass, Elemento.log, Elemento.unidad);
-                String respuesta = con.cancelarCfdi(rfcE, rfcR, total, uu, pathXml, nameXml, motivoClave, uuidRelacionado);
+                String respuesta = con.cancelarCfdi(rfcE, rfcR, total, uu, pathXml, nameXml, motivoClave, uuidRelacionado, Elemento.pathCert, Elemento.pathKey, Elemento.keyPass);
 
                 JsonObject jsonRes = JsonParser.parseString(respuesta).getAsJsonObject();
                 Boolean isCancelled = jsonRes.get("isCancelled").getAsBoolean();
@@ -284,7 +284,7 @@ public class CancelarView extends javax.swing.JFrame {
                     cambiarEstadoFactura(uu, null);
                     this.generarPdfCancelado(pathXml, pathPdf, namePdf, logo);
                     //new File(pathXml).renameTo(new File(ruta+namePdf+".xml"));
-                    util.enviarEmail("", "", email, mensaje, pathXml, pathPdf + namePdf + ".pdf", nameXml, namePdf + ".pdf", "");
+                    util.enviarEmail("", "", email, mensaje, pathXml, pathPdf + namePdf + ".pdf", nameXml, namePdf + ".pdf", "", Elemento.pathZips);
                     Exe.exeSinTiempo(pathPdf + namePdf + ".pdf");
                 } else if (isRequested) {
                     texto = msg;

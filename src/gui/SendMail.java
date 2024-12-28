@@ -149,7 +149,7 @@ public class SendMail extends javax.swing.JFrame {
             
         }else{
             try{
-                util.enviarEmail(emailO,passO,email.getText().trim(), mensaje.getText().trim(), pathXml, pathPdf, nameXml, namePdf, conf);
+                util.enviarEmail(emailO,passO,email.getText().trim(), mensaje.getText().trim(), pathXml, pathPdf, nameXml, namePdf, conf, Elemento.pathZips);
             }catch(Exception e){
                 e.printStackTrace();
                 Elemento.log.info("Excepcion: No se pudo enviar el correo electronico: " + e.getLocalizedMessage());
