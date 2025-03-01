@@ -149,7 +149,10 @@ public class Configurar extends javax.swing.JFrame {
         
         try {
             rfc.setSelectedIndex(0);
+            txtPathCert.setText("");
             certificado.setText("");
+            txtPathKey.setText("");
+            pwdKeyPass.setText("");
             logoPath.setText("");
             regimenCombo.setSelectedIndex(0);
             lugarExpedicion.setText("");
@@ -162,7 +165,7 @@ public class Configurar extends javax.swing.JFrame {
             stmt4 = fact.stmtLectura(con);
             stmt5 = fact.stmtLectura(con);
 
-            rs = consultar(stmt);
+            rs = consultarCuentas(stmt);
             
             rs3 = stmt3.executeQuery("SELECT Id,rfc,nombre FROM Emisores");
             rs4 = stmt4.executeQuery("SELECT c_tiposcomprobante_id, tiposcomprobante, descripcion FROM c_tiposcomprobante");
@@ -201,10 +204,13 @@ public class Configurar extends javax.swing.JFrame {
             }
             
             if(!rfce.trim().isEmpty()){
-                rs2 = consultar(stmt2, rfce);
+                rs2 = consultarCuentasPorRfcOId(stmt2, rfce);
                 if (rs2.next()) {
                     rfc.setSelectedItem(rs2.getString("rfc").trim());
+                    txtPathCert.setText(rs2.getString("pathCert").trim());
                     certificado.setText(rs2.getString("nocertificado").trim());
+                    txtPathKey.setText(rs2.getString("pathKey").trim());
+                    pwdKeyPass.setText(rs2.getString("keyPass").trim());
                     logoPath.setText(rs2.getString("logo").trim());
                     regimenCombo.setSelectedItem(rs2.getString("regimenFiscal").trim());
                     lugarExpedicion.setText(rs2.getString("lugarExpedicion").trim());
@@ -330,7 +336,7 @@ public class Configurar extends javax.swing.JFrame {
         }
     }
 
-    private ResultSet consultar(Statement stmt, String valor) throws Exception {
+    private ResultSet consultarCuentasPorRfcOId(Statement stmt, String valor) throws Exception {
         ResultSet rs;
         if(valor.trim().equalsIgnoreCase(rfce.trim()))
             rs = stmt.executeQuery("SELECT TOP 1 * FROM Cuentas WHERE rfc = \'" + valor + "\'");
@@ -339,7 +345,7 @@ public class Configurar extends javax.swing.JFrame {
         return rs;
     }
 
-    private ResultSet consultar(Statement stmt) throws Exception {
+    private ResultSet consultarCuentas(Statement stmt) throws Exception {
         ResultSet rs;
         
         rs = stmt.executeQuery("SELECT * FROM Cuentas");
@@ -621,6 +627,8 @@ public class Configurar extends javax.swing.JFrame {
             }
         });
 
+        lblFechaCert.setFont(new java.awt.Font("Helvetica Neue", 0, 12)); // NOI18N
+
         plantilla.setName("plantilla"); // NOI18N
 
         exaFact.setText("...");
@@ -780,7 +788,7 @@ public class Configurar extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(folio, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(plantilla, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                                .addComponent(plantilla, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(exaFact, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -961,7 +969,7 @@ public class Configurar extends javax.swing.JFrame {
             Connection con = Elemento.odbc();
             Statement stmt = fact.stmtLectura(con);
 
-            ResultSet rs = this.consultar(stmt, cuenta_id);
+            ResultSet rs = this.consultarCuentasPorRfcOId(stmt, cuenta_id);
 
             if (rs.next()) {
                 rfc.setSelectedItem(rfct);

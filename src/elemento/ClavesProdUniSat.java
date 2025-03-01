@@ -15,6 +15,15 @@ public class ClavesProdUniSat extends JFrame{
     public Integer idClaveSat;
     public String claveUnidadSat;
     public Integer idClaveUnidadSat;
+    public String descripcionUnidad;
+
+    public String getDescripcion() {
+        return descripcionUnidad;
+    }
+
+    public void setDescripcionUnidad(String descripcion) {
+        this.descripcionUnidad = descripcion;
+    }
 
     public String getClaveSat() {
         return claveSat;

@@ -195,6 +195,7 @@ public class Layout {
     private String rellenarNominas(String preFactura) throws Error, Exception {
         Elemento.log.info((Object) "Se comienza a llenar el Layout...");
         StringBuilder re = new StringBuilder();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         this.fecha = this.getFecha();
         /*BigDecimal porIeps = this.redondear(this.fact.porIeps);
         BigDecimal totalIeps = this.redondear(this.fact.totalIeps);*/
@@ -290,7 +291,7 @@ public class Layout {
         re.append("PUESTO: ").append(this.emp.getPuesto()).append("\r\n");
         re.append("BANCO: ").append(this.emp.getBanco()).append("\r\n");
         re.append("CLABE: ").append(this.emp.getClabe()).append("\r\n");
-        re.append("FECHA_INICIAL_REL_LABORAL: ").append(this.emp.getFechaInicialRelLaboral()).append("\r\n");
+        re.append("FECHA_INICIAL_REL_LABORAL: ").append(format.format(this.emp.getFechaInicialRelLaboral().getTime())).append("\r\n");
         re.append("TIPO_CONTRATO: ").append(this.emp.getTipoContrato()).append("\r\n");
         re.append("TIPO_JORNADA: ").append(this.emp.getTipoJornada()).append("\r\n");
         re.append("PERIODICIDAD_PAGO: ").append(this.nomi.getTipoNomina().equalsIgnoreCase("E") ? "99" : this.emp.getPeriodicidadPago().split(",")[0]).append("\r\n");

@@ -37,7 +37,7 @@ public class MantenimientoDataBase {
         verificarCBancos();
         
         /******cambios en tabla Cuentas y Folios******/
-        //verificarCuentasFolios();
+        verificarCuentasFolios();
         
         /******cambios en tabla de Regimen Fiscal******/
         verificarRegimenFiscal();
@@ -273,14 +273,22 @@ public class MantenimientoDataBase {
                     PrintWriter pw = new PrintWriter(vbsFile);
                     pw.println("Set conn = CreateObject(\"ADODB.Connection\")");
                     pw.println("conn.Open \"Driver={Microsoft Access Driver (*.mdb)};Dbq=" + this.dataBase + "; Pwd=" + this.password + ";\"");
-                    pw.println("conn.Execute \"ALTER TABLE Cuentas drop column facturas\"");
-                    pw.println("conn.Execute \"ALTER TABLE Cuentas drop column notasCredito\"");
-                    pw.println("conn.Execute \"ALTER TABLE Cuentas drop column recibosDonativos\"");
-                    pw.println("conn.Execute \"ALTER TABLE Cuentas DROP CONSTRAINT PrimaryKey\"");
-                    pw.println("conn.Execute \"ALTER TABLE Cuentas ADD COLUMN cuenta_id AUTOINCREMENT PRIMARY KEY\"");
-                    pw.println("conn.Execute \"ALTER TABLE Folios ADD COLUMN cuenta_id INT\"");
-                    pw.println("conn.Execute \"ALTER TABLE Folios ADD CONSTRAINT FK_folios_cuenta_id FOREIGN KEY (cuenta_id) REFERENCES Cuentas (cuenta_id)\"");
-                    pw.println("conn.Execute \"UPDATE Folios f INNER JOIN Cuentas c ON c.rfc = f.rfc set f.cuenta_id = c.cuenta_id;\"");
+                    if(ex.getMessage().toUpperCase().contains("CUENTAS")){
+                        pw.println("conn.Execute \"ALTER TABLE Cuentas drop column facturas\"");
+                        pw.println("conn.Execute \"ALTER TABLE Cuentas drop column notasCredito\"");
+                        pw.println("conn.Execute \"ALTER TABLE Cuentas drop column recibosDonativos\"");
+                        pw.println("conn.Execute \"ALTER TABLE Cuentas DROP CONSTRAINT PrimaryKey\"");
+                        pw.println("conn.Execute \"ALTER TABLE Cuentas ADD COLUMN cuenta_id AUTOINCREMENT PRIMARY KEY\"");
+                        
+                        pw.println("conn.Execute \"ALTER TABLE Folios ADD COLUMN cuenta_id INT\"");
+                        pw.println("conn.Execute \"ALTER TABLE Folios ADD CONSTRAINT FK_folios_cuenta_id FOREIGN KEY (cuenta_id) REFERENCES Cuentas (cuenta_id)\"");
+                        pw.println("conn.Execute \"UPDATE Folios f INNER JOIN Cuentas c ON c.rfc = f.rfc set f.cuenta_id = c.cuenta_id;\"");
+                    }
+                    if(ex.getMessage().toUpperCase().contains("FOLIOS")){
+                        pw.println("conn.Execute \"ALTER TABLE Folios ADD COLUMN cuenta_id INT\"");
+                        pw.println("conn.Execute \"ALTER TABLE Folios ADD CONSTRAINT FK_folios_cuenta_id FOREIGN KEY (cuenta_id) REFERENCES Cuentas (cuenta_id)\"");
+                        pw.println("conn.Execute \"UPDATE Folios f INNER JOIN Cuentas c ON c.rfc = f.rfc set f.cuenta_id = c.cuenta_id;\"");
+                    }
                     pw.println("conn.Close");
                     pw.println("Set conn = Nothing");
                     pw.close();
@@ -313,15 +321,16 @@ public class MantenimientoDataBase {
                     stmt.execute("ALTER TABLE Cuentas ADD keyPass TEXT");
                     System.out.println("Se agregaron los Campos pathCert, pathKey y keyPass");
                     
-                    rs = stmt.executeQuery("SELECT rfc FROM Cuentas");
+                    rs = stmt.executeQuery("SELECT cuenta_id, rfc FROM Cuentas");
                     while(rs.next()){
                         String rfc = rs.getString("rfc");
+                        int cuenta_id = rs.getInt("cuenta_id");
 
                         String query = "UPDATE Cuentas SET "
                             + "pathCert = '" + Elemento.pathConfig + rfc + ".cer',"
                             + "pathKey = '" + Elemento.pathConfig + rfc + ".key',"
                             + "keyPass = '" + getKeyPass(rfc) + "' "
-                            + "WHERE rfc = '" + rfc + "'";
+                            + "WHERE cuenta_id = " + cuenta_id;
 
                         stmt.executeUpdate(query);
                     }

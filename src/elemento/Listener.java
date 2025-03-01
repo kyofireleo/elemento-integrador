@@ -127,9 +127,9 @@ public class Listener {
                 cons.setPathCert(sellos.getPathCert());
                 cons.setPathKey(sellos.getPathKey());
                 cons.setKeyPass(sellos.getKeyPass());
+                cons.setNoCertificado(sellos.getNoCert());
                 
                 Factura_View fv = new Factura_View("");
-                cons.setNoCertificado(Elemento.noCertificado);
 
                 cons.crearXml();
                 BigDecimal total = cons.getTotal();
@@ -355,7 +355,7 @@ public class Listener {
         ResultSet rs;
         Elemento.log.info("Buscando los folios registrados...");
         try {
-            rs = stmt.executeQuery("SELECT serie,folio,timbrado FROM Facturas WHERE rfcEmisor = '" + rfcEmisor + "'");
+            rs = stmt.executeQuery("SELECT nz(serie, '') as serie, nz(folio, 0) as folio, timbrado FROM Facturas WHERE rfcEmisor = '" + rfcEmisor + "'");
             List<FoliosRegistrados> listaFolios = new ArrayList();
             
             while (rs.next()) {
@@ -390,12 +390,13 @@ public class Listener {
         CertificadoSelloDigital csd = null;
         
         try {
-            rs = stmt.executeQuery("SELECT pathCert, pathKey, keyPass FROM Cuentas WHERE rfc = '" + rfcEmi + "' AND regimenFiscal = '" + regimenFiscal + "'");
+            rs = stmt.executeQuery("SELECT pathCert, pathKey, keyPass, nocertificado FROM Cuentas WHERE rfc = '" + rfcEmi + "' AND regimenFiscal = '" + regimenFiscal + "'");
             if(rs.next()){
                 csd = new CertificadoSelloDigital();
                 csd.setPathCert(rs.getString("pathCert"));
                 csd.setPathKey(rs.getString("pathKey"));
                 csd.setKeyPass(rs.getString("keyPass"));
+                csd.setNoCert(rs.getString("nocertificado"));
             }else{
                 String msg = "No existe ninguna cuenta asociada al Emisor " + rfcEmi + " con Regimen Fiscal " + regimenFiscal;
                 util.printError(msg);
@@ -550,9 +551,18 @@ public class Listener {
         private String pathCert;
         private String pathKey;
         private String keyPass;
+        private String noCert;
         
         public CertificadoSelloDigital(){
             
+        }
+        
+        public String getNoCert() {
+            return noCert;
+        }
+
+        public void setNoCert(String noCert) {
+            this.noCert = noCert;
         }
 
         public String getPathCert() {

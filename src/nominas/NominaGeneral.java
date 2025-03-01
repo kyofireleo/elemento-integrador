@@ -86,7 +86,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         this.idEmisor = idEmisor;
         this.idEmpleados = idEmpleados;
         this.numEmpleados = numEmpleados;
-        this.listaEmpleados = new ArrayList();
+        //this.listaEmpleados = new ArrayList();
         util = new utils.Utils(Elemento.log);
         factory = new utils.ConnectionFactory(Elemento.log);
         ventanasPer = new HashMap();
@@ -105,7 +105,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         this.idEmisor = idEmisor;
         this.idEmpleados = idEmpleados;
         this.numEmpleados = numEmpleados;
-        this.listaEmpleados = new ArrayList();
+        //this.listaEmpleados = new ArrayList();
         this.isPtu = tipoNomina == 'P';
         this.isFiniquito = tipoNomina == 'F';
         emisor = this.getEmisor(idEmisor);
@@ -160,10 +160,10 @@ public class NominaGeneral extends javax.swing.JFrame {
 
         fechaFinalPago.setDateFormatString("yyyy-MM-dd");
         fechaFinalPago.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 fechaFinalPagoInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         fechaFinalPago.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
@@ -201,6 +201,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        tablaEmpleados.getTableHeader().setReorderingAllowed(false);
         tablaEmpleados.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tablaEmpleadosMouseClicked(evt);
@@ -776,6 +777,7 @@ public class NominaGeneral extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) tablaEmpleados.getModel();
         model.setRowCount(0);
         Object row[];
+        listaEmpleados = new ArrayList();
 
         BigDecimal tp = BigDecimal.ZERO;
         BigDecimal to = BigDecimal.ZERO;
@@ -845,6 +847,7 @@ public class NominaGeneral extends javax.swing.JFrame {
                     row[1] = this.getNombreEmpleado(emp.getIdEmpleado());
                     row[2] = this.calcularAntiguedadSemanas(emp.getFechaInicialRelLaboral(), fechaFinalPago.getCalendar());
                     row[3] = this.calcularDiasPagados(fechaInicialPago.getCalendar(), fechaFinalPago.getCalendar());
+                    row[4] = this.uuidAsoc != null && this.uuidAsoc.size() > 0 ? (this.uuidAsoc.get(emp.getIdEmpleado()) != null ? this.uuidAsoc.get(emp.getIdEmpleado()) : "") : "";
                     row[5] = df.format(i);
                     row[6] = df.format(o);
                     row[7] = df.format(d);

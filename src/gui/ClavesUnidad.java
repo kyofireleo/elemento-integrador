@@ -24,12 +24,32 @@ public class ClavesUnidad extends javax.swing.JFrame {
 
     ConnectionFactory factory = new ConnectionFactory();
     DefaultTableModel model;
-    String claveSat;
-    ClavesProdUniSat ventanaActual;
+    private String claveSat;
+    private String descripcion;
+    private ClavesProdUniSat ventanaActual;
+    private Integer idClaveUnidad;
+
+    public String getClaveSat() {
+        return claveSat;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public Integer getIdClaveUnidad() {
+        return idClaveUnidad;
+    }
     
     public ClavesUnidad() {
         initComponents();
         setLocationRelativeTo(null);
+    }
+    
+    public ClavesUnidad(String clave){
+        initComponents();
+        this.claveBuscar.setText(clave);
+        buscarPorClave();
     }
 
     /**
@@ -183,9 +203,13 @@ public class ClavesUnidad extends javax.swing.JFrame {
             int row = tablaClaves.getSelectedRow();
             claveSat = model.getValueAt(row, 1).toString();
             String id = model.getValueAt(row,0).toString();
+            String desc = model.getValueAt(row, 2).toString();
+            int max = desc.length() >= 20 ? 20 : desc.length(); //20 caracteres es el maximo soportado por este campo en el XML
+            desc = desc.substring(0, max).trim();
             
             ventanaActual.setIdClaveUnidadSat(new Integer(id));
             ventanaActual.setClaveUnidadSat(claveSat);
+            ventanaActual.setDescripcionUnidad(desc);
             
             this.dispose();
         }
@@ -260,11 +284,18 @@ public class ClavesUnidad extends javax.swing.JFrame {
                 clave_sat = rs.getString("claveunidad");
                 desc = rs.getString("nombre");
                 simbolo = rs.getString("simbolo");
+                
+                int max = desc.length() >= 20 ? 20 : desc.length(); //20 caracteres es el maximo soportado por este campo en el XML
+                desc = desc.substring(0, max).trim();
+                
+                this.idClaveUnidad = id;
+                this.claveSat = clave_sat;
+                this.descripcion = desc;
 
                 Object row [] = {id,clave_sat,desc,simbolo};
                 model.addRow(row);
             }else{
-                JOptionPane.showMessageDialog(null, "No se encontró ninguna clave", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "No se encontró ninguna clave de unidad", "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
         } catch (HeadlessException | SQLException e) {
             e.printStackTrace();

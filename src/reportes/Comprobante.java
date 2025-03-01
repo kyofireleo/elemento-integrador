@@ -15,10 +15,18 @@ public class Comprobante {
     private Emisor emisor;
     private Receptor receptor;
     private String folio, serie, uuid, tipoDeComprobante;
-    private String subtotal, total;
+    private String subtotal, total, descuento;
     private String totalTraslados, totalRetenidos;
     private Date fechaTimbrado;
     private String status;
+
+    public String getDescuento() {
+        return descuento;
+    }
+
+    public void setDescuento(String descuento) {
+        this.descuento = descuento;
+    }
 
     public String getStatus() {
         return status;

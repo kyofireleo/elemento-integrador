@@ -10,7 +10,6 @@
  */
 package gui;
 
-import com.impresoresdigitales.verificar.cfdi.TestValidator;
 import elemento.ConnectionFactory;
 import elemento.Elemento;
 import elemento.Emisor;
@@ -1077,6 +1076,9 @@ public class Folios extends javax.swing.JFrame {
     private void verificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verificarActionPerformed
         // TODO add your handling code here:
         if (activar) {
+            util.print("Esta funcionalidad esta deshabilitada por el momento");
+            return;
+            /*
             TestValidator validar = new TestValidator();
             int row = folios.getSelectedRow();
             String re = model.getValueAt(row, 1).toString();
@@ -1091,6 +1093,7 @@ public class Folios extends javax.swing.JFrame {
             }
 
             util.print(validar.consultar(validar.formarXml(re, rr, tt, uid)));
+            */
         } else {
             cfdisAsoc = new ArrayList();
             docsPagar = new ArrayList();

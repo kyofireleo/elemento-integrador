@@ -24,12 +24,28 @@ public class ClaveProdServ extends javax.swing.JFrame {
 
     ConnectionFactory factory = new ConnectionFactory();
     DefaultTableModel model;
-    String claveSat;
+    private String claveSat;
     ClavesProdUniSat ventanaActual;
+    private Integer idClaveProdSat;
+
+    public Integer getIdClaveProdSat() {
+        return idClaveProdSat;
+    }
+
+    public String getClaveSat() {
+        return claveSat;
+    }
+    
     
     public ClaveProdServ() {
         initComponents();
         setLocationRelativeTo(null);
+    }
+    
+    public ClaveProdServ(String clave){
+        initComponents();
+        this.claveBuscar.setText(clave);
+        buscarPorClave();
     }
 
     /**
@@ -251,11 +267,14 @@ public class ClaveProdServ extends javax.swing.JFrame {
                 id = rs.getInt("c_claveprodserv_id");
                 clave_sat = rs.getString("claveprodserv");
                 desc = rs.getString("descripcion");
-
+                
+                this.idClaveProdSat = id;
+                this.claveSat = clave_sat;
+                
                 Object row [] = {id,clave_sat,desc};
                 model.addRow(row);
             }else{
-                JOptionPane.showMessageDialog(null, "No se encontró ninguna clave", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "No se encontró ninguna clave de producto/servicio", "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
         } catch (HeadlessException | SQLException e) {
             e.printStackTrace();

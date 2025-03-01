@@ -112,7 +112,7 @@ public class Welcome extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("v4.0.4");
+        jLabel1.setText("v4.0.5");
 
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/elemento/empleadosIcon.png"))); // NOI18N
         jButton6.setText("Nomina");
@@ -149,8 +149,8 @@ public class Welcome extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jLabel2)
-                .addGap(131, 131, 131)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(123, 123, 123)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

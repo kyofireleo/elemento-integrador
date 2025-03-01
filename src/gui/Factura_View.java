@@ -49,6 +49,7 @@ import pagos.RecibosPagos;
 import reportes.Receptor;
 import utils.cfdi.Comprobante;
 import utils.cfdi.Concepto;
+import utils.cfdi.Concepto.ConceptoImpuestos;
 import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosTraslado;
 
 /**
@@ -608,6 +609,11 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         });
 
         claveProdSat.setToolTipText("Puedes presionar F2 para buscar");
+        claveProdSat.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                claveProdSatFocusLost(evt);
+            }
+        });
         claveProdSat.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 claveProdSatKeyPressed(evt);
@@ -625,6 +631,11 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         jLabel11.setAlignmentX(0.5F);
 
         claveUnidad.setToolTipText("Puedes presionar F2 para buscar");
+        claveUnidad.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                claveUnidadFocusLost(evt);
+            }
+        });
         claveUnidad.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 claveUnidadKeyPressed(evt);
@@ -786,22 +797,20 @@ public class Factura_View extends elemento.ClavesProdUniSat {
                                             .addComponent(isrRetenido)
                                             .addComponent(descuentoTotal)
                                             .addComponent(ieps, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addComponent(jLabel9)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(iva, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(jLabel9)
+                                        .addComponent(jLabel23)
                                         .addGap(18, 18, 18)
-                                        .addComponent(iva, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                            .addComponent(jLabel23)
-                                            .addGap(18, 18, 18)
-                                            .addComponent(ivaRetenido, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGap(18, 18, 18)
-                                            .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addGap(14, 14, 14))))
+                                        .addComponent(ivaRetenido, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(total, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(5, 5, 5)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -895,7 +904,7 @@ public class Factura_View extends elemento.ClavesProdUniSat {
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lbl_Restantes, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -1578,120 +1587,181 @@ public class Factura_View extends elemento.ClavesProdUniSat {
     private void agregarConceptoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarConceptoActionPerformed
         RoundingMode redondeo = this.radBtnRoundingUp.isSelected() ? RoundingMode.HALF_UP : RoundingMode.FLOOR;
         Object[] concept = new Object[13];
-        if (cantidad.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Debe introducir una cantidad", "Mensaje", JOptionPane.WARNING_MESSAGE);
-        } else {
-            BigDecimal cant = new BigDecimal(cantidad.getText().trim());
-            BigDecimal prec = new BigDecimal(precio.getText().trim()).setScale(2, redondeo);
-            BigDecimal desc = new BigDecimal(descuento.getText().trim());
-            BigDecimal impDesc;
-            if (desc.doubleValue() > 100 || desc.doubleValue() < 0) {
-                JOptionPane.showMessageDialog(null, "El porcentaje de descuento no puede ser mayor a 100 ni menor a 0", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        if(validarClavesProdUnidad()){
+            if (cantidad.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Debe introducir una cantidad", "Mensaje", JOptionPane.WARNING_MESSAGE);
             } else {
-                desc = desc.divide(new BigDecimal(100));
-                BigDecimal impor = cant.multiply(prec).setScale(2, redondeo);
-                impDesc = impor.multiply(desc).setScale(2, redondeo);
-
-                Boolean aplica = aplicaIva.isSelected();
-                Boolean aplIeps = aplicaIeps.isSelected();
-                Boolean aplIsr = aplicaIsr.isSelected();
-                Boolean aplIvaRet = aplicaIvaRet.isSelected();
-                Boolean aplicaPred = aplicaPredial.isSelected();
-
-                concept[0] = noIdentificacion.getText();
-                concept[1] = claveProdSat.getText();
-                concept[2] = cant.toString();
-                concept[3] = claveUnidad.getText();
-                concept[4] = unidad.getText();
-                concept[5] = descripcion.getText();
-                concept[6] = prec.toString();
-                concept[7] = impDesc.toString();
-                concept[8] = impor.toString();
-                concept[9] = aplica;
-                concept[10] = aplIeps;
-                concept[11] = aplIsr;
-                concept[12] = aplIvaRet;
-
-                model.addRow(concept);
-
-                if (!aplica) {
-                    int resp;
-                    if (this.fromFolios && evt == null) {
-                        resp = JOptionPane.YES_OPTION;
-                    } else {
-                        resp = JOptionPane.showConfirmDialog(null, "El producto está exento de IVA?", "IVA exento o IVA 0%", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                    }
-
-                    if (resp == JOptionPane.YES_OPTION) {
-                        porcentaje = new BigDecimal("-1");
-                    } else {
-                        porcentaje = BigDecimal.ZERO;
-                    }
-                    tasaIva.add(porcentaje);
+                BigDecimal cant = new BigDecimal(cantidad.getText().trim());
+                BigDecimal prec = new BigDecimal(precio.getText().trim()).setScale(2, redondeo);
+                BigDecimal desc = new BigDecimal(descuento.getText().trim());
+                BigDecimal impDesc;
+                if (desc.doubleValue() > 100 || desc.doubleValue() < 0) {
+                    JOptionPane.showMessageDialog(null, "El porcentaje de descuento no puede ser mayor a 100 ni menor a 0", "Advertencia", JOptionPane.WARNING_MESSAGE);
                 } else {
-                    porcentaje = new BigDecimal("0.16");
-                    tasaIva.add(porcentaje);
-                }
+                    desc = desc.divide(new BigDecimal(100));
+                    BigDecimal impor = cant.multiply(prec).setScale(2, redondeo);
+                    impDesc = impor.multiply(desc).setScale(2, redondeo);
 
-                if (aplicaIeps.isSelected()) {
-                    porcentajeIeps = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IEPS a aplicar:", 8.0));
+                    Boolean aplica = aplicaIva.isSelected();
+                    Boolean aplIeps = aplicaIeps.isSelected();
+                    Boolean aplIsr = aplicaIsr.isSelected();
+                    Boolean aplIvaRet = aplicaIvaRet.isSelected();
+                    Boolean aplicaPred = aplicaPredial.isSelected();
 
-                    if (porcentajeIeps.doubleValue() < 1) {
-                        tasaIeps.add(porcentajeIeps);
+                    concept[0] = noIdentificacion.getText();
+                    concept[1] = claveProdSat.getText();
+                    concept[2] = cant.toString();
+                    concept[3] = claveUnidad.getText().toUpperCase();
+                    concept[4] = unidad.getText();
+                    concept[5] = descripcion.getText();
+                    concept[6] = prec.toString();
+                    concept[7] = impDesc.toString();
+                    concept[8] = impor.toString();
+                    concept[9] = aplica;
+                    concept[10] = aplIeps;
+                    concept[11] = aplIsr;
+                    concept[12] = aplIvaRet;
+
+                    model.addRow(concept);
+
+                    Concepto c = new Concepto();
+                    c.setNoIdentificacion(noIdentificacion.getText());
+                    c.setDescripcion(descripcion.getText());
+                    c.setIdClaveSat(this.getIdClaveSat());
+                    c.setIdClaveUnidad(this.getIdClaveUnidadSat());
+                    c.setPrecio(prec);
+
+                    agregarProducto(c, aplica, aplIeps, aplIsr, aplIvaRet);
+
+                    if (!aplica) {
+                        int resp;
+                        if (this.fromFolios && evt == null) {
+                            resp = JOptionPane.YES_OPTION;
+                        } else {
+                            resp = JOptionPane.showConfirmDialog(null, "El producto está exento de IVA?", "IVA exento o IVA 0%", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                        }
+
+                        if (resp == JOptionPane.YES_OPTION) {
+                            porcentaje = new BigDecimal("-1");
+                        } else {
+                            porcentaje = BigDecimal.ZERO;
+                        }
+                        tasaIva.add(porcentaje);
                     } else {
-                        tasaIeps.add(redondear(porcentajeIeps.divide(new BigDecimal(100)), 6));
+                        porcentaje = new BigDecimal("0.16");
+                        tasaIva.add(porcentaje);
                     }
-                }
 
-                if (aplIsr) {
-                    porcentajeIsr = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de ISR a aplicar:", 0.0));
+                    if (aplicaIeps.isSelected()) {
+                        porcentajeIeps = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IEPS a aplicar:", 8.0));
 
-                    if (porcentajeIsr.doubleValue() < 1) {
-                        tasaIsr.add(porcentajeIsr);
-                    } else {
-                        tasaIsr.add(redondear(porcentajeIsr.divide(new BigDecimal(100)), 6));
+                        if (porcentajeIeps.doubleValue() < 1) {
+                            tasaIeps.add(porcentajeIeps);
+                        } else {
+                            tasaIeps.add(redondear(porcentajeIeps.divide(new BigDecimal(100)), 6));
+                        }
                     }
-                }
 
-                if (aplIvaRet) {
-                    porcentajeIvaRet = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IVA a retener:", 4.0));
+                    if (aplIsr) {
+                        porcentajeIsr = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de ISR a aplicar:", 0.0));
 
-                    if (porcentajeIvaRet.doubleValue() < 1) {
-                        tasaIvaRet.add(porcentajeIvaRet);
-                    } else {
-                        tasaIvaRet.add(redondear(porcentajeIvaRet.divide(new BigDecimal(100)), 6));
+                        if (porcentajeIsr.doubleValue() < 1) {
+                            tasaIsr.add(porcentajeIsr);
+                        } else {
+                            tasaIsr.add(redondear(porcentajeIsr.divide(new BigDecimal(100)), 6));
+                        }
                     }
-                }
-                
-                if(aplicaPred){
-                    String pred = JOptionPane.showInputDialog(null, "Ingresa el número de cuenta predial:", "");
-                    
-                    cuentasPredial.add(pred);
-                }else{
-                    cuentasPredial.add("");
-                }
 
-                claveProdSat.setText("");
-                cantidad.setText("");
-                unidad.setText("");
-                claveUnidad.setText("");
-                noIdentificacion.setText("");
-                descripcion.setText("");
-                precio.setText("");
-                descuento.setText("0");
-                aplicaIva.setSelected(true);
-                aplicaIeps.setSelected(false);
-                aplicaIsr.setSelected(false);
-                aplicaIvaRet.setSelected(false);
-                aplicaPredial.setSelected(false);
-                noIdentificacion.requestFocus();
+                    if (aplIvaRet) {
+                        porcentajeIvaRet = new BigDecimal(JOptionPane.showInputDialog(null, "Ingresa el porcentaje de IVA a retener:", 4.0));
 
-                calcular();
-                //agregarProducto();
+                        if (porcentajeIvaRet.doubleValue() < 1) {
+                            tasaIvaRet.add(porcentajeIvaRet);
+                        } else {
+                            tasaIvaRet.add(redondear(porcentajeIvaRet.divide(new BigDecimal(100)), 6));
+                        }
+                    }
+
+                    if(aplicaPred){
+                        String pred = JOptionPane.showInputDialog(null, "Ingresa el número de cuenta predial:", "");
+
+                        cuentasPredial.add(pred);
+                    }else{
+                        cuentasPredial.add("");
+                    }
+
+                    claveProdSat.setText("");
+                    cantidad.setText("");
+                    unidad.setText("");
+                    claveUnidad.setText("");
+                    noIdentificacion.setText("");
+                    descripcion.setText("");
+                    precio.setText("");
+                    descuento.setText("0");
+                    aplicaIva.setSelected(true);
+                    aplicaIeps.setSelected(false);
+                    aplicaIsr.setSelected(false);
+                    aplicaIvaRet.setSelected(false);
+                    aplicaPredial.setSelected(false);
+                    noIdentificacion.requestFocus();
+
+                    calcular();
+                }
             }
         }
     }//GEN-LAST:event_agregarConceptoActionPerformed
 
+    private void agregarProducto(Concepto c, Boolean aplicaIva, Boolean aplicaIeps, Boolean aplicaIsr, Boolean aplicaIvaRet) {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        Statement st = null;
+        ResultSet rs = null;
+        
+        try {
+            con = Elemento.odbc();
+            st = con.createStatement();
+            rs = st.executeQuery("SELECT TOP 1 1 FROM Productos WHERE noIdentificacion = '" + c.getNoIdentificacion() + "'");
+            if(rs.next()){
+               rs.close();
+               st.close();
+               con.close();
+               
+               return;
+            }
+            
+            stmt = con.prepareStatement("INSERT INTO Productos ([noIdentificacion], [descripcion], [c_claveunidad_id], [precio], [aplicaIva], [aplicaIeps], [c_claveprodserv_id])"
+                                + "VALUES(?, ?, ?, ?, ?, ?, ?)");
+            stmt.setString(1, c.getNoIdentificacion());
+            stmt.setString(2, c.getDescripcion());
+            stmt.setInt(3, c.getIdClaveUnidad());
+            stmt.setBigDecimal(4, c.getPrecio());
+            stmt.setBoolean(5, aplicaIva);
+            stmt.setBoolean(6, aplicaIeps);
+            stmt.setInt(7, c.getIdClaveSat());
+            
+            stmt.execute();
+            
+            stmt.close();
+            con.close();
+            
+        } catch (Exception e) {
+            e.printStackTrace();            
+            Elemento.log.error("Excepcion al agregar un producto desde CrearCFDi: ", e);
+            
+            try {
+                if(stmt != null && !stmt.isClosed()){
+                    stmt.close();
+                }
+                if(con != null && !con.isClosed()){
+                    con.close();
+                }
+            } catch (Exception ex) {
+                e.printStackTrace();
+                Elemento.log.error("Excepcion al cerrar la conexion a la base de datos, Factura_View(agregarProducto): ", ex);
+            }
+        }
+    }
+    
 //    private void agregarProducto(){
 //        Connection con = Elemento.odbc();
 //        Statement stmt = factory.stmtEscritura(con);
@@ -2192,8 +2262,8 @@ public class Factura_View extends elemento.ClavesProdUniSat {
     }//GEN-LAST:event_tipocfdActionPerformed
 
     private void claveProdSatKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_claveProdSatKeyPressed
-        // TODO add your handling code here:
         if(evt.getKeyCode() == java.awt.event.KeyEvent.VK_F2){
+            this.claveProdSat.setText("");
             ClaveProdServ cs = new ClaveProdServ();
             cs.setVentanaActual(this);
             cs.setVisible(true);
@@ -2203,23 +2273,138 @@ public class Factura_View extends elemento.ClavesProdUniSat {
     private void claveUnidadKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_claveUnidadKeyPressed
         // TODO add your handling code here:
         if(evt.getKeyCode() == java.awt.event.KeyEvent.VK_F2){
+            this.claveUnidad.setText("");
             ClavesUnidad cu = new ClavesUnidad();
             cu.setVentanaActual(this);
             cu.setVisible(true);
         }
     }//GEN-LAST:event_claveUnidadKeyPressed
 
+    private void claveUnidadFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_claveUnidadFocusLost
+        ValidarClaves vc = validarClaveUnidad();
+        if(vc.isValida()){
+            if(vc.getClave() != null){
+                ClavesUnidad clave = (ClavesUnidad)vc.getClave();
+                this.setIdClaveUnidadSat(clave.getIdClaveUnidad());
+                this.setClaveUnidadSat(clave.getClaveSat());
+                this.unidad.setText(clave.getDescripcion());
+                clave.dispose();
+            }else if(this.unidad.getText().trim().isEmpty()){
+                this.setIdClaveUnidadSat(null);
+                this.setClaveUnidadSat(null);
+                this.unidad.setText("");
+            }
+        }else{
+            this.setIdClaveUnidadSat(null);
+            this.setClaveUnidadSat(null);
+            this.unidad.transferFocus();
+            this.unidad.selectAll();
+        }
+    }//GEN-LAST:event_claveUnidadFocusLost
+
+    private void claveProdSatFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_claveProdSatFocusLost
+        ValidarClaves vc = validarClaveProdServ();
+        if(vc.isValida()){
+            if(vc.getClave() != null){
+                ClaveProdServ clave = (ClaveProdServ)vc.getClave();
+                this.setIdClaveSat(clave.getIdClaveProdSat());
+                this.setClaveSat(clave.getClaveSat());
+                clave.dispose();
+            }else if(this.claveProdSat.getText().trim().isEmpty()){
+                this.setIdClaveSat(null);
+                this.setClaveSat(null);
+            }
+        }else{
+            this.setIdClaveSat(null);
+            this.setClaveSat(null);
+            this.claveProdSat.transferFocus();
+            this.claveProdSat.selectAll();
+        }
+    }//GEN-LAST:event_claveProdSatFocusLost
+
+    private ValidarClaves validarClaveUnidad(){
+        if((this.getClaveUnidadSat() == null || this.getIdClaveUnidadSat() == null)){
+            if(!claveUnidad.getText().trim().isEmpty()){
+                ClavesUnidad cu = getClaveUnidad(claveUnidad.getText());
+                if(cu != null)
+                    return new ValidarClaves(cu.getIdClaveUnidad() != null, cu);
+                else
+                    return new ValidarClaves(false, null);
+            }else{
+                return new ValidarClaves(true, null);
+            }
+        }else{
+            if(!claveUnidad.getText().trim().isEmpty() && !this.claveUnidadSat.equalsIgnoreCase(this.claveUnidad.getText().trim())){
+                ClavesUnidad cu = getClaveUnidad(claveUnidad.getText());
+                if(cu != null)
+                    return new ValidarClaves(cu.getIdClaveUnidad() != null, cu);
+                else
+                    return new ValidarClaves(false, null);
+            }else{
+                return new ValidarClaves(true, null);
+            }
+        }
+    }
+    
+    private ClavesUnidad getClaveUnidad(String clave){
+        ClavesUnidad cu = new ClavesUnidad(clave);
+        if(cu.getIdClaveUnidad() != null){
+            return cu;
+        }else{
+            return null;
+        }
+    }
+    
+    private ValidarClaves validarClaveProdServ(){
+        if((this.getClaveSat() == null || this.getIdClaveSat() == null)){
+            if(!this.claveProdSat.getText().trim().isEmpty()){
+                ClaveProdServ cps = getClaveProdSat(this.claveProdSat.getText());
+                if(cps != null)
+                    return new ValidarClaves(cps.getIdClaveProdSat() != null, cps);
+                else
+                    return new ValidarClaves(false, null);
+            }else{
+                return new ValidarClaves(true, null);
+            }
+        }else{
+            if(!this.claveProdSat.getText().trim().isEmpty() && !this.claveSat.equalsIgnoreCase(this.claveProdSat.getText().trim())){
+                ClaveProdServ cps = getClaveProdSat(this.claveProdSat.getText());
+                if(cps != null)
+                    return new ValidarClaves(cps.getIdClaveProdSat() != null, cps);
+                else
+                    return new ValidarClaves(false, null);
+            }
+            return new ValidarClaves(true, null);
+        }
+    }
+    
+    private ClaveProdServ getClaveProdSat(String clave){
+        ClaveProdServ cps = new ClaveProdServ(clave);
+        if(cps.getIdClaveProdSat() != null){
+            return cps;
+        }else{
+            return null;
+        }
+    }
+    
     @Override
     public void setClaveSat(String clave){
         this.claveSat = clave;
+        if(clave != null)
         claveProdSat.setText(clave);
     }
     
     @Override
     public void setClaveUnidadSat(String clave){
         this.claveUnidadSat = clave;
+        if(clave != null)
         claveUnidad.setText(clave);
-        consultarNombreUnidadPorClave();
+    }
+    
+    @Override
+    public void setDescripcionUnidad(String desc){
+        this.descripcionUnidad = desc;
+        unidad.setText(desc);
     }
     
     private void consultarNombreUnidadPorClave(){
@@ -2233,7 +2418,10 @@ public class Factura_View extends elemento.ClavesProdUniSat {
 
             rs = stmt.executeQuery(query);
             if (rs.next()) {
-                unidad.setText(rs.getString("unidad").trim().substring(0, 20).trim());
+                String uni =  rs.getString("unidad").trim();
+                int max = uni.length() >= 20 ? 20 : uni.length(); //20 caracteres es el maximo soportado por este campo en el XML
+                uni = uni.substring(0, max);
+                unidad.setText(uni);
             }
             rs.close();
             stmt.close();
@@ -2295,9 +2483,9 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         String logo = Elemento.logo;
         try {
             util.generarPdf(pdf, xml, name, logo, plantilla, false);
-            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "", Elemento.pathZips);
             //Exe.exeSinTiempo(pdf + name + ".pdf");
             Desktop.getDesktop().open(new File(pdf + name + ".pdf"));
+            util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "", Elemento.pathZips);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2318,8 +2506,9 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         String logo = Elemento.logo;
         try {
             util.generarPdf(pdf, xmlModificado, name, logo, plantilla, false);
+            //Exe.exeSinTiempo(pdf + name + ".pdf");
+            Desktop.getDesktop().open(new File(pdf + name + ".pdf"));
             util.enviarEmail("", "", email, name + " : SERVICIO DE REPOSITORIO", xml, pdf + name + ".pdf", name + ".xml", name + ".pdf", "", Elemento.pathZips);
-            Exe.exeSinTiempo(pdf + name + ".pdf");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2700,7 +2889,7 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         ResultSet rs;
         try {
             String query = "SELECT p.noIdentificacion, cu.claveunidad, cu.nombre as unidad, "
-                    + "p.descripcion, "
+                    + "p.descripcion, p.c_claveunidad_id, p.c_claveprodserv_id, "
                     + "p.precio, p.aplicaIva, cc.claveprodserv "
                     + "FROM (Productos p "
                     + "INNER JOIN c_claveprodserv cc ON p.c_claveprodserv_id = cc.c_claveprodserv_id) "
@@ -2720,6 +2909,10 @@ public class Factura_View extends elemento.ClavesProdUniSat {
                 precio.setText("" + rs.getDouble("precio"));
                 aplicaIva.setSelected(rs.getBoolean("aplicaIva"));
                 claveProdSat.setText(rs.getString("claveprodserv"));
+                this.claveSat = rs.getString("claveprodserv");
+                this.claveUnidadSat = rs.getString("claveunidad");
+                this.idClaveSat = rs.getInt("c_claveprodserv_id");
+                this.idClaveUnidadSat = rs.getInt("c_claveunidad_id");
                 claveProdSat.transferFocus();
             }
             rs.close();
@@ -2811,4 +3004,62 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         
         return plantilla;
     }
+
+    private boolean validarClavesProdUnidad() {
+        ValidarClaves vc = validarClaveProdServ();
+        ClaveProdServ cps = (ClaveProdServ)vc.getClave();
+        String mensajeClaveProd = "Debes de ingresar una clave de producto/servicio válida";
+        
+        ValidarClaves vcu = validarClaveUnidad();
+        ClavesUnidad cu = (ClavesUnidad)vcu.getClave();
+        String mensajeClaveUni = "Debes de ingresar una clave de unidad válida";
+        
+        if(vc.isValida() && cps == null && this.idClaveSat == null){
+            util.printError(mensajeClaveProd);
+            return false;
+        }else if(!vc.isValida()){
+            return false;
+        }
+        
+        if(vcu.isValida() && cu == null && this.idClaveUnidadSat == null){
+            util.printError(mensajeClaveUni);
+            return false;
+        }else if(!vcu.isValida()){
+            return false;
+        }
+        
+        return true;
+    }
+}
+
+class ValidarClaves{
+    private boolean valida;
+    private Object clave;
+    
+    public ValidarClaves(){
+        
+    }
+    
+    public ValidarClaves(boolean valida, Object clave){
+        this.valida = valida;
+        this.clave = clave;
+    }
+
+    public boolean isValida() {
+        return valida;
+    }
+
+    public void setValida(boolean valida) {
+        this.valida = valida;
+    }
+
+    public Object getClave() {
+        return clave;
+    }
+
+    public void setClave(Object clave) {
+        this.clave = clave;
+    }
+    
+    
 }

@@ -5,6 +5,8 @@
 package gui;
 
 import elemento.Elemento;
+import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,16 +19,43 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.util.CellUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -45,6 +74,7 @@ public class ReporteadorView extends javax.swing.JFrame {
     public ReporteadorView() {
         initComponents();
         this.setLocationRelativeTo(null);
+        this.setComboAnos();
         llenarRfcs();
     }
 
@@ -57,6 +87,7 @@ public class ReporteadorView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        radioGrupo = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         comboDesdeMes = new javax.swing.JComboBox();
@@ -68,6 +99,13 @@ public class ReporteadorView extends javax.swing.JFrame {
         rfcEmisor = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         rfcReceptor = new javax.swing.JComboBox();
+        radioTxt = new javax.swing.JRadioButton();
+        radioXls = new javax.swing.JRadioButton();
+        jLabel5 = new javax.swing.JLabel();
+        comboTipoCfdi = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        comboEstado = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("REPORTES");
@@ -78,13 +116,7 @@ public class ReporteadorView extends javax.swing.JFrame {
 
         comboDesdeMes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" }));
 
-        comboDesdeAno.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026", "2027" }));
-        comboDesdeAno.setSelectedIndex(12);
-
         comboHastaMes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" }));
-
-        comboHastaAno.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026", "2027" }));
-        comboHastaAno.setSelectedIndex(12);
 
         ejecutar.setText("Ejecutar");
         ejecutar.addActionListener(new java.awt.event.ActionListener() {
@@ -97,39 +129,72 @@ public class ReporteadorView extends javax.swing.JFrame {
 
         jLabel4.setText("Emisor");
 
+        radioGrupo.add(radioTxt);
+        radioTxt.setText("TXT");
+
+        radioGrupo.add(radioXls);
+        radioXls.setText("Excel");
+
+        jLabel5.setText("Seleccione el Formato de salida deseado");
+
+        comboTipoCfdi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " ", "Ingreso", "Egreso", "Traslado", "Nómina", "Pago" }));
+
+        jLabel6.setText("Tipo Cfdi");
+
+        jLabel7.setText("Estatus");
+
+        comboEstado.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { " ", "Vigente", "Cancelada" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(28, 28, 28)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comboDesdeMes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(comboDesdeAno, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rfcEmisor, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(comboHastaMes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(comboHastaAno, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(rfcReceptor, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27))
             .addGroup(layout.createSequentialGroup()
-                .addGap(204, 204, 204)
-                .addComponent(ejecutar)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(176, 176, 176)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(radioTxt)
+                                .addGap(78, 78, 78)
+                                .addComponent(radioXls)
+                                .addGap(28, 28, 28))
+                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(ejecutar)
+                                .addGap(78, 78, 78)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comboDesdeMes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comboDesdeAno, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel6))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(rfcEmisor, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(comboTipoCfdi, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 63, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(comboHastaMes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(comboHastaAno, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(rfcReceptor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(comboEstado, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -148,120 +213,160 @@ public class ReporteadorView extends javax.swing.JFrame {
                     .addComponent(rfcEmisor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
                     .addComponent(rfcReceptor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(comboTipoCfdi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel7)
+                    .addComponent(comboEstado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, Short.MAX_VALUE)
+                .addComponent(jLabel5)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(radioTxt)
+                    .addComponent(radioXls))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(ejecutar)
-                .addGap(8, 8, 8))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void ejecutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ejecutarActionPerformed
-        // TODO add your handling code here:
-        utils.Utils util = new utils.Utils(elemento.Elemento.log);
-        Connection con = elemento.Elemento.odbc();
-        Statement stmt = this.stmtEscritura(con);
-        ResultSet rs;
+        if (radioGrupo.getSelection() != null) {
+            utils.Utils util = new utils.Utils(elemento.Elemento.log);
+            Connection con = elemento.Elemento.odbc();
+            Statement stmt = this.stmtEscritura(con);
+            ResultSet rs;
+            //NumberFormat formatter = NumberFormat.getInstance(Locale.US);
 
-        int desdeMes = comboDesdeMes.getSelectedIndex() + 1;
-        int hastaMes = comboHastaMes.getSelectedIndex() + 1;
-        int desdeAno = Integer.parseInt(comboDesdeAno.getSelectedItem().toString());
-        int hastaAno = Integer.parseInt(comboHastaAno.getSelectedItem().toString());
-        Comprobante comp;
-        Emisor emi;
-        Receptor rec;
-        List<Comprobante> lista = new ArrayList();
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        String desde, hasta;
+            int desdeMes = comboDesdeMes.getSelectedIndex() + 1;
+            int hastaMes = comboHastaMes.getSelectedIndex() + 1;
+            int desdeAno = Integer.parseInt(comboDesdeAno.getSelectedItem().toString());
+            int hastaAno = Integer.parseInt(comboHastaAno.getSelectedItem().toString());
+            Comprobante comp;
+            Emisor emi;
+            Receptor rec;
+            List<Comprobante> lista = new ArrayList();
+            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+            String desde, hasta;
 
-        if (desdeMes < 10) {
-            desde = "01/0" + desdeMes + "/" + desdeAno;
-        } else {
-            desde = "01/" + desdeMes + "/" + desdeAno;
-        }
+            if (desdeMes < 10) {
+                desde = "01/0" + desdeMes + "/" + desdeAno;
+            } else {
+                desde = "01/" + desdeMes + "/" + desdeAno;
+            }
 
-        int day = this.diaMaximo(hastaMes, hastaAno);
+            int day = this.diaMaximo(hastaMes, hastaAno);
 
-        if (hastaMes < 10) {
-            hasta = day + "/0" + hastaMes + "/" + hastaAno;
-        } else {
-            hasta = day + "/" + hastaMes + "/" + hastaAno;
-        }
+            if (hastaMes < 10) {
+                hasta = day + "/0" + hastaMes + "/" + hastaAno;
+            } else {
+                hasta = day + "/" + hastaMes + "/" + hastaAno;
+            }
 
-        java.util.Date dateDesde = null;
-        java.util.Date dateHasta = null;
+            java.util.Date dateDesde = null;
+            java.util.Date dateHasta = null;
 
-        try {
-            dateDesde = format.parse(desde);
-            dateHasta = format.parse(hasta);
-        } catch (ParseException ex) {
-            ex.printStackTrace();
-        }
+            try {
+                dateDesde = format.parse(desde);
+                dateHasta = format.parse(hasta);
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
 
-        java.sql.Date fechaDesde = new java.sql.Date(dateDesde.getTime());
-        java.sql.Date fechaHasta = new java.sql.Date(dateHasta.getTime());
-        String re = rfcEmisor.getSelectedItem().toString().trim();
-        String rr = rfcReceptor.getSelectedItem().toString().trim();
+            java.sql.Date fechaDesde = new java.sql.Date(dateDesde.getTime());
+            java.sql.Date fechaHasta = new java.sql.Date(dateHasta.getTime());
+            String re = rfcEmisor.getSelectedItem().toString().trim();
+            String rr = rfcReceptor.getSelectedItem().toString().trim();
+            String tipoCfdi = comboTipoCfdi.getSelectedItem().toString().trim();
+            String estado = comboEstado.getSelectedItem().toString().trim();
 
-        try {
-            rs = stmt.executeQuery("SELECT f.*, t.tiposcomprobante as letraTipoComprobante, t.descripcion as tipoComprobante FROM Facturas f INNER JOIN c_tiposcomprobante t ON f.idComprobante = t.c_tiposcomprobante_id WHERE f.rfcEmisor like \'%" + re + "%\' AND f.rfc like \'%" + rr + "%\' AND f.fecha_timbrado BETWEEN #" + fechaDesde + "# AND #" + fechaHasta + "# ORDER BY f.fecha_timbrado DESC, f.folio DESC");
-            ResultSetMetaData meta = rs.getMetaData();
-            while (rs.next()) {
-                String xmlString = rs.getString("xml");
-                if (rs.getBoolean("timbrado") && !(xmlString == null || xmlString.trim().isEmpty())) {
-                    comp = new Comprobante();
-                    emi = new Emisor();
-                    rec = new Receptor();
+            try {
+                String query = "SELECT f.*, t.tiposcomprobante as letraTipoComprobante, t.descripcion as tipoComprobante "
+                        + "FROM Facturas f "
+                        + "INNER JOIN c_tiposcomprobante t ON f.idComprobante = t.c_tiposcomprobante_id" + (tipoCfdi.isEmpty() ? "" : " AND t.descripcion = \'" + tipoCfdi + "\'") 
+                        + " WHERE " + (re.trim().isEmpty() ? "" : "f.rfcEmisor = \'" + re + "\' AND ") 
+                        + (rr.trim().isEmpty() ? "" : ("f.rfc = \'" + rr + "\' AND ")) 
+                        + "f.fecha_timbrado BETWEEN #" + fechaDesde + "# AND #" + fechaHasta + "#"
+                        + (estado.isEmpty() ? "" : " AND f.status = \'"+estado.toUpperCase()+"\'") 
+                        + " AND f.timbrado = True"
+                        + " ORDER BY f.status DESC, f.serie ASC, f.folio DESC, f.fecha_timbrado DESC";
+                rs = stmt.executeQuery(query);
+                ResultSetMetaData meta = rs.getMetaData();
+                while (rs.next()) {
+                    String xmlString = rs.getString("xml");
+                    if (rs.getBoolean("timbrado") && !(xmlString == null || xmlString.trim().isEmpty())) {
+                        comp = new Comprobante();
+                        emi = new Emisor();
+                        rec = new Receptor();
 
-                    emi.setRfc(rs.getString("rfcEmisor"));
-                    rec.setNombre(rs.getString("nombre"));
-                    rec.setRfc(rs.getString("rfc"));
+                        emi.setRfc(rs.getString("rfcEmisor"));
+                        rec.setNombre(rs.getString("nombre"));
+                        rec.setRfc(rs.getString("rfc"));
 
-                    comp.setEmisor(emi);
-                    comp.setReceptor(rec);
-                    comp.setFechaTimbrado(rs.getDate("fecha_timbrado"));
-                    comp.setFolio("" + rs.getInt("folio"));
-                    comp.setSerie(rs.getString("serie"));
-                    comp.setTipoDeComprobante("Factura");
-                    comp.setTotal("" + rs.getDouble("total"));
-                    comp.setStatus(rs.getString("status"));
-                    comp.setUuid(rs.getString("uuid"));
-                    comp.setTipoDeComprobante(rs.getString("tipoComprobante"));
+                        comp.setEmisor(emi);
+                        comp.setReceptor(rec);
+                        comp.setFechaTimbrado(rs.getDate("fecha_timbrado"));
+                        comp.setFolio("" + rs.getInt("folio"));
+                        comp.setSerie(rs.getString("serie"));
+                        comp.setTipoDeComprobante("Factura");
+                        comp.setTotal(rs.getString("total"));
+                        comp.setStatus(rs.getString("status"));
+                        comp.setUuid(rs.getString("uuid"));
+                        comp.setTipoDeComprobante(rs.getString("tipoComprobante"));
 
-                    String name = comp.getSerie() + "_" + comp.getFolio() + "_" + emi.getRfc() + "_" + rec.getRfc() + "_" + comp.getUuid();
-                    File xml = new File(Elemento.pathXml + name + ".xml");
-                    //int cont = 0;
-                    while (!xml.exists()) {
+                        String name = comp.getSerie() + "_" + comp.getFolio() + "_" + emi.getRfc() + "_" + rec.getRfc() + "_" + comp.getUuid();
+                        File xml = new File(Elemento.pathXml + name + ".xml");
+                        //int cont = 0;
+                        while (!xml.exists()) {
 //                        if (cont == 1) {
                             util.escribirArchivo(xmlString, Elemento.pathXml, name + ".xml");
 //                        } else {
 //                            cont++;
 //                        }
-                    }
-                    
-                    try {
-                        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-                        Document doc = docBuilder.parse(xml);
-                        
-                        comp.setTotalTraslados(getDato(doc, "cfdi:Impuestos", "TotalImpuestosTrasladados"));
-                        comp.setSubtotal(getDato(doc, "cfdi:Comprobante","SubTotal"));
+                        }
+
+                        utils.cfdi.Comprobante cfdi = util.analizarXml(xml.getPath());
+                        BigDecimal totalTraslados = (cfdi.getImpuestos() != null && cfdi.getImpuestos().getTotalImpuestosTrasladados() != null ? cfdi.getImpuestos().getTotalImpuestosTrasladados() : BigDecimal.ZERO);
+                        BigDecimal subTotal = new BigDecimal(cfdi.getSubtotal());
+                        BigDecimal descuento = new BigDecimal(cfdi.getDescuento() != null && !cfdi.getDescuento().trim().isEmpty() ? cfdi.getDescuento() : "0.00");
+
+                        comp.setTotalTraslados(totalTraslados.toString());
+                        comp.setSubtotal(subTotal.toString());
+                        comp.setDescuento(descuento.toString());
 
                         lista.add(comp);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+
                     }
                 }
+
+                rs.close();
+                stmt.close();
+                con.close();
+
+                Enumeration<AbstractButton> listaAb = radioGrupo.getElements();
+                while (listaAb.hasMoreElements()) {
+                    AbstractButton ab = listaAb.nextElement();
+                    if (ab.isSelected()) {
+                        String nombre = ab.getText();
+                        switch (nombre) {
+                            case "TXT":
+                                crearReporte(lista, dateDesde, dateHasta);
+                                break;
+                            case "Excel":
+                                crearReporteExcel(lista, dateDesde, dateHasta);
+                                break;
+                        }
+                    }
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-
-            rs.close();
-            stmt.close();
-            con.close();
-
-            crearReporte(lista, dateDesde, dateHasta);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } else {
+            JOptionPane.showMessageDialog(null, "Debe seleccionar un formato de salida", "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
 
     }//GEN-LAST:event_ejecutarActionPerformed
@@ -270,13 +375,13 @@ public class ReporteadorView extends javax.swing.JFrame {
         String valor = eElement.getAttribute(sTag);
         return valor;
     }
-    
+
     private String getDato(Document doc, String element, String dato) {
         doc.normalize();
         //doc.getDocumentElement().normalize();
         NodeList lista = doc.getElementsByTagName(element);
 
-        Node nodo = lista.item(lista.getLength()-1);
+        Node nodo = lista.item(lista.getLength() - 1);
         if (nodo != null) {
             if (nodo.getNodeType() == Node.ELEMENT_NODE) {
                 org.w3c.dom.Element elementoReceptor = (org.w3c.dom.Element) nodo;
@@ -293,7 +398,7 @@ public class ReporteadorView extends javax.swing.JFrame {
     private int diaMaximo(int mes, int ano) {
         int day = 0;
         Calendar fec = Calendar.getInstance();
-        fec.set(ano, (mes-1), 1);
+        fec.set(ano, (mes - 1), 1);
         day = fec.getActualMaximum(Calendar.DAY_OF_MONTH);
         /*
         switch (mes) {
@@ -338,8 +443,8 @@ public class ReporteadorView extends javax.swing.JFrame {
                 day = 31;
                 break;
         }
-        */
-        
+         */
+
         return day;
     }
 
@@ -349,12 +454,14 @@ public class ReporteadorView extends javax.swing.JFrame {
         String fecha;
         String fechaDesde = format.format(desde);
         String fechaHasta = format.format(hasta);
-        BigDecimal totalReporte = BigDecimal.ZERO;
-        String linea = "----------------------------------------------------------------------------------------------------------------------------------------------\r\n";
+        NumberFormat formatter = NumberFormat.getInstance(Locale.US);
 
-        sb.append("\t\t\t*****REPORTE DE COMPROBANTES DESDE " + fechaDesde + " HASTA " + fechaHasta + "*****\r\n\r\n\r\n");
+        BigDecimal totalReporte = BigDecimal.ZERO;
+        String linea = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------\r\n";
+
+        sb.append("\t\t\t\t*****REPORTE DE COMPROBANTES DESDE " + fechaDesde + " HASTA " + fechaHasta + "*****\r\n\r\n\r\n");
         sb.append(linea);
-        sb.append("Serie\t\tFolio\t\tRFC Emisor\tRFC Receptor\tEstado\t\tFecha\t\tSubTotal\tIVA\t\tTotal\r\n");
+        sb.append("Serie\t\tFolio\t\tRFC Emisor\tRFC Receptor\tEstado\t\tFecha\t\tTipo\t\tSubTotal\tDescuento\tIVA\t\tTotal\r\n");
         sb.append(linea);
 
         for (Comprobante comp : lista) {
@@ -362,10 +469,11 @@ public class ReporteadorView extends javax.swing.JFrame {
             totalReporte = totalReporte.add(total);
             fecha = format.format(comp.getFechaTimbrado());
             String status = comp.getStatus();
-            String tabs, tabsFolio, tabsSub;
+            String tabs, tabsFolio, tabsSub, tabsDesc, tabsIva;
             String folio = comp.getFolio();
-            String subtotal = comp.getSubtotal();
-            String iva = comp.getTotalTraslados();
+            String subtotal = formatter.format(new BigDecimal(comp.getSubtotal()));
+            String iva = formatter.format(new BigDecimal(comp.getTotalTraslados()));
+            String descuento = formatter.format(new BigDecimal(comp.getDescuento()));
 
             if (folio.length() > 7) {
                 tabsFolio = "\t";
@@ -385,12 +493,24 @@ public class ReporteadorView extends javax.swing.JFrame {
                 tabsSub = "\t\t";
             }
 
-            sb.append(comp.getSerie() + "\t\t" + folio + tabsFolio + comp.getEmisor().getRfc() + "\t" + comp.getReceptor().getRfc() + "\t" + status + tabs + fecha + "\t" + subtotal + tabsSub + iva + "\t\t" + total.toString() + "\r\n");
+            if (iva.length() >= 8) {
+                tabsIva = "\t";
+            } else {
+                tabsIva = "\t\t";
+            }
+
+            if (descuento.length() >= 8) {
+                tabsDesc = "\t";
+            } else {
+                tabsDesc = "\t\t";
+            }
+
+            sb.append(comp.getSerie() + "\t\t" + folio + tabsFolio + comp.getEmisor().getRfc() + "\t" + comp.getReceptor().getRfc() + "\t" + status + tabs + fecha + "\t" + comp.getTipoDeComprobante() + "\t\t" + subtotal + tabsSub + descuento + tabsDesc + iva + tabsIva + formatter.format(total) + "\r\n");
         }
         totalReporte = totalReporte.setScale(2, RoundingMode.HALF_UP);
         sb.append(linea);
 
-        sb.append("TOTAL FACTURADO: " + totalReporte.toString());
+        sb.append("TOTAL FACTURADO: $" + formatter.format(totalReporte));
         String mesDesde = comboDesdeMes.getSelectedItem().toString();
         String anoDesde = comboDesdeAno.getSelectedItem().toString();
         String mesHasta = comboHastaMes.getSelectedItem().toString();
@@ -402,7 +522,7 @@ public class ReporteadorView extends javax.swing.JFrame {
         escribirArchivo(sb.toString(), path, name);
         //System.out.println(sb.toString());
         utils.Exe exe = new utils.Exe(elemento.Elemento.log);
-        exe.exeSinTiempo(path + name);
+        Desktop.getDesktop().open(new File(path + name));
 
     }
 
@@ -457,13 +577,21 @@ public class ReporteadorView extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox comboDesdeAno;
     private javax.swing.JComboBox comboDesdeMes;
+    private javax.swing.JComboBox<String> comboEstado;
     private javax.swing.JComboBox comboHastaAno;
     private javax.swing.JComboBox comboHastaMes;
+    private javax.swing.JComboBox<String> comboTipoCfdi;
     private javax.swing.JButton ejecutar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.ButtonGroup radioGrupo;
+    private javax.swing.JRadioButton radioTxt;
+    private javax.swing.JRadioButton radioXls;
     private javax.swing.JComboBox rfcEmisor;
     private javax.swing.JComboBox rfcReceptor;
     // End of variables declaration//GEN-END:variables
@@ -493,6 +621,191 @@ public class ReporteadorView extends javax.swing.JFrame {
             stmt.close();
             con.close();
         } catch (Exception e) {
+        }
+    }
+
+    private void setComboAnos() {
+        LocalDate ld = LocalDate.now();
+        int year = ld.getYear();
+
+        for (int i = 0; i < 14; i++) {
+            String item = "" + (year - i);
+            this.comboDesdeAno.addItem(item);
+            this.comboHastaAno.addItem(item);
+        }
+        this.comboDesdeAno.setSelectedItem("" + (year - 1));
+        this.comboHastaAno.setSelectedItem("" + year);
+    }
+
+    private void crearReporteExcel(List<Comprobante> lista, Date desde, Date hasta) {
+
+        final JDialog dialog = new JDialog(this, true); // modal
+        dialog.setUndecorated(true);
+        
+        JLabel texto = new JLabel("  Esto puede tardar unos minutos...  ");
+        dialog.add(texto, BorderLayout.CENTER);
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                procesoCreacionExcel(lista, desde, hasta);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                dialog.dispose();
+            }
+        };
+        worker.execute();
+        dialog.setVisible(true); // will block but with a responsive GUI
+    }
+
+    private void procesoCreacionExcel(List<Comprobante> lista, Date desde, Date hasta) {
+        Workbook workbook = new HSSFWorkbook();
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        String fecha;
+        String fechaDesde = format.format(desde);
+        String fechaHasta = format.format(hasta);
+        NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+        BigDecimal totalReporte = BigDecimal.ZERO;
+
+        Sheet sheet = workbook.createSheet("Reporte");
+
+        Map<Integer, Object[]> datos = new TreeMap<Integer, Object[]>();
+        datos.put(1, new Object[]{"*****REPORTE DE COMPROBANTES DESDE " + fechaDesde + " HASTA " + fechaHasta + "*****", "", "", "", "", "", "", "", "", "", ""});
+        datos.put(2, new Object[]{"", "", "", "", "", "", "", "", "", "", ""});
+        datos.put(3, new Object[]{"Serie", "Folio", "RFC Emisor", "RFC Receptor", "Estado", "Fecha", "Tipo", "SubTotal", "Descuento", "IVA", "Total"});
+
+        int firstRow = 0;
+        int lastRow = 0;
+        int firstCol = 0;
+        int lastCol = 10;
+        sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol));
+
+        int conteo = 4;
+        for (Comprobante comp : lista) {
+            Double total = new Double(comp.getTotal());
+            totalReporte = totalReporte.add(new BigDecimal(comp.getTotal()));
+            fecha = format.format(comp.getFechaTimbrado());
+            String status = comp.getStatus();
+            String folio = comp.getFolio();
+            Double subtotal = new Double(comp.getSubtotal());
+            Double iva = new Double(comp.getTotalTraslados());
+            Double descuento = new Double(comp.getDescuento());
+
+            datos.put(conteo, new Object[]{comp.getSerie(), folio, comp.getEmisor().getRfc(), comp.getReceptor().getRfc(), status, fecha, comp.getTipoDeComprobante(), subtotal, descuento, iva, total});
+            conteo++;
+        }
+
+        totalReporte = totalReporte.setScale(2, RoundingMode.HALF_UP);
+
+        datos.put(conteo, new Object[]{"", "", "", "", "", "", "", "", "", "", ""});
+        conteo++;
+        datos.put(conteo, new Object[]{"", "TOTAL: ", totalReporte.doubleValue(), "", "", "", "", "", "", "", ""});
+
+        DataFormat df = workbook.createDataFormat();
+
+        CellStyle styleNumberFormat = workbook.createCellStyle();
+        styleNumberFormat.setDataFormat(df.getFormat("_(* #,##0.00_);_(* (#,##0.00);_(* \"-\"??_);_(@_)"));
+
+        Font fuenteNumber = workbook.createFont();
+        fuenteNumber.setFontName("Arial");
+        fuenteNumber.setColor(IndexedColors.BLACK.getIndex());
+        fuenteNumber.setFontHeightInPoints((short) 10);
+        fuenteNumber.setBold(false);
+        styleNumberFormat.setFont(fuenteNumber);
+
+        Set<Integer> keyset = datos.keySet();
+        int numeroRenglon = 0;
+
+        for (Integer key : keyset) {
+            Row row = sheet.createRow(numeroRenglon++);
+            Object[] arregloObjetos = datos.get(key);
+            int numeroCelda = 0;
+
+            CellStyle styleText = workbook.createCellStyle();
+            styleText.setDataFormat(df.getFormat("@"));
+            Font fuente = workbook.createFont();
+            fuente.setFontName("Arial");
+            fuente.setColor(IndexedColors.BLACK.getIndex());
+
+            if (numeroRenglon == 1) {
+                fuente.setFontHeightInPoints((short) 16);
+                fuente.setBold(true);
+                styleText.setAlignment(HorizontalAlignment.CENTER);
+            } else if (numeroRenglon == 3) {
+                fuente.setFontHeightInPoints((short) 12);
+                fuente.setBold(true);
+                styleText.setAlignment(HorizontalAlignment.CENTER);
+            } else if (numeroRenglon == datos.size()) {
+                fuente.setFontHeightInPoints((short) 12);
+                fuente.setBold(true);
+            } else {
+                fuente.setFontHeightInPoints((short) 10);
+                fuente.setBold(false);
+            }
+
+            styleText.setFont(fuente);
+            row.setRowStyle(styleText);
+
+            for (int i = 0; i < arregloObjetos.length; i++) {
+                Object obj = arregloObjetos[i];
+                Cell cell = row.createCell(numeroCelda++);
+
+                if (obj instanceof String) {
+                    cell.setCellValue((String) obj);
+                    cell.setCellStyle(row.getRowStyle());
+
+                } else if (obj instanceof Double) {
+                    cell.setCellValue((Double) obj);
+
+                    if (numeroRenglon == datos.size()) {
+                        CellStyle styleCurrencyFormat = workbook.createCellStyle();
+                        styleCurrencyFormat.setDataFormat((short) 8);
+
+                        Font fuenteCurrency = workbook.createFont();
+                        fuenteCurrency.setFontName("Arial");
+                        fuenteCurrency.setColor(IndexedColors.BLACK.getIndex());
+                        fuenteCurrency.setFontHeightInPoints((short) 12);
+                        fuenteCurrency.setBold(true);
+
+                        styleCurrencyFormat.setFont(fuenteCurrency);
+                        cell.setCellStyle(styleCurrencyFormat);
+                    } else {
+                        cell.setCellStyle(styleNumberFormat);
+                    }
+                }
+                sheet.autoSizeColumn(i, true);
+            }
+        }
+
+        String mesDesde = comboDesdeMes.getSelectedItem().toString();
+        String anoDesde = comboDesdeAno.getSelectedItem().toString();
+        String mesHasta = comboHastaMes.getSelectedItem().toString();
+        String anoHasta = comboHastaAno.getSelectedItem().toString();
+
+        String path = Elemento.pathRaiz + "/";
+        String name = "reporte " + mesDesde + "-" + anoDesde + " al " + mesHasta + "-" + anoHasta + ".xls";
+        File excel = new File(path + name);
+
+        try {
+            System.out.println(java.time.LocalDateTime.now());
+            if (!excel.exists()) {
+                excel.createNewFile();
+            }
+            FileOutputStream out = new FileOutputStream(excel);
+            workbook.write(out);
+            workbook.close();
+            out.close();
+
+            Desktop.getDesktop().open(new File(path + name));
+            System.out.println(java.time.LocalDateTime.now());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Elemento.log.error("Error al crear el reporte de Excel", e);
         }
     }
 }
