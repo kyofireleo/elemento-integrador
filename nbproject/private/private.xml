@@ -3,14 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/ClaveProdServ.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/pagos/RecibosPagos.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/cartaporte/CartaPorte.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/ClienteAdd.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/CteUpdate.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/Folios.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/cartaporte/ubicaciones/UbicacionesView.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/cartaporte/figuras/FigurasView.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/Factura_View.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/pagos/Pago.java</file>
             <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/elemento/Elemento.java</file>
             <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/elemento/Listener.java</file>
-            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/ClavesUnidad.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/cartaporte/CartaPorteView.java</file>
+            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/cartaporte/mercancias/MercanciasView.java</file>
             <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/Configurar.java</file>
-            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/Factura_View.java</file>
             <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/elemento/Layout.java</file>
-            <file>file:/Users/abe/Dropbox/proyectos/ElementoIntegrador/src/gui/ReporteadorView.java</file>
         </group>
     </open-files>
 </project-private>

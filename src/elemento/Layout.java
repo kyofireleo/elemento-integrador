@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import nominas.Empleado;
 import pagos.Documento;
+import pagos.Impuesto;
 import pagos.Pago;
 import pagos.Pagos;
+import utils.cfdi.Concepto;
+import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosRetencion;
 
 public class Layout {
 
@@ -446,7 +449,7 @@ public class Layout {
             re.append("\r\n");
             int cont = 0;
             
-            /*
+            
             //Retenciones
             if(p.getPagoRetensionesISR() != null){
                 cont++;
@@ -460,7 +463,7 @@ public class Layout {
                 cont++;
                 retPago.append("PIR").append(cont).append(": P").append((i + 1)).append("@003@").append(p.getPagoRetensionesIEPS().toString()).append("\r\n");
             }
-            */
+            
             
             //Traslados
             cont = 0;
@@ -513,41 +516,94 @@ public class Layout {
                 re.append("@").append(d.getUuid());
                 re.append("@").append(d.getObjImp()).append("\r\n");
                 
-                int cont = 0;
                 
-                /*
                 //Retenciones
-                if(d.getRetensionISR()!= null){
-                    cont++;
-                    retDoc.append("PIR").append(cont).append(": DP").append((i + 1)).append("@001@").append(d.getRetensionISR().toString()).append("@Tasa@").append(d.getR).append("\r\n");
+                Map<String,Impuesto> rets = new HashMap();
+                for(Concepto con : d.getComprobante().getConceptos()){
+                    if(con.getImpuestos() != null && con.getImpuestos().getRetenciones() != null && !con.getImpuestos().getRetenciones().isEmpty()){
+                        for(ConceptoImpuestosRetencion r : con.getImpuestos().getRetenciones()){
+                            Impuesto imp;
+                            if(!rets.containsKey(r.getClaveImpuesto() + "-" + r.getTipoFactor())){
+                                imp = new Impuesto();
+                                imp.setBase(r.getBase());
+                                imp.setImporte(r.getImporte());
+                                imp.setTasaOCuota(r.getTasaOCuota());
+                                imp.setTipo('R');
+                                imp.setTipoFactor(r.getTipoFactor());
+                                imp.setImpuestoId(r.getClaveImpuesto());
+                                rets.put(r.getClaveImpuesto() + "-" + r.getTipoFactor(), imp);
+                            }else{
+                                imp = rets.get(r.getClaveImpuesto() + "-" + r.getTipoFactor());
+                                imp.setBase(imp.getBase().add(r.getBase()));
+                                imp.setImporte(imp.getImporte().add(r.getImporte()));
+                                rets.put(r.getClaveImpuesto() + "-" + r.getTipoFactor(), imp);
+                            }
+                        }
+                    }
                 }
-                if(d.getRetencionIVA()!= null){
-                    cont++;
-                    retDoc.append("PIR").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getRetencionIVA().toString()).append("\r\n");
+                
+                int cont;
+                
+                //Impuesto@Base@TipoFactor@Importe@TasaOCuota
+                if(!rets.isEmpty()){
+                    cont = 0;
+                    if(rets.containsKey("001-Tasa") || rets.containsKey("001-Cuota")){
+                        Impuesto isr;
+                        if(rets.containsKey("001-Tasa")){
+                            isr = rets.get("001-Tasa");
+                            cont++;
+                            retDoc.append("DPR").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@001@").append(isr.getBase()).append("@Tasa@").append(isr.getImporte().toString()).append("@").append(isr.getTasaOCuota().toString()).append("\r\n");
+                        }else if(rets.containsKey("001-Cuota")){
+                            isr = rets.get("001-Cuota");
+                            cont++;
+                            retDoc.append("DPR").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@001@").append(isr.getBase()).append("@Cuota@").append(isr.getImporte().toString()).append("@").append(isr.getTasaOCuota().toString()).append("\r\n");
+                        }
+                    }
+                    if(rets.containsKey("002-Tasa") || rets.containsKey("002-Cuota")){
+                        Impuesto isr;
+                        if(rets.containsKey("002-Tasa")){
+                            isr = rets.get("002-Tasa");
+                            cont++;
+                            retDoc.append("DPR").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@002@").append(isr.getBase()).append("@Tasa@").append(isr.getImporte().toString()).append("@").append(isr.getTasaOCuota().toString()).append("\r\n");
+                        }else if(rets.containsKey("002-Cuota")){
+                            isr = rets.get("002-Cuota");
+                            cont++;
+                            retDoc.append("DPR").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@002@").append(isr.getBase()).append("@Cuota@").append(isr.getImporte().toString()).append("@").append(isr.getTasaOCuota().toString()).append("\r\n");
+                        }
+                    }
+                    if(rets.containsKey("003-Tasa") || rets.containsKey("003-Cuota")){
+                        Impuesto isr;
+                        if(rets.containsKey("003-Tasa")){
+                            isr = rets.get("003-Tasa");
+                            cont++;
+                            retDoc.append("DPR").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@003@").append(isr.getBase()).append("@Tasa@").append(isr.getImporte().toString()).append("@").append(isr.getTasaOCuota().toString()).append("\r\n");
+                        }else if(rets.containsKey("003-Cuota")){
+                            isr = rets.get("003-Cuota");
+                            cont++;
+                            retDoc.append("DPR").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@003@").append(isr.getBase()).append("@Cuota@").append(isr.getImporte().toString()).append("@").append(isr.getTasaOCuota().toString()).append("\r\n");
+                        }
+                    }
                 }
-                if(d.getRetensionIEPS() != null){
-                    cont++;
-                    retDoc.append("PIR").append(cont).append(": DP").append((i + 1)).append("@003@").append(d.getRetensionIEPS().toString()).append("\r\n");
-                }
-                */
+
+                
                 
                 //Traslados
                 cont = 0;
                 if(d.getTrasladoBaseIVA0() != null){
                     cont++;
-                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA0().toString()).append("@").append(d.getTrasladoImpuestoIVA0()).append("@Tasa@0.000000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@002@").append(d.getTrasladoBaseIVA0().toString()).append("@").append(d.getTrasladoImpuestoIVA0()).append("@Tasa@0.000000").append("\r\n");
                 }
                 if(d.getTrasladoBaseIVA8() != null){
                     cont++;
-                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA8().toString()).append("@").append(d.getTrasladoImpuestoIVA8()).append("@Tasa@0.080000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@002@").append(d.getTrasladoBaseIVA8().toString()).append("@").append(d.getTrasladoImpuestoIVA8()).append("@Tasa@0.080000").append("\r\n");
                 }
                 if(d.getTrasladoBaseIVA16() != null){
                     cont++;
-                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(d.getTrasladoBaseIVA16().toString()).append("@").append(d.getTrasladoImpuestoIVA16()).append("@Tasa@0.160000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@002@").append(d.getTrasladoBaseIVA16().toString()).append("@").append(d.getTrasladoImpuestoIVA16()).append("@Tasa@0.160000").append("\r\n");
                 }
                 if(d.getTrasladoBaseIVAExento() != null){
                     cont++;
-                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("@002@").append(p.getPagoTrasladosBaseIVAExento().toString()).append("@").append("0.00").append("@Exento@0.000000").append("\r\n");
+                    traDoc.append("DPT").append(cont).append(": DP").append((i + 1)).append("-P").append(h + 1).append("@002@").append(p.getPagoTrasladosBaseIVAExento().toString()).append("@").append("0.00").append("@Exento@0.000000").append("\r\n");
                 }
             }
         }

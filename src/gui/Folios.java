@@ -104,7 +104,7 @@ public class Folios extends javax.swing.JFrame {
         setTableHeaderListener();
     }
 
-    public Folios(String rfcEmi, String rfcReceptor, Factura_View fv, RecibosPagos rp) {
+    public Folios(String rfcEmi, String rfcReceptor, Factura_View fv, RecibosPagos rp) { //Constructor para asociar CFDIs desde Facturas o Recibos de Pago
         initComponents();
         setLocationRelativeTo(null);
         model = (DefaultTableModel) folios.getModel();
@@ -121,7 +121,7 @@ public class Folios extends javax.swing.JFrame {
             getEmisores(con, rfcEmi);
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND idComprobante <> 4 AND timbrado = True" + order);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND " + (rp != null ? "idComprobante = 5" : "idComprobante not in (4, 5)") + "AND timbrado = True" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -167,7 +167,7 @@ public class Folios extends javax.swing.JFrame {
         }
     }
 
-    public Folios(String rfcEmi, String rfcReceptor, RecibosPagos rp, Pago p) {
+    public Folios(String rfcEmi, String rfcReceptor, RecibosPagos rp, Pago p) { //Constructor para Recibos de Pago
         this.rp = rp;
         this.p = p;
         initComponents();
@@ -179,7 +179,7 @@ public class Folios extends javax.swing.JFrame {
             String order = getOrdenamiento();
             if (con != null) {
                 Statement stmt = factory.stmtLectura(con);
-                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND idComprobante <> 4 AND timbrado = True" + order);
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Facturas WHERE rfcEmisor = '" + rfcEmi + "' AND rfc = '" + rfcReceptor + "' AND idComprobante = 1 AND timbrado = True" + order);
                 Object[] fila = new Object[7];
                 rfcEmisor.clear();
                 uuid.clear();
@@ -1126,6 +1126,7 @@ public class Folios extends javax.swing.JFrame {
                             total = new BigDecimal(comp.getTotal());
 
                             doc = new Documento();
+                            doc.setComprobante(comp);
                             doc.setEquivalencia(BigDecimal.ONE);
 
                             doc.setRfcEmisor(comp.getEmisor().getRfc());
@@ -1193,18 +1194,18 @@ public class Folios extends javax.swing.JFrame {
                                         for (Traslados t : comp.getImpuestos().getImpuestosTrasladados()) {
                                             if (t.getNombre().equalsIgnoreCase("IVA")) {
                                                 if (t.getTasa().compareTo(TASA_IVA_16) == 0) {
-                                                    BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_16.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
-                                                    doc.setTrasladoBaseIVA16(baseImportePagado);
-                                                    doc.setTrasladoImpuestoIVA16(importePagado.subtract(baseImportePagado));
+                                                    //BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_16.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                                                    doc.setTrasladoBaseIVA16(t.getBase());
+                                                    doc.setTrasladoImpuestoIVA16(t.getImporte());
                                                 }
                                                 if (t.getTasa().compareTo(TASA_IVA_8) == 0) {
-                                                    BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_8.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
-                                                    doc.setTrasladoBaseIVA8(baseImportePagado);
-                                                    doc.setTrasladoImpuestoIVA8(importePagado.subtract(baseImportePagado));
+                                                    //BigDecimal baseImportePagado = importePagado.divide(TASA_IVA_8.add(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
+                                                    doc.setTrasladoBaseIVA8(t.getBase());
+                                                    doc.setTrasladoImpuestoIVA8(t.getImporte());
                                                 }
                                                 if (t.getTasa().compareTo(TASA_IVA_0) == 0 && t.getTipoFactor().equalsIgnoreCase("Tasa")) {
-                                                    doc.setTrasladoBaseIVA0(importePagado);
-                                                    doc.setTrasladoImpuestoIVA0(BigDecimal.ZERO);
+                                                    doc.setTrasladoBaseIVA0(t.getBase());
+                                                    doc.setTrasladoImpuestoIVA0(t.getImporte());
                                                 }
                                                 if (t.getTipoFactor().equalsIgnoreCase("Exento")) {
                                                     doc.setTrasladoBaseIVAExento(importePagado);

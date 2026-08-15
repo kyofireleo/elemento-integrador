@@ -10,18 +10,19 @@
  */
 package gui;
 
+import cartaporte.CartaPorteView;
 import com.mxrck.autocompleter.AutoCompleterCallback;
 import com.mxrck.autocompleter.TextAutoCompleter;
 import elemento.ConnectionFactory;
 import elemento.Donataria;
 import elemento.Elemento;
 import elemento.Emisor;
-import elemento.Exe;
 import elemento.ExpedidoEn;
 import elemento.Factura;
 import elemento.Factura.ConceptoTraslado;
 import elemento.Factura.ConceptoRetencion;
 import elemento.Layout;
+import elemento.ValidarClaves;
 import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
@@ -49,7 +50,6 @@ import pagos.RecibosPagos;
 import reportes.Receptor;
 import utils.cfdi.Comprobante;
 import utils.cfdi.Concepto;
-import utils.cfdi.Concepto.ConceptoImpuestos;
 import utils.cfdi.Concepto.ConceptoImpuestos.ConceptoImpuestosTraslado;
 
 /**
@@ -96,6 +96,7 @@ public class Factura_View extends elemento.ClavesProdUniSat {
     private TextAutoCompleter texter;
     public boolean esperaCliente = true;
     private ButtonGroup bg;
+    private CartaPorteView traslado;
 
     /**
      * Creates new form Factura_View
@@ -113,11 +114,13 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         setLocationRelativeTo(null);
         iniciar();
     }
-
+    
+    //Constructor para crear objeto sin ventana
     public Factura_View(String nada) {
 
     }
-
+    
+    //Constructor para crear ventana con cliente seleccionado
     public Factura_View(int idCliente) {
         initComponents();
         setLocationRelativeTo(null);
@@ -690,6 +693,11 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         });
 
         txtCliente.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        txtCliente.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtClienteKeyPressed(evt);
+            }
+        });
 
         jLabel15.setText("Cliente");
 
@@ -2242,6 +2250,16 @@ public class Factura_View extends elemento.ClavesProdUniSat {
                     case "I":
                         asociarCfdi.setEnabled(true);
                         break;
+                    case "T":
+                        traslado = new CartaPorteView();
+                        if(!traslado.isVisible()){
+                            if(emisor == null){
+                                consultar("Emisores", "SELECT * FROM Emisores WHERE id = " + id);
+                            }
+                            traslado.setEmisor(emisor);
+                            traslado.setFolio(this.folioText.getText());
+                            traslado.setVisible(true);
+                        }
                 }
 
                 /*if (tipocfd.getItemCount() > 0) {
@@ -2321,6 +2339,11 @@ public class Factura_View extends elemento.ClavesProdUniSat {
             this.claveProdSat.selectAll();
         }
     }//GEN-LAST:event_claveProdSatFocusLost
+
+    private void txtClienteKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtClienteKeyPressed
+        // TODO add your handling code here:
+        txtCliente.select(txtCliente.getText().length(), txtCliente.getText().length());
+    }//GEN-LAST:event_txtClienteKeyPressed
 
     private ValidarClaves validarClaveUnidad(){
         if((this.getClaveUnidadSat() == null || this.getIdClaveUnidadSat() == null)){
@@ -3030,36 +3053,4 @@ public class Factura_View extends elemento.ClavesProdUniSat {
         
         return true;
     }
-}
-
-class ValidarClaves{
-    private boolean valida;
-    private Object clave;
-    
-    public ValidarClaves(){
-        
-    }
-    
-    public ValidarClaves(boolean valida, Object clave){
-        this.valida = valida;
-        this.clave = clave;
-    }
-
-    public boolean isValida() {
-        return valida;
-    }
-
-    public void setValida(boolean valida) {
-        this.valida = valida;
-    }
-
-    public Object getClave() {
-        return clave;
-    }
-
-    public void setClave(Object clave) {
-        this.clave = clave;
-    }
-    
-    
 }

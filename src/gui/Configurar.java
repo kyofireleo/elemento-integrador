@@ -914,7 +914,9 @@ public class Configurar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void examinarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_examinarActionPerformed
-        logoPath.setText(seleccionarArchivo("Imagen de Mapa de Bits .JPG", "jpg"));
+        String path = seleccionarArchivo("Imagen de Mapa de Bits .JPG", "jpg");
+        if(!path.isEmpty())
+            logoPath.setText(path);
     }//GEN-LAST:event_examinarActionPerformed
 
     private String seleccionarArchivo(String nombre, String tipo) {
@@ -922,18 +924,19 @@ public class Configurar extends javax.swing.JFrame {
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         FileNameExtensionFilter ext = new FileNameExtensionFilter(nombre, tipo);
         chooser.setFileFilter(ext);
+        
         if (nombre.contains("Plantilla")) {
             chooser.setCurrentDirectory(new File(Elemento.pathPlantillas));
         } else {
             chooser.setCurrentDirectory(new File(Elemento.unidad.contains(":") ? (Elemento.unidad + "\\") : Elemento.unidad));
         }
+        
         chooser.setVisible(true);
         int opc = chooser.showOpenDialog(null);
         String path = "";
 
         switch (opc) {
             case JFileChooser.APPROVE_OPTION:
-                // path to watch
                 path = chooser.getSelectedFile().getAbsolutePath();
                 chooser.setVisible(false);
                 break;
@@ -941,7 +944,7 @@ public class Configurar extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Ocurrio un error, intentelo de nuevo");
                 chooser.setVisible(false);
             case JFileChooser.CANCEL_OPTION:
-                chooser.setVisible(true);
+                chooser.setVisible(false);
         }
 
         return path;
@@ -1302,7 +1305,7 @@ public class Configurar extends javax.swing.JFrame {
 
         if (creditos > 0) {
 //            String cr = JOptionPane.showInputDialog(null, "Ingrese la cantidad de creditos a agregar:", "Agregar Creditos",JOptionPane.INFORMATION_MESSAGE);
-            this.agregarCreditos(creditos, rfcActual, certActual);
+            this.agregarCreditos(creditos, rfcActual, certActual, lugarActual, regimenActual);
 
             this.llenarFormulario(true);
         } else {
@@ -1492,15 +1495,17 @@ public class Configurar extends javax.swing.JFrame {
     }//GEN-LAST:event_rfcItemStateChanged
 
     private void btnExaminarCertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarCertActionPerformed
-        // TODO add your handling code here:
-        txtPathCert.setText(seleccionarArchivo("Archivo de certificado .CER", "cer"));
-        
-        validarCertificado(true);
+        String path = seleccionarArchivo("Archivo de certificado .CER", "cer");
+        if(!path.isEmpty()){
+            txtPathCert.setText(path);
+            validarCertificado(true);
+        }
     }//GEN-LAST:event_btnExaminarCertActionPerformed
 
     private void btnExaminarKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarKeyActionPerformed
-        // TODO add your handling code here:
-        txtPathKey.setText(seleccionarArchivo("Archivo de llave .KEY", "key"));
+        String path = seleccionarArchivo("Archivo de llave .KEY", "key");
+        if(!path.isEmpty())
+            txtPathKey.setText(path);
     }//GEN-LAST:event_btnExaminarKeyActionPerformed
 
     private void validarCertificado(boolean setNoCertificado){
@@ -1528,7 +1533,7 @@ public class Configurar extends javax.swing.JFrame {
         }
     }
     
-    private void agregarCreditos(final int creditos, final String rfcE, final String cert) {
+    private void agregarCreditos(final int creditos, final String rfcE, final String cert, final String lugar, final String regimen) {
         try {
             Connection con = Elemento.odbc();
             Statement stmt = fact.stmtEscritura(con);
@@ -1547,24 +1552,18 @@ public class Configurar extends javax.swing.JFrame {
                         util.enviarEmail("esquerodriguez@gmail.com,gorenajc2.3@gmail.com",
                                 "SE AGREGARON CREDITOS A LA SIGUIENTE CUENTA\r\n"
                                 + "*Vendedor: " + rfcVendedor.toUpperCase() + "\r\n"
-                                + "*Certificado: " + cert + "\r\n\r\n"
+                                + "*Certificado: " + cert + "\r\n"
+                                + "*Folios Activados: " + creditos + "\r\n\r\n"
                                 + "***DATOS DEL EMISOR***\r\n\r\n"
                                 + "NOMBRE2: " + nombre + "\r\n"
                                 + "RFC2: " + rfcE + "\r\n"
-                                + "CALLE2: " + emis.calle.getText().trim() + "\r\n"
-                                + "NOEXTERIOR2: " + emis.noExterior.getText().trim() + "\r\n"
-                                + "NOINTERIOR2: " + emis.noInterior.getText().trim() + "\r\n"
-                                + "COLONIA2: " + emis.colonia.getText().trim() + "\r\n"
-                                + "LOCALIDAD2: " + emis.localidad.getText().trim() + "\r\n"
-                                + "MUNICIPIO2: " + emis.municipio.getText().trim() + "\r\n"
-                                + "ESTADO2: " + emis.estado.getSelectedItem().toString() + "\r\n"
-                                + "PAIS2: " + emis.pais.getSelectedItem().toString() + "\r\n"
-                                + "CP2: " + emis.cp.getText().trim() + "\r\n\r\n"
-                                + "*Folios Activados: " + creditos + "\r\n");
+                                + "DOMICILIOFISCAL: " + lugar + "\r\n"
+                                + "REGIMENFISCAL2: " + regimen + "\r\n"
+                                + "RESIDENCIAFISCAL: MEX\r\n");
                     }
                 }.start();
             }
-
+            
             rs.close();
             stmt2.close();
             stmt.close();

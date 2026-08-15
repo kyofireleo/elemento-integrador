@@ -758,6 +758,7 @@ public class CteUpdate extends javax.swing.JFrame {
 
     private void nombreCteKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_nombreCteKeyPressed
         // TODO add your handling code here:
+        nombreCte.select(nombreCte.getText().length(), nombreCte.getText().length());
     }//GEN-LAST:event_nombreCteKeyPressed
 
     private void nombreCteFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nombreCteFocusGained

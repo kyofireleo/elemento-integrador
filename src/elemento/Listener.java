@@ -65,12 +65,14 @@ public class Listener {
 
     
     public void fileCreated(int wd, String rootPath, String name) {
-        Elemento.log.info("Layout Detectado: " + (rootPath + name));
-        try {
-            this.procesar(rootPath, name);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Elemento.log.error("Excepcion: Ocurrio un problema al timbrar el comprobante: " + ex.getMessage(), ex);
+        if(name.toLowerCase().endsWith("xml") || name.toLowerCase().endsWith("txt")){
+            Elemento.log.info("Layout Detectado: " + (rootPath + name));
+            try {
+                this.procesar(rootPath, name);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Elemento.log.error("Excepcion: Ocurrio un problema al timbrar el comprobante: " + ex.getMessage(), ex);
+            }
         }
     }
 

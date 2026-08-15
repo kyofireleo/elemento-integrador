@@ -7,6 +7,7 @@ package pagos;
 
 import java.math.BigDecimal;
 import java.util.List;
+import utils.cfdi.Comprobante;
 
 /**
  *
@@ -19,9 +20,12 @@ public class Documento {
     private int numParcialidad;
     private String rfcEmisor, rfcReceptor;
     private BigDecimal 
-	retencionIVA 
-	,retensionISR 
-	,retensionIEPS 
+	retencionIVA
+        ,retencionTasaIVA
+	,retensionISR
+        ,retensionTasaISR
+	,retensionIEPS
+        ,retensionTasaIEPS
 	,trasladoBaseIVA16 
 	,trasladoImpuestoIVA16 
 	,trasladoBaseIVA8 
@@ -29,13 +33,38 @@ public class Documento {
 	,trasladoBaseIVA0 
 	,trasladoImpuestoIVA0 
 	,trasladoBaseIVAExento;
-    
+
     private List<Impuesto> impuestos;
     private String objImp;
     private BigDecimal equivalencia;
+    private Comprobante comp;
     
     public Documento() {
 
+    }
+    
+    public BigDecimal getRetencionTasaIVA() {
+        return retencionTasaIVA;
+    }
+
+    public void setRetencionTasaIVA(BigDecimal retencionTasaIVA) {
+        this.retencionTasaIVA = retencionTasaIVA;
+    }
+
+    public BigDecimal getRetensionTasaISR() {
+        return retensionTasaISR;
+    }
+
+    public void setRetensionTasaISR(BigDecimal retensionTasaISR) {
+        this.retensionTasaISR = retensionTasaISR;
+    }
+
+    public BigDecimal getRetensionTasaIEPS() {
+        return retensionTasaIEPS;
+    }
+
+    public void setRetensionTasaIEPS(BigDecimal retensionTasaIEPS) {
+        this.retensionTasaIEPS = retensionTasaIEPS;
     }
 
     public List<Impuesto> getImpuestos() {
@@ -237,83 +266,12 @@ public class Documento {
     public void setNumParcialidad(int numParcialidad) {
         this.numParcialidad = numParcialidad;
     }
-    
-    public class Impuesto{
-        char tipo;
-        String nombre;
-        String impuestoId;
-        String tipoFactor;
-        BigDecimal tasaOCuota;
-        BigDecimal base;
-        BigDecimal importe;
 
-        public Impuesto(char tipo, String nombre, String impuestoId, String tipoFactor, BigDecimal tasaOCuota, BigDecimal base, BigDecimal importe) {
-            this.tipo = tipo;
-            this.nombre = nombre;
-            this.impuestoId = impuestoId;
-            this.tipoFactor = tipoFactor;
-            this.tasaOCuota = tasaOCuota;
-            this.base = base;
-            this.importe = importe;
-        }
-
-        public char getTipo() {
-            return tipo;
-        }
-
-        public void setTipo(char tipo) {
-            this.tipo = tipo;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public void setNombre(String nombre) {
-            this.nombre = nombre;
-        }
-
-        public String getImpuestoId() {
-            return impuestoId;
-        }
-
-        public void setImpuestoId(String impuestoId) {
-            this.impuestoId = impuestoId;
-        }
-
-        public String getTipoFactor() {
-            return tipoFactor;
-        }
-
-        public void setTipoFactor(String tipoFactor) {
-            this.tipoFactor = tipoFactor;
-        }
-
-        public BigDecimal getTasaOCuota() {
-            return tasaOCuota;
-        }
-
-        public void setTasaOCuota(BigDecimal tasaOCuota) {
-            this.tasaOCuota = tasaOCuota;
-        }
-
-        public BigDecimal getBase() {
-            return base;
-        }
-
-        public void setBase(BigDecimal base) {
-            this.base = base;
-        }
-
-        public BigDecimal getImporte() {
-            return importe;
-        }
-
-        public void setImporte(BigDecimal importe) {
-            this.importe = importe;
-        }
-
+    public void setComprobante(Comprobante comp) {
+        this.comp = comp;
     }
-
-
+    
+    public Comprobante getComprobante(){
+        return this.comp;
+    }
 }
